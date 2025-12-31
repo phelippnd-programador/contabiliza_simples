@@ -10,6 +10,12 @@ import ConfiguracaoEmpresaPage from "../features/empresa/pages/ConfiguracaoEmpre
 
 const CadastroEmpresaPage = lazy(() => import("../features/empresa/pages/CadastroEmpresaPage"));
 const TributacaoPage = lazy(() => import("../features/tributacao/pages/TributacaoPage"));
+const ContasBancariasPage = lazy(
+  () => import("../features/financeiro/pages/ContasBancariasPage")
+);
+const ContaBancariaPage = lazy(
+  () => import("../features/financeiro/pages/ContaBancariaPage")
+);
 
 const withLoading = (node: React.ReactNode) => (
   <Suspense fallback={<PageLoading />}>{node}</Suspense>
@@ -51,7 +57,7 @@ export const router = createBrowserRouter([
         path: "receitas",
         element: withLoading(
           <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
-            <TributacaoPage />
+            <ContaBancariaPage />
           </RequireRole>
         ),
       },
@@ -68,6 +74,30 @@ export const router = createBrowserRouter([
         element: withLoading(
           <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
             <TributacaoPage />
+          </RequireRole>
+        ),
+      },
+      {
+        path: "financeiro/contas",
+        element: withLoading(
+          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
+            <ContasBancariasPage />
+          </RequireRole>
+        ),
+      },
+      {
+        path: "financeiro/contas/nova",
+        element: withLoading(
+          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
+            <ContaBancariaPage />
+          </RequireRole>
+        ),
+      },
+      {
+        path: "financeiro/contas/:id",
+        element: withLoading(
+          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
+            <ContaBancariaPage />
           </RequireRole>
         ),
       },

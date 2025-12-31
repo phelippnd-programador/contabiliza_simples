@@ -32,7 +32,16 @@ const AppTextInput = forwardRef<HTMLInputElement, AppTextInputProps>(
     },
     ref
   ) => {
-    const [display, setDisplay] = React.useState<string>(props.value?.toString() || '');
+    const [display, setDisplay] = React.useState<string>(
+      props.value?.toString() ?? 'OI'
+    );
+
+    React.useEffect(() => {
+      if (props.value !== undefined && props.value !== null) {
+        setDisplay(props.value.toString());
+      }
+    }, [props.value]);
+    
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       let v = e.target.value;
       let raw = v;
@@ -45,7 +54,6 @@ const AppTextInput = forwardRef<HTMLInputElement, AppTextInputProps>(
       if (formatter) {
         v = formatter(raw);
       }
-      console.log("Input value changed:", v);
       e.target.value = v;
       setDisplay(v);
       onValueChange?.(raw);
