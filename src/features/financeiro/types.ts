@@ -56,4 +56,21 @@ export const TipoMovimentoCaixa = {
 } as const;
 export type TipoMovimentoCaixa = typeof TipoMovimentoCaixa[keyof typeof TipoMovimentoCaixa];
 
+export type CategoriaMovimento = {
+    id: string;
+    nome: string;
+    tipo: TipoMovimentoCaixa;
+};
+
+export type ContaBancaria = {
+    id: string;
+    nome: string;
+    banco: string;
+    agencia: string;
+    conta: string;
+    digito?: string;
+    tipo: TipoConta;
+    categoria: TipoMovimentoCaixa;
+};
+
 
