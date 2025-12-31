@@ -1,0 +1,40 @@
+
+@import "tailwindcss";
+@font-face {
+  font-family: "Montserrat";
+  src: url("./assets/fonts/Montserrat/Montserrat-VariableFont_wght.ttf") format("truetype");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Montserrat";
+  src: url("./assets/fonts/Montserrat/Montserrat-Italic-VariableFont_wght.ttf") format("truetype");
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Amarna";
+  src: url("./assets/fonts/Amarna/Amarna-VariableFont_wght.ttf") format("truetype");
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Amarna";
+  src: url("./assets/fonts/Amarna/Amarna-Italic-VariableFont_wght.ttf") format("truetype");
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
+:root {
+  --font-amarna: "Amarna", system-ui, sans-serif;
+}
+
+
+@layer utilities {
+  .font-amarna {
+    font-family: var(--font-amarna);
+  }
+}
