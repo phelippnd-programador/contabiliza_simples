@@ -10,6 +10,9 @@ import ConfiguracaoEmpresaPage from "../features/empresa/pages/ConfiguracaoEmpre
 
 const CadastroEmpresaPage = lazy(() => import("../features/empresa/pages/CadastroEmpresaPage"));
 const TributacaoPage = lazy(() => import("../features/tributacao/pages/TributacaoPage"));
+const CategoriasFinanceirasPage = lazy(
+  () => import("../features/financeiro/pages/CategoriasFinanceirasPage")
+);
 const ContasBancariasPage = lazy(
   () => import("../features/financeiro/pages/ContasBancariasPage")
 );
@@ -98,6 +101,14 @@ export const router = createBrowserRouter([
         element: withLoading(
           <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
             <ContaBancariaPage />
+          </RequireRole>
+        ),
+      },
+      {
+        path: "financeiro/categorias",
+        element: withLoading(
+          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
+            <CategoriasFinanceirasPage />
           </RequireRole>
         ),
       },
