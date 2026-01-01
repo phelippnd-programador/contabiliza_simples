@@ -13,6 +13,9 @@ const TributacaoPage = lazy(() => import("../features/tributacao/pages/Tributaca
 const CategoriasFinanceirasPage = lazy(
   () => import("../features/financeiro/pages/CategoriasFinanceirasPage")
 );
+const MovimentosCaixaPage = lazy(
+  () => import("../features/financeiro/pages/MovimentosCaixaPage")
+);
 const ContasBancariasPage = lazy(
   () => import("../features/financeiro/pages/ContasBancariasPage")
 );
@@ -109,6 +112,14 @@ export const router = createBrowserRouter([
         element: withLoading(
           <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
             <CategoriasFinanceirasPage />
+          </RequireRole>
+        ),
+      },
+      {
+        path: "financeiro/movimentos",
+        element: withLoading(
+          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
+            <MovimentosCaixaPage />
           </RequireRole>
         ),
       },
