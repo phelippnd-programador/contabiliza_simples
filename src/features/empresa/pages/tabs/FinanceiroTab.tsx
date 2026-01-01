@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import AppTextInput from "../../../../components/ui/input/AppTextInput";
 import AppSelectInput from "../../../../components/ui/input/AppSelectInput";
 import AppButton from "../../../../components/ui/button/AppButton";
@@ -8,36 +8,15 @@ import {
   empresaFinanceiroSchema,
   type EmpresaFinanceiroFormData,
 } from "../../validation/empresa.financeiro.schema";
-import {
-  TipoConta,
-  TipoMovimentoCaixa,
-  type CategoriaMovimento,
-  type ContaCaixa,
-} from "../../../financeiro/types";
-import { diasPagamentoOptions, tipoCategoriaOptions, tipoContaOptions } from "../../../../shared/types/select-type";
+import { TipoMovimentoCaixa, type CategoriaMovimento } from "../../../financeiro/types";
+import { diasPagamentoOptions, tipoCategoriaOptions } from "../../../../shared/types/select-type";
+import { listContas } from "../../../financeiro/storage/contas";
+import type { ContaBancaria } from "../../../financeiro/types";
 
 type Props = {
   onSave?: () => Promise<void> | void;
 };
 
-
-// const tipoCategoriaOptions = [
-//   { value: TipoMovimentoCaixa.ENTRADA, label: "Entrada" },
-//   { value: TipoMovimentoCaixa.SAIDA, label: "Saida" },
-// ];
-
-const formatTipoConta = (tipo: TipoConta) => {
-  switch (tipo) {
-    case TipoConta.BANCO:
-      return "Banco";
-    case TipoConta.DINHEIRO:
-      return "Dinheiro";
-    case TipoConta.CARTAO:
-      return "Cartao";
-    default:
-      return "Outros";
-  }
-};
 
 const formatTipoMovimento = (tipo: TipoMovimentoCaixa) =>
   tipo === TipoMovimentoCaixa.ENTRADA ? "Entrada" : "Saida";
@@ -53,15 +32,8 @@ export function FinanceiroTab({ onSave }: Props) {
     percentualInssProlabore: 11,
     frequenciaProlabore: "MENSAL",
   });
-  const [contas, setContas] = useState<ContaCaixa[]>([]);
+  const [contas, setContas] = useState<ContaBancaria[]>([]);
   const [categorias, setCategorias] = useState<CategoriaMovimento[]>([]);
-  const [novaConta, setNovaConta] = useState<{
-    nome: string;
-    tipo: TipoConta;
-  }>({
-    nome: "",
-    tipo: TipoConta.BANCO,
-  });
   const [novaCategoria, setNovaCategoria] = useState<{
     nome: string;
     tipo: TipoMovimentoCaixa;
@@ -70,15 +42,17 @@ export function FinanceiroTab({ onSave }: Props) {
     tipo: TipoMovimentoCaixa.SAIDA,
   });
   const [localErrors, setLocalErrors] = useState<{
-    contaNome?: string;
     categoriaNome?: string;
   }>({});
-  const [contaInputKey, setContaInputKey] = useState(0);
   const [categoriaInputKey, setCategoriaInputKey] = useState(0);
+
+  useEffect(() => {
+    setContas(listContas());
+  }, []);
 
   const contaOptions = contas.map((conta) => ({
     value: conta.id,
-    label: `${conta.nome} (${formatTipoConta(conta.tipo)})`,
+    label: `${conta.nome} (${conta.banco})`,
   }));
   const categoriasSaidaOptions = categorias
     .filter((categoria) => categoria.tipo === TipoMovimentoCaixa.SAIDA)
@@ -103,25 +77,6 @@ export function FinanceiroTab({ onSave }: Props) {
     });
     setErrors(next);
     return false;
-  }
-
-  function handleAddConta() {
-    const nome = novaConta.nome.trim();
-    if (!nome) {
-      setLocalErrors((prev) => ({
-        ...prev,
-        contaNome: "Informe o nome da conta",
-      }));
-      return;
-    }
-
-    setLocalErrors((prev) => ({ ...prev, contaNome: "" }));
-    setContas((prev) => [
-      ...prev,
-      { id: createLocalId("conta"), nome, tipo: novaConta.tipo },
-    ]);
-    setNovaConta((prev) => ({ ...prev, nome: "" }));
-    setContaInputKey((prev) => prev + 1);
   }
 
   function handleAddCategoria() {
@@ -150,66 +105,6 @@ export function FinanceiroTab({ onSave }: Props) {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* CONTAS FINANCEIRAS */}
-      <div className="rounded-lg border border-gray-200 bg-white p-4">
-        <div className="mb-4">
-          <h2 className="text-base font-semibold">Contas financeiras</h2>
-          <p className="text-sm text-gray-500">
-            Cadastre contas para usar nos lancamentos e pagamentos.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <AppTextInput
-            key={`conta-${contaInputKey}`}
-            title="Nome da conta"
-            value={novaConta.nome}
-            onChange={(e) =>
-              setNovaConta((prev) => ({ ...prev, nome: e.target.value }))
-            }
-            error={localErrors.contaNome}
-          />
-
-          <AppSelectInput
-            title="Tipo"
-            value={novaConta.tipo}
-            onChange={(e) =>
-              setNovaConta((prev) => ({
-                ...prev,
-                tipo: e.target.value as TipoConta,
-              }))
-            }
-            data={tipoContaOptions}
-          />
-
-          <div className="flex items-end">
-            <AppButton type="button" className="w-auto" onClick={handleAddConta}>
-              Adicionar conta
-            </AppButton>
-          </div>
-        </div>
-
-        <div className="mt-4">
-          {contas.length ? (
-            <ul className="divide-y divide-gray-100 rounded-lg border border-gray-200">
-              {contas.map((conta) => (
-                <li
-                  key={conta.id}
-                  className="flex items-center justify-between px-3 py-2 text-sm"
-                >
-                  <span className="font-medium text-gray-900">{conta.nome}</span>
-                  <span className="text-xs text-gray-500">
-                    {formatTipoConta(conta.tipo)}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-sm text-gray-500">Nenhuma conta cadastrada.</p>
-          )}
-        </div>
-      </div>
-
       {/* CATEGORIAS DE LANCAMENTO */}
       <div className="rounded-lg border border-gray-200 bg-white p-4">
         <div className="mb-4">
