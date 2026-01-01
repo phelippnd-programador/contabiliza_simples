@@ -9,9 +9,10 @@ import {
   type EmpresaFinanceiroFormData,
 } from "../../validation/empresa.financeiro.schema";
 import { TipoMovimentoCaixa, type CategoriaMovimento } from "../../../financeiro/types";
-import { diasPagamentoOptions, tipoCategoriaOptions } from "../../../../shared/types/select-type";
+import { diasPagamentoOptions } from "../../../../shared/types/select-type";
 import { listContas } from "../../../financeiro/storage/contas";
 import type { ContaBancaria } from "../../../financeiro/types";
+import { listCategorias } from "../../../financeiro/storage/categorias";
 
 type Props = {
   onSave?: () => Promise<void> | void;
@@ -20,9 +21,6 @@ type Props = {
 
 const formatTipoMovimento = (tipo: TipoMovimentoCaixa) =>
   tipo === TipoMovimentoCaixa.ENTRADA ? "Entrada" : "Saida";
-
-const createLocalId = (prefix: string) =>
-  `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
 export function FinanceiroTab({ onSave }: Props) {
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -34,20 +32,10 @@ export function FinanceiroTab({ onSave }: Props) {
   });
   const [contas, setContas] = useState<ContaBancaria[]>([]);
   const [categorias, setCategorias] = useState<CategoriaMovimento[]>([]);
-  const [novaCategoria, setNovaCategoria] = useState<{
-    nome: string;
-    tipo: TipoMovimentoCaixa;
-  }>({
-    nome: "",
-    tipo: TipoMovimentoCaixa.SAIDA,
-  });
-  const [localErrors, setLocalErrors] = useState<{
-    categoriaNome?: string;
-  }>({});
-  const [categoriaInputKey, setCategoriaInputKey] = useState(0);
 
   useEffect(() => {
     setContas(listContas());
+    setCategorias(listCategorias());
   }, []);
 
   const contaOptions = contas.map((conta) => ({
@@ -79,25 +67,6 @@ export function FinanceiroTab({ onSave }: Props) {
     return false;
   }
 
-  function handleAddCategoria() {
-    const nome = novaCategoria.nome.trim();
-    if (!nome) {
-      setLocalErrors((prev) => ({
-        ...prev,
-        categoriaNome: "Informe o nome da categoria",
-      }));
-      return;
-    }
-
-    setLocalErrors((prev) => ({ ...prev, categoriaNome: "" }));
-    setCategorias((prev) => [
-      ...prev,
-      { id: createLocalId("categoria"), nome, tipo: novaCategoria.tipo },
-    ]);
-    setNovaCategoria((prev) => ({ ...prev, nome: "" }));
-    setCategoriaInputKey((prev) => prev + 1);
-  }
-
   async function handleSave() {
     if (!validate()) return;
     await onSave?.();
@@ -105,78 +74,6 @@ export function FinanceiroTab({ onSave }: Props) {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* CATEGORIAS DE LANCAMENTO */}
-      <div className="rounded-lg border border-gray-200 bg-white p-4">
-        <div className="mb-4">
-          <h2 className="text-base font-semibold">Categorias de lancamento</h2>
-          <p className="text-sm text-gray-500">
-            Crie categorias de entrada e saida para organizar os movimentos.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <AppTextInput
-            key={`categoria-${categoriaInputKey}`}
-            title="Nome da categoria"
-            value={novaCategoria.nome}
-            onChange={(e) =>
-              setNovaCategoria((prev) => ({ ...prev, nome: e.target.value }))
-            }
-            error={localErrors.categoriaNome}
-          />
-
-          <AppSelectInput
-            title="Tipo"
-            value={novaCategoria.tipo}
-            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                const next = e.target.value as TipoMovimentoCaixa;
-                setNovaCategoria((prev) => ({ ...prev, tipo: next }));
-            }}
-            // onChange={(e) =>
-            //   setNovaCategoria((prev) => ({
-            //     ...prev,
-            //     tipo: e.target.value as TipoMovimentoCaixa,
-            //   }))
-            // }
-            data={tipoCategoriaOptions}
-          />
-
-          <div className="flex items-end">
-            <AppButton
-              type="button"
-              className="w-auto"
-              onClick={handleAddCategoria}
-            >
-              Adicionar categoria
-            </AppButton>
-          </div>
-        </div>
-
-        <div className="mt-4">
-          {categorias.length ? (
-            <ul className="divide-y divide-gray-100 rounded-lg border border-gray-200">
-              {categorias.map((categoria) => (
-                <li
-                  key={categoria.id}
-                  className="flex items-center justify-between px-3 py-2 text-sm"
-                >
-                  <span className="font-medium text-gray-900">
-                    {categoria.nome}
-                  </span>
-                  <span className="text-xs text-gray-500">
-                    {formatTipoMovimento(categoria.tipo)}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-sm text-gray-500">
-              Nenhuma categoria cadastrada.
-            </p>
-          )}
-        </div>
-      </div>
-
       {/* ATIVAR PRO-LABORE */}
       <div className="rounded-lg border border-gray-200 bg-white p-4">
         <div className="mb-4">
