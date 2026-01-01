@@ -21,6 +21,15 @@ export const tipoCategoriaOptions: ItemSelect[] = (
     })
     );
 
+export const categoriaInssOptions: ItemSelect[] = [
+    { value: "EMPREGADO", label: "Empregado (CLT)" },
+    { value: "CONTRIBUINTE_INDIVIDUAL_20", label: "Contribuinte Individual 20%" },
+    { value: "CONTRIBUINTE_INDIVIDUAL_11", label: "Contribuinte Individual 11%" },
+    { value: "MEI", label: "MEI" },
+    { value: "EMPREGADO_DOMESTICO", label: "Empregado Domestico" },
+    { value: "FACULTATIVO", label: "Facultativo" },
+];
+
 export const diasPagamentoOptions: ItemSelect[] = (
     Array.from({ length: 28 }, (_, i) => ({
         label: String(i + 1),

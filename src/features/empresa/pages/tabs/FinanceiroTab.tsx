@@ -9,7 +9,7 @@ import {
   type EmpresaFinanceiroFormData,
 } from "../../validation/empresa.financeiro.schema";
 import { TipoMovimentoCaixa, type CategoriaMovimento } from "../../../financeiro/types";
-import { diasPagamentoOptions } from "../../../../shared/types/select-type";
+import { categoriaInssOptions, diasPagamentoOptions } from "../../../../shared/types/select-type";
 import { listContas } from "../../../financeiro/storage/contas";
 import type { ContaBancaria } from "../../../financeiro/types";
 import { listCategorias } from "../../../financeiro/storage/categorias";
@@ -218,7 +218,7 @@ export function FinanceiroTab({ onSave }: Props) {
                       categoriaInssId: e.target.value,
                     }))
                   }
-                  data={categoriasSaidaOptions}
+                  data={categoriaInssOptions}
                   placeholder="Selecione"
                   error={errors.categoriaInssId}
                 />
