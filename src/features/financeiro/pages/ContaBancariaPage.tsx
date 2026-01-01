@@ -46,7 +46,8 @@ const ContaBancariaPage = () => {
 
   const handleSave = () => {
     const saved = saveConta({ ...form, id });
-    navigate(`/financeiro/contas/${saved.id}`);
+    // navigate(`/financeiro/contas/${saved.id}`);
+    navigate(`/financeiro/contas/`);
   };
 
   return (

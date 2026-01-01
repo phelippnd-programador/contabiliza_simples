@@ -33,7 +33,7 @@ const AppTextInput = forwardRef<HTMLInputElement, AppTextInputProps>(
     ref
   ) => {
     const [display, setDisplay] = React.useState<string>(
-      props.value?.toString() ?? 'OI'
+      props.value?.toString() ?? ''
     );
 
     React.useEffect(() => {
@@ -41,7 +41,7 @@ const AppTextInput = forwardRef<HTMLInputElement, AppTextInputProps>(
         setDisplay(props.value.toString());
       }
     }, [props.value]);
-    
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       let v = e.target.value;
       let raw = v;
