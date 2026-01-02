@@ -70,6 +70,7 @@ export function AppTextSearch<T>({
     const [loading, setLoading] = useState(false);
     const [results, setResults] = useState<T[]>([]);
     const [activeIndex, setActiveIndex] = useState(0);
+    const [popoverStyle, setPopoverStyle] = useState<React.CSSProperties>({});
 
     const containerRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
@@ -90,6 +91,35 @@ export function AppTextSearch<T>({
         document.addEventListener("mousedown", onDocMouseDown);
         return () => document.removeEventListener("mousedown", onDocMouseDown);
     }, []);
+
+    useEffect(() => {
+        if (!open || disabled) return;
+        const updatePosition = () => {
+            const inputEl = inputRef.current;
+            if (!inputEl) return;
+            const rect = inputEl.getBoundingClientRect();
+            const maxWidth = rect.width;
+            const left = Math.max(
+                8,
+                Math.min(rect.left, window.innerWidth - maxWidth - 8)
+            );
+            const top = rect.bottom + 8;
+            setPopoverStyle({
+                position: "fixed",
+                top,
+                left,
+                width: rect.width,
+                zIndex: 60,
+            });
+        };
+        updatePosition();
+        window.addEventListener("scroll", updatePosition, true);
+        window.addEventListener("resize", updatePosition);
+        return () => {
+            window.removeEventListener("scroll", updatePosition, true);
+            window.removeEventListener("resize", updatePosition);
+        };
+    }, [open, disabled]);
 
     // quando fecha, limpa resultados (opcional, mas melhora UX/perf)
     useEffect(() => {
@@ -199,7 +229,7 @@ export function AppTextSearch<T>({
     const hintFooter = texts?.hintFooter ?? "↑ ↓ • Enter • Esc";
 
     return (
-        <div ref={containerRef} className="w-full">
+        <div ref={containerRef} className="relative w-full">
             <div className="relative">
                 <AppTextInput
                     ref={inputRef}
@@ -228,7 +258,10 @@ export function AppTextSearch<T>({
                 )}
 
                 {open && !disabled && (
-                    <div className="absolute z-50 mt-2 w-full rounded-lg border border-gray-200 bg-white shadow-lg overflow-hidden">
+                    <div
+                        className="rounded-lg border border-gray-200 bg-white shadow-lg overflow-hidden"
+                        style={popoverStyle}
+                    >
                         <div className="px-3 py-2 text-xs text-gray-500 flex items-center justify-between">
                             <span>{headerText}</span>
                             <span className="text-[11px]">{hintFooter}</span>

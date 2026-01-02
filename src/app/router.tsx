@@ -37,6 +37,9 @@ const ContaBancariaPage = lazy(
   () => import("../features/financeiro/pages/ContaBancariaPage")
 );
 const DashboardPage = lazy(() => import("../features/dashboard/pages/DashboardPage"));
+const NotasListPage = lazy(() => import("../features/notas/pages/NotasListPage"));
+const NotaNovaPage = lazy(() => import("../features/notas/pages/NotaNovaPage"));
+const NotaDetalhePage = lazy(() => import("../features/notas/pages/NotaDetalhePage"));
 
 const withLoading = (node: React.ReactNode) => (
   <Suspense fallback={<PageLoading />}>{node}</Suspense>
@@ -173,6 +176,30 @@ export const router = createBrowserRouter([
         element: withLoading(
           <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
             <FechamentoFiscalPage />
+          </RequireRole>
+        ),
+      },
+      {
+        path: "fiscal/notas",
+        element: withLoading(
+          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
+            <NotasListPage />
+          </RequireRole>
+        ),
+      },
+      {
+        path: "fiscal/notas/nova",
+        element: withLoading(
+          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
+            <NotaNovaPage />
+          </RequireRole>
+        ),
+      },
+      {
+        path: "fiscal/notas/:id",
+        element: withLoading(
+          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
+            <NotaDetalhePage />
           </RequireRole>
         ),
       },
