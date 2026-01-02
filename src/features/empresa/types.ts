@@ -10,3 +10,10 @@ export type EnderecoContatoData = {
     cidade: string;
     uf: string;
 };
+
+export type EmpresaResumo = {
+    id: string;
+    razaoSocial: string;
+    nomeFantasia?: string;
+    cnpj?: string;
+};

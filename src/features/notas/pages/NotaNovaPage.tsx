@@ -13,6 +13,7 @@ import type { CnaeItem } from "../../../shared/services/ibgeCnae";
 import type { NcmItem } from "../../../shared/services/ncm";
 import { listCategorias } from "../../financeiro/services/categorias.service";
 import { listContas } from "../../financeiro/services/contas.service";
+import { listEmpresas } from "../../empresa/services/empresas.service";
 import { formatBRL } from "../../../shared/utils/formater";
 import { notaDraftSchema } from "../validation/notaDraft.schema";
 import { createDraft, emitir } from "../services/notas.service";
@@ -53,6 +54,7 @@ const NotaNovaPage = () => {
   const [searchParams] = useSearchParams();
   const [contas, setContas] = useState<Array<{ value: string; label: string }>>([]);
   const [categorias, setCategorias] = useState<Array<{ value: string; label: string }>>([]);
+  const [empresas, setEmpresas] = useState<Array<{ value: string; label: string }>>([]);
   const [form, setForm] = useState<NotaDraftRequest>({
     empresaId: searchParams.get("empresaId") ?? "",
     tipo: "SERVICO",
@@ -97,23 +99,44 @@ const NotaNovaPage = () => {
   useEffect(() => {
     let isMounted = true;
     const load = async () => {
-      const [contasData, categoriasData] = await Promise.all([
-        listContas(),
-        listCategorias(),
-      ]);
+      const [contasResult, categoriasResult, empresasResult] =
+        await Promise.allSettled([listContas(), listCategorias(), listEmpresas()]);
       if (!isMounted) return;
-      setContas(
-        contasData.map((conta) => ({
-          value: conta.id,
-          label: `${conta.nome} (${conta.banco})`,
-        }))
-      );
-      setCategorias(
-        categoriasData.map((categoria) => ({
-          value: categoria.id,
-          label: categoria.nome,
-        }))
-      );
+      if (contasResult.status === "fulfilled") {
+        setContas(
+          contasResult.value.map((conta) => ({
+            value: conta.id,
+            label: `${conta.nome} (${conta.banco})`,
+          }))
+        );
+      } else {
+        setContas([]);
+      }
+
+      if (categoriasResult.status === "fulfilled") {
+        setCategorias(
+          categoriasResult.value.map((categoria) => ({
+            value: categoria.id,
+            label: categoria.nome,
+          }))
+        );
+      } else {
+        setCategorias([]);
+      }
+
+      if (empresasResult.status === "fulfilled") {
+        setEmpresas(
+          empresasResult.value.map((empresa) => ({
+            value: empresa.id,
+            label:
+              empresa.nomeFantasia?.trim() ||
+              empresa.razaoSocial ||
+              empresa.id,
+          }))
+        );
+      } else {
+        setEmpresas([]);
+      }
     };
     load();
     return () => {
@@ -226,12 +249,14 @@ const NotaNovaPage = () => {
       <Card>
         <AppSubTitle text="Dados da nota" />
         <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
-          <AppTextInput
+          <AppSelectInput
             required
-            title="Empresa (ID)"
+            title="Empresa"
             value={form.empresaId}
             onChange={(e) => setForm((prev) => ({ ...prev, empresaId: e.target.value }))}
             error={errors["empresaId"]}
+            data={empresas}
+            placeholder="Selecione"
           />
 
           <AppSelectInput
