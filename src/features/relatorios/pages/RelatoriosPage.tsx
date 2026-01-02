@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
 
 import { TipoMovimentoCaixa, type CategoriaMovimento, type ContaBancaria, type MovimentoCaixa } from "../../financeiro/types";
-import { listContas } from "../../financeiro/storage/contas";
-import { listCategorias } from "../../financeiro/storage/categorias";
-import { listMovimentos } from "../../financeiro/storage/movimentos";
+import { listContas } from "../../financeiro/services/contas.service";
+import { listCategorias } from "../../financeiro/services/categorias.service";
+import { listMovimentos } from "../../financeiro/services/movimentos.service";
 import AppTextInput from "../../../components/ui/input/AppTextInput";
 import AppTitle, { AppSubTitle } from "../../../components/ui/text/AppTitle";
 import Card from "../../../components/ui/card/Card";
@@ -23,9 +23,22 @@ const RelatoriosPage = () => {
   });
 
   useEffect(() => {
-    setContas(listContas());
-    setCategorias(listCategorias());
-    setMovimentos(listMovimentos());
+    let isMounted = true;
+    const load = async () => {
+      const [contasData, categoriasData, movimentosData] = await Promise.all([
+        listContas(),
+        listCategorias(),
+        listMovimentos(),
+      ]);
+      if (!isMounted) return;
+      setContas(contasData);
+      setCategorias(categoriasData);
+      setMovimentos(movimentosData);
+    };
+    load();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const contaOptions = useMemo(

@@ -6,13 +6,13 @@ import AppTextInput from "../../../components/ui/input/AppTextInput";
 import AppSelectInput from "../../../components/ui/input/AppSelectInput";
 import AppTable from "../../../components/ui/table/AppTable";
 import AppListNotFound from "../../../components/ui/AppListNotFound";
-import { listContas } from "../storage/contas";
-import { listCategorias } from "../storage/categorias";
+import { listContas } from "../services/contas.service";
+import { listCategorias } from "../services/categorias.service";
 import {
   deleteMovimento,
   listMovimentos,
   saveMovimento,
-} from "../storage/movimentos";
+} from "../services/movimentos.service";
 import {
   TipoMovimentoCaixa,
   type CategoriaMovimento,
@@ -55,12 +55,24 @@ const MovimentosCaixaPage = () => {
   const [form, setForm] = useState({ id: "", ...emptyForm });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const refresh = () => setMovimentos(listMovimentos());
+  const refresh = async () => setMovimentos(await listMovimentos());
 
   useEffect(() => {
-    setContas(listContas());
-    setCategorias(listCategorias());
-    refresh();
+    let isMounted = true;
+    const load = async () => {
+      const [contasData, categoriasData] = await Promise.all([
+        listContas(),
+        listCategorias(),
+      ]);
+      if (!isMounted) return;
+      setContas(contasData);
+      setCategorias(categoriasData);
+      await refresh();
+    };
+    load();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const contaOptions = useMemo(
@@ -81,7 +93,7 @@ const MovimentosCaixaPage = () => {
     [categorias]
   );
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const nextErrors: Record<string, string> = {};
     if (!form.data) nextErrors.data = "Informe a data";
     if (!form.contaId) nextErrors.contaId = "Selecione a conta";
@@ -91,7 +103,7 @@ const MovimentosCaixaPage = () => {
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length) return;
 
-    saveMovimento({
+    await saveMovimento({
       id: form.id || undefined,
       data: form.data,
       contaId: form.contaId,
@@ -104,7 +116,7 @@ const MovimentosCaixaPage = () => {
     });
     setErrors({});
     setForm({ id: "", ...emptyForm });
-    refresh();
+    await refresh();
   };
 
   const handleEdit = (movimento: MovimentoCaixa) => {
@@ -122,16 +134,16 @@ const MovimentosCaixaPage = () => {
     setErrors({});
   };
 
-  const handleRemove = (movimento: MovimentoCaixa) => {
+  const handleRemove = async (movimento: MovimentoCaixa) => {
     const confirmed = window.confirm(
       "Deseja remover este movimento de caixa?"
     );
     if (!confirmed) return;
-    deleteMovimento(movimento.id);
+    await deleteMovimento(movimento.id);
     if (form.id === movimento.id) {
       setForm({ id: "", ...emptyForm });
     }
-    refresh();
+    await refresh();
   };
 
   const handleReset = () => {

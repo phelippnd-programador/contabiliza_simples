@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import AppTitle, { AppSubTitle } from "../../../components/ui/text/AppTitle";
 import Card from "../../../components/ui/card/Card";
 import AppButton from "../../../components/ui/button/AppButton";
-import { deleteConta, listContas } from "../storage/contas";
+import { deleteConta, listContas } from "../services/contas.service";
 import type { ContaBancaria } from "../types";
 import AppListNotFound from "../../../components/ui/AppListNotFound";
 import AppTable from "../../../components/ui/table/AppTable";
@@ -24,16 +24,25 @@ const ContasBancariasPage = () => {
   const [contas, setContas] = useState<ContaBancaria[]>([]);
 
   useEffect(() => {
-    setContas(listContas());
+    let isMounted = true;
+    const load = async () => {
+      const data = await listContas();
+      if (!isMounted) return;
+      setContas(data);
+    };
+    load();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  const handleRemove = (conta: ContaBancaria) => {
+  const handleRemove = async (conta: ContaBancaria) => {
     const confirmed = window.confirm(
       `Deseja remover a conta "${conta.nome}"?`
     );
     if (!confirmed) return;
-    deleteConta(conta.id);
-    setContas(listContas());
+    await deleteConta(conta.id);
+    setContas(await listContas());
   };
 
   return (
