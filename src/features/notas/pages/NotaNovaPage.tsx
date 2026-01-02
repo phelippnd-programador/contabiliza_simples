@@ -8,7 +8,9 @@ import AppSelectInput from "../../../components/ui/input/AppSelectInput";
 import AppDateInput from "../../../components/ui/input/AppDateInput";
 import AppListNotFound from "../../../components/ui/AppListNotFound";
 import { CnaePicker } from "../../../components/ui/picked/CnaePicker";
+import { NcmPicker } from "../../../components/ui/picked/NcmPicker";
 import type { CnaeItem } from "../../../shared/services/ibgeCnae";
+import type { NcmItem } from "../../../shared/services/ncm";
 import { listCategorias } from "../../financeiro/services/categorias.service";
 import { listContas } from "../../financeiro/services/contas.service";
 import { formatBRL } from "../../../shared/utils/formater";
@@ -90,6 +92,7 @@ const NotaNovaPage = () => {
   const [emissao, setEmissao] = useState<NotaEmissaoResponse | null>(null);
   const [submitError, setSubmitError] = useState("");
   const [cnaeSelections, setCnaeSelections] = useState<Record<number, CnaeItem | null>>({});
+  const [ncmSelections, setNcmSelections] = useState<Record<number, NcmItem | null>>({});
 
   useEffect(() => {
     let isMounted = true;
@@ -145,6 +148,15 @@ const NotaNovaPage = () => {
     }));
     setCnaeSelections((prev) => {
       const next: Record<number, CnaeItem | null> = {};
+      Object.entries(prev).forEach(([key, value]) => {
+        const idx = Number(key);
+        if (Number.isNaN(idx) || idx === index) return;
+        next[idx > index ? idx - 1 : idx] = value;
+      });
+      return next;
+    });
+    setNcmSelections((prev) => {
+      const next: Record<number, NcmItem | null> = {};
       Object.entries(prev).forEach(([key, value]) => {
         const idx = Number(key);
         if (Number.isNaN(idx) || idx === index) return;
@@ -523,11 +535,23 @@ const NotaNovaPage = () => {
                   </>
                 ) : (
                   <>
-                    <AppTextInput
+                    <NcmPicker
                       required
-                      title="NCM"
-                      value={item.ncm ?? ""}
-                      onChange={(e) => setItem(index, { ncm: e.target.value })}
+                      label="NCM"
+                      value={
+                        ncmSelections[index] ??
+                        (item.ncm ? { codigo: item.ncm, descricao: "" } : null)
+                      }
+                      onChange={(selection) =>
+                        setNcmSelections((prev) => ({
+                          ...prev,
+                          [index]: selection,
+                        }))
+                      }
+                      onChangeCodigo={(codigo) =>
+                        setItem(index, { ncm: codigo ?? "" })
+                      }
+                      helperText="Selecione o NCM do item."
                       error={itemErrors[index]?.ncm}
                     />
                     <AppTextInput

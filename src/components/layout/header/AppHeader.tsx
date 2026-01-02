@@ -32,6 +32,7 @@ const AppHeader = () => {
       label: "Fiscal",
       children: [
         { id: "fechamento", label: "Fechamento", to: "/fiscal/fechamento" },
+        { id: "notas", label: "Notas", to: "/fiscal/notas" },
       ],
     },
     { id: "relatorios", label: "Relatorios", to: "/relatorios" },
