@@ -29,6 +29,7 @@ const AppDateInput = forwardRef<HTMLInputElement, AppDateInputProps>(
     const containerRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const [open, setOpen] = useState(false);
+    const [popoverStyle, setPopoverStyle] = useState<React.CSSProperties>({});
     const type = props.type ?? "date";
     const isMonthPicker = type === "month";
     const value = (props.value ?? "") as string;
@@ -71,6 +72,35 @@ const AppDateInput = forwardRef<HTMLInputElement, AppDateInputProps>(
       document.addEventListener("mousedown", handleClickOutside);
       return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
+
+    useEffect(() => {
+      if (!open) return;
+      const updatePosition = () => {
+        const inputEl = inputRef.current;
+        if (!inputEl) return;
+        const rect = inputEl.getBoundingClientRect();
+        const maxWidth = 320;
+        const width = Math.min(rect.width, maxWidth);
+        const left = Math.max(
+          8,
+          Math.min(rect.left, window.innerWidth - width - 8)
+        );
+        const top = rect.bottom + 8;
+        setPopoverStyle({
+          position: "fixed",
+          top,
+          left,
+          width,
+        });
+      };
+      updatePosition();
+      window.addEventListener("scroll", updatePosition, true);
+      window.addEventListener("resize", updatePosition);
+      return () => {
+        window.removeEventListener("scroll", updatePosition, true);
+        window.removeEventListener("resize", updatePosition);
+      };
+    }, [open]);
 
     const monthLabel = useMemo(
       () =>
@@ -215,7 +245,10 @@ const AppDateInput = forwardRef<HTMLInputElement, AppDateInputProps>(
         </div>
 
         {open && !props.disabled ? (
-          <div className="absolute left-0 top-full z-50 mt-2 w-full max-w-[320px] rounded-md border border-gray-200 bg-white p-3 shadow-xl">
+          <div
+            className="z-[60] rounded-md border border-gray-200 bg-white p-3 shadow-xl"
+            style={popoverStyle}
+          >
             <div className="flex items-center justify-between">
               <button
                 type="button"

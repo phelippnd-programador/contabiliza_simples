@@ -4,6 +4,8 @@ import Card from "../../../components/ui/card/Card";
 import AppButton from "../../../components/ui/button/AppButton";
 import AppTextInput from "../../../components/ui/input/AppTextInput";
 import AppDateInput from "../../../components/ui/input/AppDateInput";
+import { CnaePicker } from "../../../components/ui/picked/CnaePicker";
+import type { CnaeItem } from "../../../shared/services/ibgeCnae";
 import AppSelectInput from "../../../components/ui/input/AppSelectInput";
 import AppTable from "../../../components/ui/table/AppTable";
 import AppListNotFound from "../../../components/ui/AppListNotFound";
@@ -55,6 +57,7 @@ const MovimentosCaixaPage = () => {
   const [movimentos, setMovimentos] = useState<MovimentoCaixa[]>([]);
   const [form, setForm] = useState({ id: "", ...emptyForm });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [cnaeItem, setCnaeItem] = useState<CnaeItem | null>(null);
 
   const refresh = async () => setMovimentos(await listMovimentos());
 
@@ -75,6 +78,14 @@ const MovimentosCaixaPage = () => {
       isMounted = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (!form.cnae) {
+      setCnaeItem(null);
+      return;
+    }
+    setCnaeItem({ codigo: form.cnae, descricao: "" });
+  }, [form.cnae]);
 
   const contaOptions = useMemo(
     () =>
@@ -255,12 +266,14 @@ const MovimentosCaixaPage = () => {
             }
           />
 
-          <AppTextInput
-            title="CNAE (opcional)"
-            value={form.cnae ?? ""}
-            onChange={(e) =>
-              setForm((prev) => ({ ...prev, cnae: e.target.value }))
+          <CnaePicker
+            label="CNAE (opcional)"
+            value={cnaeItem}
+            onChange={(item) => setCnaeItem(item)}
+            onChangeCodigo={(codigo) =>
+              setForm((prev) => ({ ...prev, cnae: codigo ?? "" }))
             }
+            helperText="Selecione um CNAE se o movimento estiver vinculado."
           />
         </div>
 
