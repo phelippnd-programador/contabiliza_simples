@@ -1,0 +1,222 @@
+import React, { useEffect, useMemo, useState } from "react";
+
+import { TipoMovimentoCaixa, type CategoriaMovimento, type ContaBancaria, type MovimentoCaixa } from "../../financeiro/types";
+import { listContas } from "../../financeiro/storage/contas";
+import { listCategorias } from "../../financeiro/storage/categorias";
+import { listMovimentos } from "../../financeiro/storage/movimentos";
+import AppTextInput from "../../../components/ui/input/AppTextInput";
+import AppTitle, { AppSubTitle } from "../../../components/ui/text/AppTitle";
+import Card from "../../../components/ui/card/Card";
+import AppTable from "../../../components/ui/table/AppTable";
+import AppListNotFound from "../../../components/ui/AppListNotFound";
+import AppSelectInput from "../../../components/ui/input/AppSelectInput";
+
+
+const RelatoriosPage = () => {
+  const [contas, setContas] = useState<ContaBancaria[]>([]);
+  const [categorias, setCategorias] = useState<CategoriaMovimento[]>([]);
+  const [movimentos, setMovimentos] = useState<MovimentoCaixa[]>([]);
+  const [filters, setFilters] = useState({
+    dataInicial: "",
+    dataFinal: "",
+    contaId: "",
+  });
+
+  useEffect(() => {
+    setContas(listContas());
+    setCategorias(listCategorias());
+    setMovimentos(listMovimentos());
+  }, []);
+
+  const contaOptions = useMemo(
+    () =>
+      contas.map((conta) => ({
+        value: conta.id,
+        label: `${conta.nome} (${conta.banco})`,
+      })),
+    [contas]
+  );
+
+  const filteredMovimentos = useMemo(() => {
+    return movimentos.filter((movimento) => {
+      if (filters.contaId && movimento.contaId !== filters.contaId) {
+        return false;
+      }
+      if (filters.dataInicial && movimento.data < filters.dataInicial) {
+        return false;
+      }
+      if (filters.dataFinal && movimento.data > filters.dataFinal) {
+        return false;
+      }
+      return true;
+    });
+  }, [filters, movimentos]);
+
+  const resumoCaixa = useMemo(() => {
+    const entradas = filteredMovimentos
+      .filter((movimento) => movimento.tipo === TipoMovimentoCaixa.ENTRADA)
+      .reduce((acc, movimento) => acc + movimento.valor, 0);
+    const saidas = filteredMovimentos
+      .filter((movimento) => movimento.tipo === TipoMovimentoCaixa.SAIDA)
+      .reduce((acc, movimento) => acc + movimento.valor, 0);
+    return {
+      entradas,
+      saidas,
+      saldo: entradas - saidas,
+    };
+  }, [filteredMovimentos]);
+
+  const despesasPorCategoria = useMemo(() => {
+    const mapa = new Map<string, number>();
+    filteredMovimentos
+      .filter((movimento) => movimento.tipo === TipoMovimentoCaixa.SAIDA)
+      .forEach((movimento) => {
+        const nome =
+          categorias.find((categoria) => categoria.id === movimento.categoriaId)
+            ?.nome ?? "Sem categoria";
+        mapa.set(nome, (mapa.get(nome) ?? 0) + movimento.valor);
+      });
+    return Array.from(mapa.entries()).map(([categoria, total]) => ({
+      categoria,
+      total,
+    }));
+  }, [categorias, filteredMovimentos]);
+
+  const receitaPorCnae = useMemo(() => {
+    const mapa = new Map<string, number>();
+    filteredMovimentos
+      .filter((movimento) => movimento.tipo === TipoMovimentoCaixa.ENTRADA)
+      .forEach((movimento) => {
+        const cnae = movimento.cnae?.trim() || "Sem CNAE";
+        mapa.set(cnae, (mapa.get(cnae) ?? 0) + movimento.valor);
+      });
+    return Array.from(mapa.entries()).map(([cnae, total]) => ({
+      cnae,
+      total,
+    }));
+  }, [filteredMovimentos]);
+
+  return (
+    <div className="flex w-full flex-col items-center justify-center p-5">
+      <AppTitle text="Relatorios" />
+      <AppSubTitle text="Resumo rapido de movimentos e categorias." />
+
+      <Card>
+        <AppSubTitle text="Filtros" />
+        <small>Filtre os relatorios por periodo e conta.</small>
+
+        <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
+          <AppTextInput
+            title="Data inicial"
+            type="date"
+            value={filters.dataInicial}
+            onChange={(e) =>
+              setFilters((prev) => ({ ...prev, dataInicial: e.target.value }))
+            }
+          />
+
+          <AppTextInput
+            title="Data final"
+            type="date"
+            value={filters.dataFinal}
+            onChange={(e) =>
+              setFilters((prev) => ({ ...prev, dataFinal: e.target.value }))
+            }
+          />
+
+          <AppSelectInput
+            title="Conta"
+            value={filters.contaId}
+            onChange={(e) =>
+              setFilters((prev) => ({ ...prev, contaId: e.target.value }))
+            }
+            data={contaOptions}
+            placeholder="Todas"
+          />
+        </div>
+
+        <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div className="rounded-lg border border-gray-200 bg-white p-4">
+            <p className="text-xs text-gray-500">Entradas</p>
+            <p className="text-lg font-semibold">
+              {resumoCaixa.entradas.toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+              })}
+            </p>
+          </div>
+          <div className="rounded-lg border border-gray-200 bg-white p-4">
+            <p className="text-xs text-gray-500">Saidas</p>
+            <p className="text-lg font-semibold">
+              {resumoCaixa.saidas.toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+              })}
+            </p>
+          </div>
+          <div className="rounded-lg border border-gray-200 bg-white p-4">
+            <p className="text-xs text-gray-500">Saldo</p>
+            <p className="text-lg font-semibold">
+              {resumoCaixa.saldo.toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+              })}
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-6">
+          <AppSubTitle text="Despesas por categoria" />
+          <AppTable
+            data={despesasPorCategoria}
+            rowKey={(row) => row.categoria}
+            emptyState={<AppListNotFound texto="Sem despesas no periodo." />}
+            pagination={{ enabled: true, pageSize: 10 }}
+            columns={[
+              {
+                key: "categoria",
+                header: "Categoria",
+                render: (row) => row.categoria,
+              },
+              {
+                key: "total",
+                header: "Total",
+                align: "right",
+                render: (row) =>
+                  row.total.toLocaleString("pt-BR", {
+                    style: "currency",
+                    currency: "BRL",
+                  }),
+              },
+            ]}
+          />
+        </div>
+
+        <div className="mt-6">
+          <AppSubTitle text="Receita por CNAE" />
+          <AppTable
+            data={receitaPorCnae}
+            rowKey={(row) => row.cnae}
+            emptyState={<AppListNotFound texto="Sem receitas no periodo." />}
+            pagination={{ enabled: true, pageSize: 10 }}
+            columns={[
+              { key: "cnae", header: "CNAE", render: (row) => row.cnae },
+              {
+                key: "total",
+                header: "Total",
+                align: "right",
+                render: (row) =>
+                  row.total.toLocaleString("pt-BR", {
+                    style: "currency",
+                    currency: "BRL",
+                  }),
+              },
+            ]}
+          />
+        </div>
+      </Card>
+    </div>
+  );
+};
+
+export default RelatoriosPage;

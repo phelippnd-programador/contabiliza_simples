@@ -13,6 +13,19 @@ const TributacaoPage = lazy(() => import("../features/tributacao/pages/Tributaca
 const CategoriasFinanceirasPage = lazy(
   () => import("../features/financeiro/pages/CategoriasFinanceirasPage")
 );
+const MovimentosCaixaPage = lazy(
+  () => import("../features/financeiro/pages/MovimentosCaixaPage")
+);
+const CaixaPage = lazy(() => import("../features/financeiro/pages/CaixaPage"));
+const FechamentoFiscalPage = lazy(
+  () => import("../features/fiscal/pages/FechamentoFiscalPage")
+);
+const ProlaborePage = lazy(
+  () => import("../features/financeiro/pages/ProlaborePage")
+);
+const RelatoriosPage = lazy(
+  () => import("../features/relatorios/pages/RelatoriosPage")
+);
 const ContasBancariasPage = lazy(
   () => import("../features/financeiro/pages/ContasBancariasPage")
 );
@@ -109,6 +122,46 @@ export const router = createBrowserRouter([
         element: withLoading(
           <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
             <CategoriasFinanceirasPage />
+          </RequireRole>
+        ),
+      },
+      {
+        path: "financeiro/movimentos",
+        element: withLoading(
+          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
+            <MovimentosCaixaPage />
+          </RequireRole>
+        ),
+      },
+      {
+        path: "financeiro/caixa",
+        element: withLoading(
+          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
+            <CaixaPage />
+          </RequireRole>
+        ),
+      },
+      {
+        path: "financeiro/prolabore",
+        element: withLoading(
+          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
+            <ProlaborePage />
+          </RequireRole>
+        ),
+      },
+      {
+        path: "fiscal/fechamento",
+        element: withLoading(
+          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
+            <FechamentoFiscalPage />
+          </RequireRole>
+        ),
+      },
+      {
+        path: "relatorios",
+        element: withLoading(
+          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
+            <RelatoriosPage />
           </RequireRole>
         ),
       },
