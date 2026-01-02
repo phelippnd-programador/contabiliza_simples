@@ -1,8 +1,10 @@
 import React from "react";
 import type { AppMenuItem } from "../menu/types";
 import AppMenu from "../menu/AppMenu";
+import { useAuth } from "../../../shared/context/AuthContext";
 
 const AppHeader = () => {
+  const { logout } = useAuth();
   const menu: AppMenuItem[] = [
     { id: "dash", label: "Dashboard", to: "/", end: true },
     {
@@ -41,6 +43,11 @@ const AppHeader = () => {
         { id: "caixa", label: "Caixa", to: "/caixa" },
         { id: "conciliacao", label: "Conciliacao", to: "/conciliacao" },
       ],
+    },
+    {
+      id: "logout",
+      label: "Sair",
+      onClick: () => logout(),
     },
   ];
 

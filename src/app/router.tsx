@@ -10,6 +10,10 @@ import ConfiguracaoEmpresaPage from "../features/empresa/pages/ConfiguracaoEmpre
 
 const CadastroEmpresaPage = lazy(() => import("../features/empresa/pages/CadastroEmpresaPage"));
 const TributacaoPage = lazy(() => import("../features/tributacao/pages/TributacaoPage"));
+const LoginPage = lazy(() => import("../features/auth/pages/LoginPage"));
+const ForgotPasswordPage = lazy(
+  () => import("../features/auth/pages/ForgotPasswordPage")
+);
 const CategoriasFinanceirasPage = lazy(
   () => import("../features/financeiro/pages/CategoriasFinanceirasPage")
 );
@@ -39,10 +43,16 @@ const withLoading = (node: React.ReactNode) => (
 
 export const router = createBrowserRouter([
   { path: "/403", element: <ForbiddenPage /> },
-
+  { path: "/login", element: withLoading(<LoginPage />) },
+  { path: "/esqueci-senha", element: withLoading(<ForgotPasswordPage />) },
+  { path: "*", element: <NotFoundPage /> },
   {
     path: "/",
-    element: <AppLayout />,
+    element: (
+      <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
+        <AppLayout />
+      </RequireRole>
+    ),
     errorElement: <ServerErrorPage />,
     children: [
       {
@@ -167,7 +177,7 @@ export const router = createBrowserRouter([
       },
 
       // 404 dentro do layout (eu recomendo deixar ligado)
-      { path: "*", element: <NotFoundPage /> },
+
     ],
   },
 ]);
