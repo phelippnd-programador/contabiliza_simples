@@ -36,6 +36,7 @@ const ContasBancariasPage = lazy(
 const ContaBancariaPage = lazy(
   () => import("../features/financeiro/pages/ContaBancariaPage")
 );
+const DashboardPage = lazy(() => import("../features/dashboard/pages/DashboardPage"));
 
 const withLoading = (node: React.ReactNode) => (
   <Suspense fallback={<PageLoading />}>{node}</Suspense>
@@ -55,6 +56,14 @@ export const router = createBrowserRouter([
     ),
     errorElement: <ServerErrorPage />,
     children: [
+      {
+        index: true,
+        element: withLoading(
+          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
+            <DashboardPage />
+          </RequireRole>
+        ),
+      },
       {
         path: "empresa",
         element: withLoading(

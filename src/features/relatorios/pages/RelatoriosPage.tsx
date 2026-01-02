@@ -10,6 +10,7 @@ import Card from "../../../components/ui/card/Card";
 import AppTable from "../../../components/ui/table/AppTable";
 import AppListNotFound from "../../../components/ui/AppListNotFound";
 import AppSelectInput from "../../../components/ui/input/AppSelectInput";
+import DashboardStatCard from "../../../components/ui/card/DashboardStatCard";
 
 
 const RelatoriosPage = () => {
@@ -149,33 +150,45 @@ const RelatoriosPage = () => {
         </div>
 
         <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
-          <div className="rounded-lg border border-gray-200 bg-white p-4">
-            <p className="text-xs text-gray-500">Entradas</p>
-            <p className="text-lg font-semibold">
-              {resumoCaixa.entradas.toLocaleString("pt-BR", {
-                style: "currency",
-                currency: "BRL",
-              })}
-            </p>
-          </div>
-          <div className="rounded-lg border border-gray-200 bg-white p-4">
-            <p className="text-xs text-gray-500">Saidas</p>
-            <p className="text-lg font-semibold">
-              {resumoCaixa.saidas.toLocaleString("pt-BR", {
-                style: "currency",
-                currency: "BRL",
-              })}
-            </p>
-          </div>
-          <div className="rounded-lg border border-gray-200 bg-white p-4">
-            <p className="text-xs text-gray-500">Saldo</p>
-            <p className="text-lg font-semibold">
-              {resumoCaixa.saldo.toLocaleString("pt-BR", {
-                style: "currency",
-                currency: "BRL",
-              })}
-            </p>
-          </div>
+          <DashboardStatCard
+            title="Entradas"
+            value={resumoCaixa.entradas.toLocaleString("pt-BR", {
+              style: "currency",
+              currency: "BRL",
+            })}
+            tone="green"
+            icon={
+              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor">
+                <path d="M12 4 5 11h4v7h6v-7h4z" />
+              </svg>
+            }
+          />
+          <DashboardStatCard
+            title="Saidas"
+            value={resumoCaixa.saidas.toLocaleString("pt-BR", {
+              style: "currency",
+              currency: "BRL",
+            })}
+            tone="amber"
+            icon={
+              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor">
+                <path d="m12 20 7-7h-4V6H9v7H5z" />
+              </svg>
+            }
+          />
+          <DashboardStatCard
+            title="Saldo"
+            value={resumoCaixa.saldo.toLocaleString("pt-BR", {
+              style: "currency",
+              currency: "BRL",
+            })}
+            tone="blue"
+            icon={
+              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor">
+                <path d="M12 3a9 9 0 1 0 9 9 9.01 9.01 0 0 0-9-9Zm1 13.5h-2V14H8v-2h3V9.5h2V12h3v2h-3Z" />
+              </svg>
+            }
+          />
         </div>
 
         <div className="mt-6">
