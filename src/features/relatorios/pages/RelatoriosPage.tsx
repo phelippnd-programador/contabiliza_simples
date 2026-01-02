@@ -4,7 +4,7 @@ import { TipoMovimentoCaixa, type CategoriaMovimento, type ContaBancaria, type M
 import { listContas } from "../../financeiro/services/contas.service";
 import { listCategorias } from "../../financeiro/services/categorias.service";
 import { listMovimentos } from "../../financeiro/services/movimentos.service";
-import AppTextInput from "../../../components/ui/input/AppTextInput";
+import AppDateInput from "../../../components/ui/input/AppDateInput";
 import AppTitle, { AppSubTitle } from "../../../components/ui/text/AppTitle";
 import Card from "../../../components/ui/card/Card";
 import AppTable from "../../../components/ui/table/AppTable";
@@ -120,7 +120,7 @@ const RelatoriosPage = () => {
         <small>Filtre os relatorios por periodo e conta.</small>
 
         <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
-          <AppTextInput
+          <AppDateInput
             title="Data inicial"
             type="date"
             value={filters.dataInicial}
@@ -129,7 +129,7 @@ const RelatoriosPage = () => {
             }
           />
 
-          <AppTextInput
+          <AppDateInput
             title="Data final"
             type="date"
             value={filters.dataFinal}

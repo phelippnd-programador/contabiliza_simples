@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import AppTitle, { AppSubTitle } from "../../../components/ui/text/AppTitle";
 import AppTable from "../../../components/ui/table/AppTable";
 import AppListNotFound from "../../../components/ui/AppListNotFound";
-import AppTextInput from "../../../components/ui/input/AppTextInput";
+import AppDateInput from "../../../components/ui/input/AppDateInput";
 import DashboardSection from "../../../components/ui/card/DashboardSection";
 import DashboardStatCard from "../../../components/ui/card/DashboardStatCard";
 import PeriodCashChart, {
@@ -204,7 +204,7 @@ const DashboardPage = () => {
 
       <DashboardSection title="Entradas x saidas por periodo">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <AppTextInput
+          <AppDateInput
             title="Data inicial"
             type="date"
             value={chartFilters.start}
@@ -212,7 +212,7 @@ const DashboardPage = () => {
               setChartFilters((prev) => ({ ...prev, start: e.target.value }))
             }
           />
-          <AppTextInput
+          <AppDateInput
             title="Data final"
             type="date"
             value={chartFilters.end}

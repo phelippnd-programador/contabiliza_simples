@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import AppTitle, { AppSubTitle } from "../../../components/ui/text/AppTitle";
 import Card from "../../../components/ui/card/Card";
-import AppTextInput from "../../../components/ui/input/AppTextInput";
+import AppDateInput from "../../../components/ui/input/AppDateInput";
 import AppTable from "../../../components/ui/table/AppTable";
 import AppListNotFound from "../../../components/ui/AppListNotFound";
 import DashboardStatCard from "../../../components/ui/card/DashboardStatCard";
@@ -119,7 +119,7 @@ const FechamentoFiscalPage = () => {
         <small>Selecione a competencia para consolidar a receita.</small>
 
         <div className="mt-4 max-w-sm">
-          <AppTextInput
+          <AppDateInput
             title="Competencia"
             type="month"
             value={competencia}

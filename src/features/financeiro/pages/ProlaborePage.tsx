@@ -3,6 +3,7 @@ import AppTitle, { AppSubTitle } from "../../../components/ui/text/AppTitle";
 import Card from "../../../components/ui/card/Card";
 import AppButton from "../../../components/ui/button/AppButton";
 import AppTextInput from "../../../components/ui/input/AppTextInput";
+import AppDateInput from "../../../components/ui/input/AppDateInput";
 import AppSelectInput from "../../../components/ui/input/AppSelectInput";
 import { listContas } from "../services/contas.service";
 import { listCategorias } from "../services/categorias.service";
@@ -125,7 +126,7 @@ const ProlaborePage = () => {
         <small>Baseado na configuracao da empresa.</small>
 
         <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
-          <AppTextInput
+          <AppDateInput
             title="Competencia"
             type="month"
             value={form.competencia}
@@ -134,7 +135,7 @@ const ProlaborePage = () => {
             }
           />
 
-          <AppTextInput
+          <AppDateInput
             required
             title="Data"
             type="date"
