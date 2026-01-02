@@ -4,9 +4,9 @@ import Card from "../../../components/ui/card/Card";
 import AppButton from "../../../components/ui/button/AppButton";
 import AppTextInput from "../../../components/ui/input/AppTextInput";
 import AppSelectInput from "../../../components/ui/input/AppSelectInput";
-import { listContas } from "../storage/contas";
-import { listCategorias } from "../storage/categorias";
-import { saveMovimento } from "../storage/movimentos";
+import { listContas } from "../services/contas.service";
+import { listCategorias } from "../services/categorias.service";
+import { saveMovimento } from "../services/movimentos.service";
 import {
   TipoMovimentoCaixa,
   type CategoriaMovimento,
@@ -30,8 +30,20 @@ const ProlaborePage = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    setContas(listContas());
-    setCategorias(listCategorias());
+    let isMounted = true;
+    const load = async () => {
+      const [contasData, categoriasData] = await Promise.all([
+        listContas(),
+        listCategorias(),
+      ]);
+      if (!isMounted) return;
+      setContas(contasData);
+      setCategorias(categoriasData);
+    };
+    load();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const contaOptions = useMemo(
@@ -57,7 +69,7 @@ const ProlaborePage = () => {
     [categoriasSaida]
   );
 
-  const handleGerar = () => {
+  const handleGerar = async () => {
     const nextErrors: Record<string, string> = {};
     if (!form.data) nextErrors.data = "Informe a data";
     if (!form.contaId) nextErrors.contaId = "Selecione a conta";
@@ -76,7 +88,7 @@ const ProlaborePage = () => {
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length) return;
 
-    saveMovimento({
+    await saveMovimento({
       data: form.data,
       contaId: form.contaId,
       tipo: TipoMovimentoCaixa.SAIDA,
@@ -88,7 +100,7 @@ const ProlaborePage = () => {
 
     if (form.gerarInss) {
       const valorInss = (form.valorProlabore * form.percentualInss) / 100;
-      saveMovimento({
+      await saveMovimento({
         data: form.data,
         contaId: form.contaId,
         tipo: TipoMovimentoCaixa.SAIDA,

@@ -6,9 +6,9 @@ import AppTextInput from "../../../components/ui/input/AppTextInput";
 import AppSelectInput from "../../../components/ui/input/AppSelectInput";
 import AppTable from "../../../components/ui/table/AppTable";
 import AppListNotFound from "../../../components/ui/AppListNotFound";
-import { listContas } from "../storage/contas";
-import { listCategorias } from "../storage/categorias";
-import { listMovimentos } from "../storage/movimentos";
+import { listContas } from "../services/contas.service";
+import { listCategorias } from "../services/categorias.service";
+import { listMovimentos } from "../services/movimentos.service";
 import {
   TipoMovimentoCaixa,
   type CategoriaMovimento,
@@ -28,9 +28,22 @@ const CaixaPage = () => {
   });
 
   useEffect(() => {
-    setContas(listContas());
-    setCategorias(listCategorias());
-    setMovimentos(listMovimentos());
+    let isMounted = true;
+    const load = async () => {
+      const [contasData, categoriasData, movimentosData] = await Promise.all([
+        listContas(),
+        listCategorias(),
+        listMovimentos(),
+      ]);
+      if (!isMounted) return;
+      setContas(contasData);
+      setCategorias(categoriasData);
+      setMovimentos(movimentosData);
+    };
+    load();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const contaOptions = useMemo(

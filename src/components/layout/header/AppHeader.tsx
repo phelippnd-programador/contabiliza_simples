@@ -1,34 +1,54 @@
-import React from 'react'
-import type { AppMenuItem } from '../menu/types';
-import AppMenu from '../menu/AppMenu';
+import React from "react";
+import type { AppMenuItem } from "../menu/types";
+import AppMenu from "../menu/AppMenu";
 
 const AppHeader = () => {
   const menu: AppMenuItem[] = [
     { id: "dash", label: "Dashboard", to: "/", end: true },
     {
-      id: "empresas", label: "Empresas", to: "/empresa",
+      id: "empresas",
+      label: "Empresas",
+      to: "/empresa",
       children: [
-        { id: "minhas_empresas", label: "Minhas Empresas", to: "/empresa" ,end: true  },
+        { id: "minhas_empresas", label: "Minhas Empresas", to: "/empresa", end: true },
         { id: "cadastro_empresa", label: "Cadastro Empresa", to: "/empresa/nova" },
-      ]
+      ],
     },
     {
-      id: "receitas",
-      label: "Receitas",
+      id: "financeiro",
+      label: "Financeiro",
+      children: [
+        { id: "contas", label: "Contas", to: "/financeiro/contas" },
+        { id: "categorias", label: "Categorias", to: "/financeiro/categorias" },
+        { id: "movimentos", label: "Movimentos", to: "/financeiro/movimentos" },
+        { id: "caixa_financeiro", label: "Caixa", to: "/financeiro/caixa" },
+        { id: "prolabore", label: "Pro-labore", to: "/financeiro/prolabore" },
+      ],
+    },
+    {
+      id: "fiscal",
+      label: "Fiscal",
+      children: [
+        { id: "fechamento", label: "Fechamento", to: "/fiscal/fechamento" },
+      ],
+    },
+    { id: "relatorios", label: "Relatorios", to: "/relatorios" },
+    {
+      id: "tributacao",
+      label: "Tributacao",
       children: [
         { id: "receitas", label: "Receitas", to: "/receitas" },
         { id: "caixa", label: "Caixa", to: "/caixa" },
-        { id: "conciliacao", label: "Conciliação", to: "/conciliacao" },
+        { id: "conciliacao", label: "Conciliacao", to: "/conciliacao" },
       ],
     },
-   
   ];
-  return (
-    <div className='flex w-full justify-between shadow-md items-center '>
-      <AppMenu title="Meu App"  subtitle="Painel" menu={menu} />
-      
-    </div>
-  )
-}
 
-export default AppHeader
+  return (
+    <div className="flex w-full items-center justify-between shadow-md">
+      <AppMenu title="Meu App" subtitle="Painel" menu={menu} />
+    </div>
+  );
+};
+
+export default AppHeader;

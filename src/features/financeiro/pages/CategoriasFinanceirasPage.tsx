@@ -11,7 +11,7 @@ import {
   deleteCategoria,
   listCategorias,
   saveCategoria,
-} from "../storage/categorias";
+} from "../services/categorias.service";
 import { TipoMovimentoCaixa, type CategoriaMovimento } from "../types";
 
 const EditIcon = () => (
@@ -34,27 +34,27 @@ const CategoriasFinanceirasPage = () => {
   });
   const [errors, setErrors] = useState<{ nome?: string }>({});
 
-  const refresh = () => setCategorias(listCategorias());
+  const refresh = async () => setCategorias(await listCategorias());
 
   useEffect(() => {
     refresh();
   }, []);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const nome = form.nome.trim();
     if (!nome) {
       setErrors({ nome: "Informe o nome da categoria" });
       return;
     }
 
-    saveCategoria({
+    await saveCategoria({
       id: form.id || undefined,
       nome,
       tipo: form.tipo,
     });
     setErrors({});
     setForm({ id: "", nome: "", tipo: TipoMovimentoCaixa.SAIDA });
-    refresh();
+    await refresh();
   };
 
   const handleEdit = (categoria: CategoriaMovimento) => {
@@ -66,16 +66,16 @@ const CategoriasFinanceirasPage = () => {
     setErrors({});
   };
 
-  const handleRemove = (categoria: CategoriaMovimento) => {
+  const handleRemove = async (categoria: CategoriaMovimento) => {
     const confirmed = window.confirm(
       `Deseja remover a categoria "${categoria.nome}"?`
     );
     if (!confirmed) return;
-    deleteCategoria(categoria.id);
+    await deleteCategoria(categoria.id);
     if (form.id === categoria.id) {
       setForm({ id: "", nome: "", tipo: TipoMovimentoCaixa.SAIDA });
     }
-    refresh();
+    await refresh();
   };
 
   const handleReset = () => {

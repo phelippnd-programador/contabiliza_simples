@@ -10,9 +10,9 @@ import {
 } from "../../validation/empresa.financeiro.schema";
 import { TipoMovimentoCaixa, type CategoriaMovimento } from "../../../financeiro/types";
 import { categoriaInssOptions, diasPagamentoOptions } from "../../../../shared/types/select-type";
-import { listContas } from "../../../financeiro/storage/contas";
+import { listContas } from "../../../financeiro/services/contas.service";
 import type { ContaBancaria } from "../../../financeiro/types";
-import { listCategorias } from "../../../financeiro/storage/categorias";
+import { listCategorias } from "../../../financeiro/services/categorias.service";
 
 type Props = {
   onSave?: () => Promise<void> | void;
@@ -34,8 +34,20 @@ export function FinanceiroTab({ onSave }: Props) {
   const [categorias, setCategorias] = useState<CategoriaMovimento[]>([]);
 
   useEffect(() => {
-    setContas(listContas());
-    setCategorias(listCategorias());
+    let isMounted = true;
+    const load = async () => {
+      const [contasData, categoriasData] = await Promise.all([
+        listContas(),
+        listCategorias(),
+      ]);
+      if (!isMounted) return;
+      setContas(contasData);
+      setCategorias(categoriasData);
+    };
+    load();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const contaOptions = contas.map((conta) => ({

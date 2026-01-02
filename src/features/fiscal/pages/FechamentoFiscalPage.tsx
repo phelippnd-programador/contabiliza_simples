@@ -4,8 +4,8 @@ import Card from "../../../components/ui/card/Card";
 import AppTextInput from "../../../components/ui/input/AppTextInput";
 import AppTable from "../../../components/ui/table/AppTable";
 import AppListNotFound from "../../../components/ui/AppListNotFound";
-import { listCategorias } from "../../financeiro/storage/categorias";
-import { listMovimentos } from "../../financeiro/storage/movimentos";
+import { listCategorias } from "../../financeiro/services/categorias.service";
+import { listMovimentos } from "../../financeiro/services/movimentos.service";
 import {
   TipoMovimentoCaixa,
   type CategoriaMovimento,
@@ -32,8 +32,20 @@ const FechamentoFiscalPage = () => {
   const [categorias, setCategorias] = useState<CategoriaMovimento[]>([]);
 
   useEffect(() => {
-    setMovimentos(listMovimentos());
-    setCategorias(listCategorias());
+    let isMounted = true;
+    const load = async () => {
+      const [movimentosData, categoriasData] = await Promise.all([
+        listMovimentos(),
+        listCategorias(),
+      ]);
+      if (!isMounted) return;
+      setMovimentos(movimentosData);
+      setCategorias(categoriasData);
+    };
+    load();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const categoriasFolhaIds = useMemo(() => {

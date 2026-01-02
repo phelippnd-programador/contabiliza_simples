@@ -9,7 +9,7 @@ import {
   tipoCategoriaOptions,
   tipoContaOptions,
 } from "../../../shared/types/select-type";
-import { getConta, saveConta } from "../storage/contas";
+import { getConta, saveConta } from "../services/contas.service";
 import { TipoConta, TipoMovimentoCaixa, type ContaBancaria } from "../types";
 
 const ContaBancariaPage = () => {
@@ -27,15 +27,22 @@ const ContaBancariaPage = () => {
   const [notFound, setNotFound] = useState<boolean>(false);
 
   useEffect(() => {
-    if (!id) return;
-    const conta = getConta(id);
-    if (!conta) {
-      setNotFound(true);
-      return;
-    }
-    const { id: _id, ...rest } = conta;
-    console.log("rest", rest);
-    setForm(rest);
+    let isMounted = true;
+    const load = async () => {
+      if (!id) return;
+      const conta = await getConta(id);
+      if (!isMounted) return;
+      if (!conta) {
+        setNotFound(true);
+        return;
+      }
+      const { id: _id, ...rest } = conta;
+      setForm(rest);
+    };
+    load();
+    return () => {
+      isMounted = false;
+    };
   }, [id]);
 
   const handleChange =
@@ -44,9 +51,8 @@ const ContaBancariaPage = () => {
         setForm((prev) => ({ ...prev, [field]: e.target.value }));
       };
 
-  const handleSave = () => {
-    const saved = saveConta({ ...form, id });
-    // navigate(`/financeiro/contas/${saved.id}`);
+  const handleSave = async () => {
+    await saveConta({ ...form, id });
     navigate(`/financeiro/contas/`);
   };
 
