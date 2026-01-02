@@ -168,7 +168,7 @@ const AppDateInput = forwardRef<HTMLInputElement, AppDateInputProps>(
     };
 
     return (
-      <div ref={containerRef} className="flex w-full flex-col gap-1">
+      <div ref={containerRef} className="relative flex w-full flex-col gap-1">
         <div className="flex items-center gap-2">
           {title && <AppLabel text={title} />}
           {required && <span className="text-red-500">*</span>}
@@ -215,7 +215,7 @@ const AppDateInput = forwardRef<HTMLInputElement, AppDateInputProps>(
         </div>
 
         {open && !props.disabled ? (
-          <div className="absolute z-50 mt-2 w-full max-w-[320px] rounded-md border border-gray-200 bg-white p-3 shadow-xl">
+          <div className="absolute left-0 top-full z-50 mt-2 w-full max-w-[320px] rounded-md border border-gray-200 bg-white p-3 shadow-xl">
             <div className="flex items-center justify-between">
               <button
                 type="button"
