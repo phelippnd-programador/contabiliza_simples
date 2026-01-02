@@ -146,15 +146,26 @@ const AppMenu = ({ title = "Menu", subtitle, menu, className }: AppMenuProps) =>
       );
     }
 
-    // Item normal
+    // Item normal sem rota (acao)
     if (!item.to) {
       return (
-        <div
+        <button
           key={item.id}
-          className={cx("rounded-lg py-2 text-sm text-gray-500", paddingLeft, "pr-3")}
+          type="button"
+          onClick={() => {
+            item.onClick?.();
+            close();
+          }}
+          className={cx(
+            "flex w-full items-center gap-3 rounded-lg py-2 text-sm transition",
+            paddingLeft,
+            "pr-3",
+            "text-gray-800 hover:bg-gray-100 active:bg-gray-200"
+          )}
         >
-          {item.label}
-        </div>
+          {item.icon ? <span className="shrink-0">{item.icon}</span> : null}
+          <span>{item.label}</span>
+        </button>
       );
     }
 

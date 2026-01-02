@@ -8,7 +8,9 @@ type Props = {
   children: ReactNode;
 };
 export function RequireRole({ allowedRoles, children }: Props) {
-  const { isAuthenticated, role } = useAuth();
+  const { isAuthenticated, role, isLoading } = useAuth();
+
+  if (isLoading) return null;
 
   if (!isAuthenticated) return <Navigate to="/login" replace />;
 
