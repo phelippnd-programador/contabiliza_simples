@@ -2,8 +2,12 @@ import React, { useEffect, useMemo, useState } from "react";
 import AppTitle, { AppSubTitle } from "../../../components/ui/text/AppTitle";
 import AppTable from "../../../components/ui/table/AppTable";
 import AppListNotFound from "../../../components/ui/AppListNotFound";
+import AppTextInput from "../../../components/ui/input/AppTextInput";
 import DashboardSection from "../../../components/ui/card/DashboardSection";
 import DashboardStatCard from "../../../components/ui/card/DashboardStatCard";
+import PeriodCashChart, {
+  type PeriodCashPoint,
+} from "../../../components/ui/chart/PeriodCashChart";
 import { listContas } from "../../financeiro/services/contas.service";
 import { listCategorias } from "../../financeiro/services/categorias.service";
 import { listMovimentos } from "../../financeiro/services/movimentos.service";
@@ -17,6 +21,11 @@ import {
 const formatCurrency = (value: number) =>
   value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
+const formatDateLabel = (value: string) => value.slice(5);
+
+const toDateString = (date: Date) =>
+  date.toISOString().slice(0, 10);
+
 const parseDate = (value?: string) => {
   if (!value) return null;
   const date = new Date(value);
@@ -27,6 +36,15 @@ const DashboardPage = () => {
   const [contas, setContas] = useState<ContaBancaria[]>([]);
   const [categorias, setCategorias] = useState<CategoriaMovimento[]>([]);
   const [movimentos, setMovimentos] = useState<MovimentoCaixa[]>([]);
+  const [chartFilters, setChartFilters] = useState(() => {
+    const end = new Date();
+    const start = new Date();
+    start.setDate(end.getDate() - 6);
+    return {
+      start: toDateString(start),
+      end: toDateString(end),
+    };
+  });
 
   useEffect(() => {
     let isMounted = true;
@@ -95,6 +113,36 @@ const DashboardPage = () => {
       .slice(0, 5);
   }, [categorias, movimentos]);
 
+  const chartData = useMemo<PeriodCashPoint[]>(() => {
+    if (!chartFilters.start || !chartFilters.end) return [];
+    const start = parseDate(chartFilters.start);
+    const end = parseDate(chartFilters.end);
+    if (!start || !end) return [];
+
+    const map = new Map<string, { entradas: number; saidas: number }>();
+    movimentos.forEach((movimento) => {
+      const data = parseDate(movimento.data);
+      if (!data) return;
+      if (data < start || data > end) return;
+      const label = toDateString(data);
+      const current = map.get(label) ?? { entradas: 0, saidas: 0 };
+      if (movimento.tipo === TipoMovimentoCaixa.ENTRADA) {
+        current.entradas += movimento.valor;
+      } else {
+        current.saidas += movimento.valor;
+      }
+      map.set(label, current);
+    });
+
+    return Array.from(map.entries())
+      .sort(([a], [b]) => (a > b ? 1 : -1))
+      .map(([label, values]) => ({
+        label: formatDateLabel(label),
+        entradas: values.entradas,
+        saidas: values.saidas,
+      }));
+  }, [chartFilters, movimentos]);
+
   return (
     <div className="flex flex-col gap-8">
       <div>
@@ -151,6 +199,31 @@ const DashboardPage = () => {
               </svg>
             }
           />
+        </div>
+      </DashboardSection>
+
+      <DashboardSection title="Entradas x saidas por periodo">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <AppTextInput
+            title="Data inicial"
+            type="date"
+            value={chartFilters.start}
+            onChange={(e) =>
+              setChartFilters((prev) => ({ ...prev, start: e.target.value }))
+            }
+          />
+          <AppTextInput
+            title="Data final"
+            type="date"
+            value={chartFilters.end}
+            onChange={(e) =>
+              setChartFilters((prev) => ({ ...prev, end: e.target.value }))
+            }
+          />
+        </div>
+
+        <div className="mt-4">
+          <PeriodCashChart title="Fluxo de caixa" data={chartData} />
         </div>
       </DashboardSection>
 

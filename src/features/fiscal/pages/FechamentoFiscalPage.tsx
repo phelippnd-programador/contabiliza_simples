@@ -4,6 +4,7 @@ import Card from "../../../components/ui/card/Card";
 import AppTextInput from "../../../components/ui/input/AppTextInput";
 import AppTable from "../../../components/ui/table/AppTable";
 import AppListNotFound from "../../../components/ui/AppListNotFound";
+import DashboardStatCard from "../../../components/ui/card/DashboardStatCard";
 import { listCategorias } from "../../financeiro/services/categorias.service";
 import { listMovimentos } from "../../financeiro/services/movimentos.service";
 import {
@@ -127,29 +128,43 @@ const FechamentoFiscalPage = () => {
         </div>
 
         <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
-          <div className="rounded-lg border border-gray-200 bg-white p-4">
-            <p className="text-xs text-gray-500">Receita do mes</p>
-            <p className="text-lg font-semibold">
-              {totalReceitaMes.toLocaleString("pt-BR", {
-                style: "currency",
-                currency: "BRL",
-              })}
-            </p>
-          </div>
-          <div className="rounded-lg border border-gray-200 bg-white p-4">
-            <p className="text-xs text-gray-500">RBT12</p>
-            <p className="text-lg font-semibold">
-              {rbt12.toLocaleString("pt-BR", {
-                style: "currency",
-                currency: "BRL",
-              })}
-            </p>
-          </div>
-          <div className="rounded-lg border border-gray-200 bg-white p-4">
-            <p className="text-xs text-gray-500">Fator R</p>
-            <p className="text-lg font-semibold">{fatorRPercent}%</p>
-            <p className="text-xs text-gray-500">{fatorRAnexo}</p>
-          </div>
+          <DashboardStatCard
+            title="Receita do mes"
+            value={totalReceitaMes.toLocaleString("pt-BR", {
+              style: "currency",
+              currency: "BRL",
+            })}
+            tone="green"
+            icon={
+              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor">
+                <path d="M12 4 5 11h4v7h6v-7h4z" />
+              </svg>
+            }
+          />
+          <DashboardStatCard
+            title="RBT12"
+            value={rbt12.toLocaleString("pt-BR", {
+              style: "currency",
+              currency: "BRL",
+            })}
+            tone="blue"
+            icon={
+              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor">
+                <path d="M12 3a9 9 0 1 0 9 9 9.01 9.01 0 0 0-9-9Zm1 13.5h-2V14H8v-2h3V9.5h2V12h3v2h-3Z" />
+              </svg>
+            }
+          />
+          <DashboardStatCard
+            title="Fator R"
+            value={`${fatorRPercent}%`}
+            helper={fatorRAnexo}
+            tone="purple"
+            icon={
+              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor">
+                <path d="M4 6a2 2 0 0 1 2-2h5v6H4Zm0 8h7v6H6a2 2 0 0 1-2-2Zm9 6v-6h7v4a2 2 0 0 1-2 2Zm0-10V4h5a2 2 0 0 1 2 2v4Z" />
+              </svg>
+            }
+          />
         </div>
 
         <div className="mt-6">
