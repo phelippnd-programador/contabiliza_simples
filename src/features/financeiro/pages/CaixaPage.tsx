@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import AppTitle, { AppSubTitle } from "../../../components/ui/text/AppTitle";
 import Card from "../../../components/ui/card/Card";
 import AppButton from "../../../components/ui/button/AppButton";
-import AppTextInput from "../../../components/ui/input/AppTextInput";
+import AppDateInput from "../../../components/ui/input/AppDateInput";
 import AppSelectInput from "../../../components/ui/input/AppSelectInput";
 import AppTable from "../../../components/ui/table/AppTable";
 import AppListNotFound from "../../../components/ui/AppListNotFound";
@@ -114,7 +114,7 @@ const CaixaPage = () => {
         <small>Filtre os movimentos por periodo, conta e categoria.</small>
 
         <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-4">
-          <AppTextInput
+          <AppDateInput
             title="Data inicial"
             type="date"
             value={filters.dataInicial}
@@ -123,7 +123,7 @@ const CaixaPage = () => {
             }
           />
 
-          <AppTextInput
+          <AppDateInput
             title="Data final"
             type="date"
             value={filters.dataFinal}
