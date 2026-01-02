@@ -246,9 +246,9 @@ const MovimentosCaixaPage = () => {
             }
           />
 
-          <AppTextInput
+          <AppDateInput
             title="Competencia"
-            placeholder="2025-01"
+            type="month"
             value={form.competencia ?? ""}
             onChange={(e) =>
               setForm((prev) => ({ ...prev, competencia: e.target.value }))
