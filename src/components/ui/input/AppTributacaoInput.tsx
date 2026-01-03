@@ -140,10 +140,15 @@ export function AppTributacaoInput({
                     tooltip="Fator R = Folha/Receita (12m). Corte 28%"
                     value={percentualFatorRDisplay}
                     onChange={(e) => setPercentualFatorRDisplay(e.target.value)}
-                    onValueChange={(raw) => patch({ percentualFatorR: raw ? Number(raw) : undefined })}
+                    onValueChange={(raw) =>
+                        patch({
+                            percentualFatorR: raw ? Number(raw) / 100 : undefined,
+                        })
+                    }
                     error={errors.percentualFatorR}
                     formatter={formatPercentBR}
                     sanitizeRegex={/[0-9]/g}
+                    maxRawLength={5}
                     required
                     title="Percentual Fator R"
                     placeholder=""

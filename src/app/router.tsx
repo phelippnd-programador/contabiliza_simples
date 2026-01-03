@@ -37,6 +37,7 @@ const ContaBancariaPage = lazy(
   () => import("../features/financeiro/pages/ContaBancariaPage")
 );
 const DashboardPage = lazy(() => import("../features/dashboard/pages/DashboardPage"));
+const EmpresasPage = lazy(() => import("../features/empresa/pages/EmpresasPage"));
 const NotasListPage = lazy(() => import("../features/notas/pages/NotasListPage"));
 const NotaNovaPage = lazy(() => import("../features/notas/pages/NotaNovaPage"));
 const NotaDetalhePage = lazy(() => import("../features/notas/pages/NotaDetalhePage"));
@@ -71,7 +72,7 @@ export const router = createBrowserRouter([
         path: "empresa",
         element: withLoading(
           <RequireRole allowedRoles={["EMPRESA"]}>
-            <CadastroEmpresaPage />
+            <EmpresasPage />
           </RequireRole>
         ),
       },

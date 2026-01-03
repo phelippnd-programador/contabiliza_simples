@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import AppTextInput from '../../../components/ui/input/AppTextInput'
 import AppButton from '../../../components/ui/button/AppButton'
 import AppTitle, { AppSubTitle } from '../../../components/ui/text/AppTitle'
@@ -10,10 +11,14 @@ import { empresaSchema, type EmpresaFormData } from '../validation/empresa.schem
 import { CnaePicker } from '../../../components/ui/picked/CnaePicker'
 import type { CnaeItem } from '../../../shared/services/ibgeCnae'
 import { AppTributacaoInput } from '../../../components/ui/input/AppTributacaoInput'
+import { saveEmpresa } from '../services/empresas.service'
 
 const CadastroEmpresaPage = () => {
+    const navigate = useNavigate();
     const empresaId = 1; // só para exemplo de syncKey
-    const [form, setForm] = useState<EmpresaFormData>({} as EmpresaFormData);
+    const [form, setForm] = useState<
+        EmpresaFormData & { email?: string; inscricaoEstadual?: string }
+    >({} as EmpresaFormData);
     const [errors, setErrors] = useState<Record<string, string>>({});
 
     const [selectedCnae, setSelectedCnae] = useState<CnaeItem | null>(null);
@@ -35,11 +40,14 @@ const CadastroEmpresaPage = () => {
         setErrors({});
         return true;
     };
-    const onSubmit = () => {
-        console.log("Erros de validação:");
+    const onSubmit = async () => {
+        console.log("Erros de validacao:");
         if (!validate()) return;
 
-        console.log("Form válido", form);
+        await saveEmpresa({
+            ...form,
+        });
+        navigate("/empresa");
     };
     // const renderTributacaoFields = (): ReactNode => {
     //     return <div className="flex w-full gap-4">
@@ -119,8 +127,17 @@ const CadastroEmpresaPage = () => {
                             setForm((p: EmpresaFormData) => ({ ...p, cnpj: v ?? '' }))
                         }
                         error={errors.cnpj}
+                        maxRawLength={14}
                         formatter={formatCNPJ} sanitizeRegex={/[0-9]/g} required title='CNPJ' placeholder='' />
-                    <AppTextInput required title='Inscrição Estadual' placeholder='' />
+                    <AppTextInput
+                        required
+                        title='Inscricao Estadual'
+                        placeholder=''
+                        value={form.inscricaoEstadual ?? ''}
+                        onChange={(e) =>
+                            setForm((p) => ({ ...p, inscricaoEstadual: e.target.value }))
+                        }
+                    />
                 </div>
                 <AppTributacaoInput
                     syncKey={empresaId} // 👈 MUITO importante para carregar outra empresa e resetar display
@@ -164,7 +181,13 @@ const CadastroEmpresaPage = () => {
                     }
                         error={errors.telefone}
                         sanitizeRegex={/[0-9]/g} formatter={formatPhoneBR} required title='Telefone' placeholder='' />
-                    <AppTextInput required title='Email' placeholder='' />
+                    <AppTextInput
+                        required
+                        title='Email'
+                        placeholder=''
+                        value={form.email ?? ''}
+                        onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
+                    />
                 </div>
                 <div className="footer flex gap-4">
                     <AppButton onClick={onSubmit}>Criar empresa</AppButton>
