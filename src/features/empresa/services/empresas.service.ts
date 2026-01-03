@@ -1,12 +1,32 @@
-import type { EmpresaResumo } from "../types";
-
-const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
+import type { EmpresaCadastro, EmpresaResumo } from "../types";
+import {
+  deleteEmpresa as deleteEmpresaStorage,
+  getEmpresa as getEmpresaStorage,
+  listEmpresas as listEmpresasStorage,
+  saveEmpresa as saveEmpresaStorage,
+} from "../storage/empresas";
 
 export async function listEmpresas(): Promise<EmpresaResumo[]> {
-  // TODO: ajustar endpoint real do backend
-  const res = await fetch(`${API_BASE}/empresas`);
-  if (!res.ok) {
-    throw new Error("LIST_EMPRESAS_FAILED");
-  }
-  return (await res.json()) as EmpresaResumo[];
+  return listEmpresasStorage().map((empresa) => ({
+    id: empresa.id,
+    razaoSocial: empresa.razaoSocial,
+    nomeFantasia: empresa.nomeFantasia,
+    cnpj: empresa.cnpj,
+  }));
+}
+
+export async function getEmpresa(
+  id: string
+): Promise<EmpresaCadastro | undefined> {
+  return getEmpresaStorage(id);
+}
+
+export async function saveEmpresa(
+  data: Omit<EmpresaCadastro, "id"> & { id?: string }
+): Promise<EmpresaCadastro> {
+  return saveEmpresaStorage(data);
+}
+
+export async function deleteEmpresa(id: string): Promise<void> {
+  deleteEmpresaStorage(id);
 }

@@ -10,6 +10,7 @@ interface AppTextInputProps
   formatter?: (raw: string) => string;
   onValueChange?: (raw: string) => void;
   helperText?: string;
+  maxRawLength?: number;
   tooltip?: string;
   tooltipPosition?: "top" | "right" | "bottom" | "left";
 }
@@ -23,6 +24,7 @@ const AppTextInput = forwardRef<HTMLInputElement, AppTextInputProps>(
       className,
       sanitizeRegex,
       formatter,
+      maxRawLength,
       onChange,
       onValueChange,
       tooltip,
@@ -35,12 +37,25 @@ const AppTextInput = forwardRef<HTMLInputElement, AppTextInputProps>(
     const [display, setDisplay] = React.useState<string>(
       props.value?.toString() ?? ''
     );
+    const [rawValue, setRawValue] = React.useState<string>(() => {
+      const base = props.value?.toString() ?? "";
+      if (!sanitizeRegex) return base;
+      const matches = base.match(sanitizeRegex);
+      return matches ? matches.join("") : "";
+    });
 
     React.useEffect(() => {
       if (props.value !== undefined && props.value !== null) {
-        setDisplay(props.value.toString());
+        const nextDisplay = props.value.toString();
+        setDisplay(nextDisplay);
+        if (sanitizeRegex) {
+          const matches = nextDisplay.match(sanitizeRegex);
+          setRawValue(matches ? matches.join("") : "");
+        } else {
+          setRawValue(nextDisplay);
+        }
       }
-    }, [props.value]);
+    }, [props.value, sanitizeRegex]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       let v = e.target.value;
@@ -51,13 +66,43 @@ const AppTextInput = forwardRef<HTMLInputElement, AppTextInputProps>(
         raw = matches ? matches.join("") : "";
       }
 
+      if (maxRawLength && raw.length > maxRawLength) {
+        raw = raw.slice(0, maxRawLength);
+      }
+
       if (formatter) {
         v = formatter(raw);
       }
       e.target.value = v;
       setDisplay(v);
+      setRawValue(raw);
       onValueChange?.(raw);
       onChange?.(e);
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (
+        e.key === "Backspace" &&
+        sanitizeRegex &&
+        formatter &&
+        display &&
+        /[^0-9]$/.test(display)
+      ) {
+        const input = e.currentTarget;
+        const atEnd =
+          input.selectionStart === input.selectionEnd &&
+          input.selectionEnd === display.length;
+        if (atEnd) {
+          const nextRaw = rawValue.slice(0, -1);
+          const nextDisplay = nextRaw ? formatter(nextRaw) : "";
+          setRawValue(nextRaw);
+          setDisplay(nextDisplay);
+          onValueChange?.(nextRaw);
+          e.preventDefault();
+          return;
+        }
+      }
+      props.onKeyDown?.(e);
     };
 
     return (
@@ -75,6 +120,7 @@ const AppTextInput = forwardRef<HTMLInputElement, AppTextInputProps>(
           ref={ref}
           {...props}
           onChange={handleChange}
+          onKeyDown={handleKeyDown}
           value={display}
           className={[
             props.disabled ? "bg-gray-100 cursor-not-allowed" : "",
