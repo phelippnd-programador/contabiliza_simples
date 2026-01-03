@@ -11,7 +11,9 @@ const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 export async function createDraft(
   payload: NotaDraftRequest
 ): Promise<NotaDraftResponse> {
-  // TODO: ajustar endpoint real do backend
+  if (!API_BASE) {
+    throw new Error("API_NOT_CONFIGURED");
+  }
   const res = await fetch(`${API_BASE}/notas/draft`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -24,7 +26,9 @@ export async function createDraft(
 }
 
 export async function emitir(draftId: string): Promise<NotaEmissaoResponse> {
-  // TODO: ajustar endpoint real do backend
+  if (!API_BASE) {
+    throw new Error("API_NOT_CONFIGURED");
+  }
   const res = await fetch(`${API_BASE}/notas/draft/${draftId}/emitir`, {
     method: "POST",
   });
@@ -37,11 +41,13 @@ export async function emitir(draftId: string): Promise<NotaEmissaoResponse> {
 export async function listNotas(
   params: ListNotasParams
 ): Promise<NotaResumo[]> {
+  if (!API_BASE) {
+    return [];
+  }
   const query = new URLSearchParams();
   if (params.competencia) query.set("competencia", params.competencia);
   if (params.status) query.set("status", params.status);
 
-  // TODO: ajustar endpoint real do backend
   const res = await fetch(`${API_BASE}/notas?${query.toString()}`);
   if (!res.ok) {
     throw new Error("LIST_NOTAS_FAILED");
@@ -50,7 +56,9 @@ export async function listNotas(
 }
 
 export async function getNota(id: string): Promise<NotaEmissaoResponse> {
-  // TODO: ajustar endpoint real do backend
+  if (!API_BASE) {
+    throw new Error("API_NOT_CONFIGURED");
+  }
   const res = await fetch(`${API_BASE}/notas/${id}`);
   if (!res.ok) {
     throw new Error("GET_NOTA_FAILED");

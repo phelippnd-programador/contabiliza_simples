@@ -11,6 +11,17 @@ Base
 - Competencia: `YYYY-MM`
 - Currency: integer cents (UI divides by 100)
 
+Perfil
+- `GET /usuarios/perfil`
+- `PUT /usuarios/perfil`
+
+Empresas
+- `GET /empresas`
+- `GET /empresas/:id`
+- `POST /empresas`
+- `PUT /empresas/:id`
+- `DELETE /empresas/:id`
+
 List response
 ```json
 {
@@ -47,6 +58,21 @@ Financeiro
 - `POST /financeiro/contas-receber`
 - `PUT /financeiro/contas-receber/:id`
 - `DELETE /financeiro/contas-receber/:id`
+- `GET /financeiro/categorias`
+- `GET /financeiro/categorias/:id`
+- `POST /financeiro/categorias`
+- `PUT /financeiro/categorias/:id`
+- `DELETE /financeiro/categorias/:id`
+- `GET /financeiro/contas`
+- `GET /financeiro/contas/:id`
+- `POST /financeiro/contas`
+- `PUT /financeiro/contas/:id`
+- `DELETE /financeiro/contas/:id`
+- `GET /financeiro/movimentos`
+- `GET /financeiro/movimentos/:id`
+- `POST /financeiro/movimentos`
+- `PUT /financeiro/movimentos/:id`
+- `DELETE /financeiro/movimentos/:id`
 
 Cadastros
 - `GET /cadastros/clientes`
@@ -95,6 +121,12 @@ Fiscal
 - `POST /fiscal/obrigacoes`
 - `PUT /fiscal/obrigacoes/:id`
 - `DELETE /fiscal/obrigacoes/:id`
+
+Notas
+- `GET /notas`
+- `GET /notas/:id`
+- `POST /notas/draft`
+- `POST /notas/draft/:id/emitir`
 
 Integracoes
 - `GET /integracoes/bancos`

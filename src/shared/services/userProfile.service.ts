@@ -1,3 +1,5 @@
+import { apiFetch } from "./apiClient";
+
 export type UserProfile = {
   nome?: string;
   email?: string;
@@ -6,6 +8,7 @@ export type UserProfile = {
 };
 
 const STORAGE_KEY = "usuario.perfil";
+const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 
 const load = (): UserProfile => {
   try {
@@ -23,11 +26,29 @@ const persist = (profile: UserProfile) => {
 };
 
 export async function getUserProfile(): Promise<UserProfile> {
-  return load();
+  if (!API_BASE) {
+    return load();
+  }
+  const response = await apiFetch("/usuarios/perfil");
+  if (!response.ok) {
+    throw new Error("GET_PROFILE_FAILED");
+  }
+  return (await response.json()) as UserProfile;
 }
 
 export async function saveUserProfile(profile: UserProfile): Promise<UserProfile> {
-  const next = { ...load(), ...profile };
-  persist(next);
-  return next;
+  if (!API_BASE) {
+    const next = { ...load(), ...profile };
+    persist(next);
+    return next;
+  }
+  const response = await apiFetch("/usuarios/perfil", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(profile),
+  });
+  if (!response.ok) {
+    throw new Error("SAVE_PROFILE_FAILED");
+  }
+  return (await response.json()) as UserProfile;
 }
