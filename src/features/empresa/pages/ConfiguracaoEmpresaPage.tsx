@@ -7,6 +7,7 @@ import { DadosTab } from './tabs/DadosTab';
 import { EnderecoContatoTab } from './tabs/EnderecoContatoTab';
 import { TributacaoTab } from './tabs/TributacaoTab';
 import { FinanceiroTab } from './tabs/FinanceiroTab';
+import { UsuariosTab } from './tabs/UsuariosTab';
 import type { EmpresaCadastro } from '../types';
 import { getEmpresa } from '../services/empresas.service';
 
@@ -67,7 +68,7 @@ const ConfiguracaoEmpresaPage = () => {
             <TributacaoTab empresaId={empresa?.id} empresa={empresa ?? undefined} />
           )}
           {tab === 'financeiro' && <FinanceiroTab />}
-          {tab === 'usuarios' && <div>Conteudo Usuarios</div>}
+          {tab === 'usuarios' && <UsuariosTab />}
         </div>
       </Card>
     </div>
