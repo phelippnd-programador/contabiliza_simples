@@ -7,7 +7,6 @@ import { DadosTab } from './tabs/DadosTab';
 import { EnderecoContatoTab } from './tabs/EnderecoContatoTab';
 import { TributacaoTab } from './tabs/TributacaoTab';
 import { FinanceiroTab } from './tabs/FinanceiroTab';
-import { UsuariosTab } from './tabs/UsuariosTab';
 import type { EmpresaCadastro } from '../types';
 import { getEmpresa } from '../services/empresas.service';
 
@@ -28,7 +27,7 @@ const ConfiguracaoEmpresaPage = () => {
     { id: 'endereco', label: 'Endereco & Contato' },
     { id: 'fiscal', label: 'Fiscal / Tributacao', badge: '!' },
     { id: 'financeiro', label: 'Financeiro' },
-    { id: 'usuarios', label: 'Usuarios' },
+    // { id: 'usuarios', label: 'Usuarios' },
   ];
   const [tab, setTab] = useState<EmpresaTab>('dados');
 
@@ -68,7 +67,7 @@ const ConfiguracaoEmpresaPage = () => {
             <TributacaoTab empresaId={empresa?.id} empresa={empresa ?? undefined} />
           )}
           {tab === 'financeiro' && <FinanceiroTab />}
-          {tab === 'usuarios' && <UsuariosTab />}
+          {/* {tab === 'usuarios' && <UsuariosTab />} */}
         </div>
       </Card>
     </div>

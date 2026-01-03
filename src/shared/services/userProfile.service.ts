@@ -2,6 +2,7 @@ export type UserProfile = {
   nome?: string;
   email?: string;
   telefone?: string;
+  fotoUrl?: string;
 };
 
 const STORAGE_KEY = "usuario.perfil";
