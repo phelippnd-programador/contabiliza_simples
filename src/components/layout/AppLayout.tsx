@@ -1,16 +1,16 @@
-import React from 'react'
-import { Outlet } from 'react-router-dom'
-import AppHeader from './header/AppHeader'
+import React from 'react';
+import { Outlet } from 'react-router-dom';
+import AppHeader from './header/AppHeader';
 
 const AppLayout = () => {
-    return (
-        <div className="h-screen flex flex-col px-0">
-            <AppHeader />
-            <main className="flex-1 px-10 py-5 overflow-auto">
-                <Outlet />
-            </main>
-        </div>
-    )
-}
+  return (
+    <div className="min-h-screen flex bg-slate-100">
+      <AppHeader />
+      <main className="flex-1 overflow-auto px-8 py-6">
+        <Outlet />
+      </main>
+    </div>
+  );
+};
 
-export default AppLayout
+export default AppLayout;
