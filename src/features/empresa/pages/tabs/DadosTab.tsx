@@ -3,6 +3,8 @@ import AppTextInput from '../../../../components/ui/input/AppTextInput';
 import AppButton from '../../../../components/ui/button/AppButton';
 import { formatCNPJ } from '../../../../shared/utils/formater';
 import type { EmpresaCadastro } from '../../types';
+import AppTitle, { AppSubTitle } from '../../../../components/ui/text/AppTitle';
+import Card from '../../../../components/ui/card/Card';
 
 interface Props {
   empresa?: EmpresaCadastro;
@@ -18,11 +20,12 @@ export const DadosTab = ({ empresa }: Props) => {
 
   return (
     <>
-      <div className="rounded-lg border border-gray-200 bg-white p-4">
-        <div className="mb-4">
-          <h2 className="text-base font-semibold">Dados da Empresa</h2>
-          <p className="text-sm text-gray-500">Informacoes para configuracao da empresa.</p>
-        </div>
+      <div className="mb-4">
+        <AppTitle text='Dados da Empresa' />
+        <AppSubTitle text="Informacoes para configuracao da empresa." />
+
+      </div>
+      <Card>
         <AppTextInput
           required
           title='Razao Social'
@@ -60,9 +63,9 @@ export const DadosTab = ({ empresa }: Props) => {
             setForm((prev) => (prev ? { ...prev, inscricaoEstadual: e.target.value } : prev))
           }
         />
-      </div>
+      </Card>
       <div className="footer flex gap-4">
-        <AppButton onClick={() => {}}>Salvar</AppButton>
+        <AppButton onClick={() => { }}>Salvar</AppButton>
         <AppButton>Cancelar</AppButton>
       </div>
     </>

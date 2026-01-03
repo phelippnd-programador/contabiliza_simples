@@ -68,6 +68,9 @@ const IconSettings = () => (
 const AppHeader = () => {
   const { logout } = useAuth();
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [isDark, setIsDark] = useState(
+    () => window.localStorage.getItem("theme") === "dark"
+  );
   const settingsRef = useRef<HTMLDivElement | null>(null);
 
   const menu: AppMenuItem[] = [
@@ -79,7 +82,7 @@ const AppHeader = () => {
       icon: <IconBuilding />,
       children: [
         { id: "minhas_empresas", label: "Minhas Empresas", to: "/empresa", end: true, icon: <IconList /> },
-        { id: "cadastro_empresa", label: "Cadastro Empresa", to: "/empresa/nova", icon: <IconBuilding /> },
+        // { id: "cadastro_empresa", label: "Cadastro Empresa", to: "/empresa/nova", icon: <IconBuilding /> },
       ],
     },
     {
@@ -141,6 +144,18 @@ const AppHeader = () => {
     };
   }, [settingsOpen]);
 
+  const applyTheme = (dark: boolean) => {
+    document.documentElement.classList.toggle("dark", dark);
+    document.body.classList.toggle("dark", dark);
+    const root = document.getElementById("root");
+    if (root) root.classList.toggle("dark", dark);
+    window.localStorage.setItem("theme", dark ? "dark" : "light");
+  };
+
+  useEffect(() => {
+    applyTheme(isDark);
+  }, [isDark]);
+
   return (
     <>
       <AppMenu title="Main" subtitle="Menu" menu={menu} />
@@ -151,7 +166,7 @@ const AppHeader = () => {
           aria-haspopup="menu"
           aria-expanded={settingsOpen}
           onClick={() => setSettingsOpen((prev) => !prev)}
-          className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 shadow-sm hover:border-blue-500 hover:text-blue-600"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 shadow-sm hover:border-blue-500 hover:text-blue-600 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-200"
         >
           <IconSettings />
         </button>
@@ -159,35 +174,59 @@ const AppHeader = () => {
         {settingsOpen ? (
           <div
             role="menu"
-            className="absolute right-0 z-50 mt-2 w-56 rounded-lg border border-gray-200 bg-white shadow-lg"
+            className="absolute right-0 z-50 mt-2 w-56 rounded-lg border border-gray-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-800"
           >
             <div className="px-3 py-2 text-xs uppercase tracking-wide text-gray-400">
               Configuracoes
             </div>
+            <button
+              type="button"
+              className="flex w-full items-center justify-between px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-slate-700"
+              onClick={() => {
+                const next = !isDark;
+                setIsDark(next);
+                applyTheme(next);
+              }}
+            >
+              <span>Modo escuro</span>
+              <span
+                className={[
+                  "inline-flex h-5 w-9 items-center rounded-full border transition",
+                  isDark ? "border-blue-500 bg-blue-500" : "border-gray-300 bg-gray-200",
+                ].join(" ")}
+              >
+                <span
+                  className={[
+                    "h-4 w-4 rounded-full bg-white shadow-sm transition",
+                    isDark ? "translate-x-4" : "translate-x-1",
+                  ].join(" ")}
+                />
+              </span>
+            </button>
             <Link
               to="/empresa"
-              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-slate-700"
               onClick={() => setSettingsOpen(false)}
             >
               Empresas
             </Link>
             <Link
               to="/empresa/nova"
-              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-slate-700"
               onClick={() => setSettingsOpen(false)}
             >
               Cadastrar empresa
             </Link>
             <Link
               to="/configuracoes/usuario"
-              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-slate-700"
               onClick={() => setSettingsOpen(false)}
             >
               Configuracao do usuario
             </Link>
             <button
               type="button"
-              className="block w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50"
+              className="block w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10"
               onClick={() => {
                 setSettingsOpen(false);
                 logout();

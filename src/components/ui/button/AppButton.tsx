@@ -16,7 +16,7 @@ const AppButton = ({
         <button
             {...props}
             disabled={disabled || loading}
-            className={"w-full h-11 rounded-lg border border-gray-200 active:shadow-sm active:bg-gray-50 px-4 text-sm hover:border-blue-500 " + (className ?? "")}
+            className={"w-full h-11 rounded-lg border border-gray-200 active:shadow-sm active:bg-gray-50 px-4 text-sm hover:border-blue-500 dark:border-slate-700 dark:text-gray-100 dark:hover:border-blue-400 dark:active:bg-slate-800 " + (className ?? "")}
         // className={[
         //     "w-full",
         //     "h-11 px-6 rounded-lg",

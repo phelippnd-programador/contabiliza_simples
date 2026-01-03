@@ -250,7 +250,7 @@ export function AppTextSearch<T>({
                     <button
                         type="button"
                         onClick={clearSelection}
-                        className="cursor-pointer absolute right-3 top-[40px] text-xs text-gray-500 hover:text-red-600"
+                        className="cursor-pointer absolute right-3 top-[40px] text-xs text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400"
                         title="Limpar"
                     >
                         limpar
@@ -259,10 +259,10 @@ export function AppTextSearch<T>({
 
                 {open && !disabled && (
                     <div
-                        className="rounded-lg border border-gray-200 bg-white shadow-lg overflow-hidden"
+                        className="rounded-lg border border-gray-200 bg-white shadow-lg overflow-hidden dark:border-slate-700 dark:bg-slate-900"
                         style={popoverStyle}
                     >
-                        <div className="px-3 py-2 text-xs text-gray-500 flex items-center justify-between">
+                        <div className="px-3 py-2 text-xs text-gray-500 flex items-center justify-between dark:text-gray-400">
                             <span>{headerText}</span>
                             <span className="text-[11px]">{hintFooter}</span>
                         </div>
@@ -278,7 +278,7 @@ export function AppTextSearch<T>({
                                         onClick={() => selectItem(it)}
                                         className={[
                                             "w-full text-left px-3 py-2 text-sm",
-                                            active ? "bg-blue-50" : "bg-white",
+                                            active ? "bg-blue-50 dark:bg-slate-800" : "bg-white dark:bg-slate-900",
                                             "hover:bg-blue-50",
                                         ].join(" ")}
                                     >
@@ -289,7 +289,7 @@ export function AppTextSearch<T>({
                         </div>
 
                         {!loading && results.length === 0 && query.trim().length >= minCharsToSearch && (
-                            <div className="px-3 py-3 text-sm text-gray-600">
+                            <div className="px-3 py-3 text-sm text-gray-600 dark:text-gray-300">
                                 Tente refinar sua busca.
                             </div>
                         )}

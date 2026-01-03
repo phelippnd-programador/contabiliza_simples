@@ -31,7 +31,7 @@ const DashboardStatCard = ({
       <div className="flex items-start justify-between">
         <div>
           <p className="text-xs uppercase tracking-wide text-gray-500">{title}</p>
-          <p className="mt-2 text-xl font-semibold text-gray-900">{value}</p>
+          <p className="mt-2 text-xl font-semibold text-gray-900 dark:text-gray-100 ">{value}</p>
         </div>
         {icon ? (
           <span

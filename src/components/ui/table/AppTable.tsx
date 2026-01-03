@@ -75,9 +75,9 @@ const AppTable = <T,>({
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border border-gray-200">
+    <div className="overflow-hidden rounded-lg border border-gray-200 dark:border-slate-800">
       <table className="w-full text-left text-sm">
-        <thead className="bg-gray-50 text-xs uppercase text-gray-500">
+        <thead className="bg-gray-50 text-xs uppercase text-gray-500 dark:bg-slate-900 dark:text-gray-400">
           <tr>
             {columns.map((column) => (
               <th
@@ -93,7 +93,7 @@ const AppTable = <T,>({
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-100">
+        <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
           {pagedData.map((row, index) => (
             <tr key={rowKey ? rowKey(row, index) : String(index)}>
               {columns.map((column) => (
@@ -114,14 +114,14 @@ const AppTable = <T,>({
       </table>
 
       {isPaginated && totalPages > 1 ? (
-        <div className="flex items-center justify-between border-t border-gray-100 bg-white px-4 py-3 text-xs text-gray-500">
+        <div className="flex items-center justify-between border-t border-gray-100 bg-white px-4 py-3 text-xs text-gray-500 dark:border-slate-800 dark:bg-slate-900 dark:text-gray-400">
           <span>
             Pagina {currentPage} de {totalPages}
           </span>
           <div className="flex gap-2">
             <button
               type="button"
-              className="rounded-md border border-gray-200 px-3 py-2 text-xs font-medium text-gray-700 hover:border-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-md border border-gray-200 px-3 py-2 text-xs font-medium text-gray-700 hover:border-blue-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:text-gray-100 dark:hover:border-blue-400"
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage <= 1}
             >
@@ -129,7 +129,7 @@ const AppTable = <T,>({
             </button>
             <button
               type="button"
-              className="rounded-md border border-gray-200 px-3 py-2 text-xs font-medium text-gray-700 hover:border-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-md border border-gray-200 px-3 py-2 text-xs font-medium text-gray-700 hover:border-blue-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:text-gray-100 dark:hover:border-blue-400"
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage >= totalPages}
             >

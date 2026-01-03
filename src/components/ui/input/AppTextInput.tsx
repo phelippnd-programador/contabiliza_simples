@@ -127,6 +127,7 @@ const AppTextInput = forwardRef<HTMLInputElement, AppTextInputProps>(
             error
               ? "border-red-300 focus:border-red-500 focus:ring-2 focus:ring-red-200"
               : "border-gray-200 hover:border-blue-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-200",
+            "bg-white text-gray-900 dark:bg-slate-900 dark:text-gray-100 dark:border-slate-700 dark:focus:ring-blue-900/40",
             "outline-none transition",
             className ?? "",
           ].join(" ")}
@@ -134,7 +135,7 @@ const AppTextInput = forwardRef<HTMLInputElement, AppTextInputProps>(
         {error ? (
           <span className="text-xs text-red-600">{error}</span>
         ) : (
-          helperText && <span className="text-xs text-gray-500">{helperText}</span>
+          helperText && <span className="text-xs text-gray-500 dark:text-gray-400">{helperText}</span>
         )}
 
       </div>

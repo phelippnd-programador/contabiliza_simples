@@ -60,14 +60,16 @@ const ConfiguracaoEmpresaPage = () => {
         {error ? <p className="mt-2 text-sm text-red-600">{error}</p> : null}
 
         <AppTabs tabs={tabs} activeTab={tab} onChange={setTab} />
-        <div className="rounded-lg border border-gray-200 p-6 bg-white gap-4 flex flex-col">
-          {tab === 'dados' && <DadosTab empresa={empresa ?? undefined} />}
-          {tab === 'endereco' && <EnderecoContatoTab empresa={empresa ?? undefined} />}
-          {tab === 'fiscal' && (
-            <TributacaoTab empresaId={empresa?.id} empresa={empresa ?? undefined} />
-          )}
-          {tab === 'financeiro' && <FinanceiroTab />}
-          {/* {tab === 'usuarios' && <UsuariosTab />} */}
+        <div>
+          {/* <div className="rounded-lg border border-gray-200 p-6 bg-white gap-4 flex flex-col"> */}
+            {tab === 'dados' && <DadosTab empresa={empresa ?? undefined} />}
+            {tab === 'endereco' && <EnderecoContatoTab empresa={empresa ?? undefined} />}
+            {tab === 'fiscal' && (
+              <TributacaoTab empresaId={empresa?.id} empresa={empresa ?? undefined} />
+            )}
+            {tab === 'financeiro' && <FinanceiroTab />}
+            {/* {tab === 'usuarios' && <UsuariosTab />} */}
+          {/* </div> */}
         </div>
       </Card>
     </div>
