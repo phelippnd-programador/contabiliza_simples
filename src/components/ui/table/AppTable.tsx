@@ -14,6 +14,7 @@ type AppTablePagination = {
   enabled?: boolean;
   pageSize?: number;
   page?: number;
+  total?: number;
   onPageChange?: (page: number) => void;
 };
 
@@ -42,7 +43,8 @@ const AppTable = <T,>({
   const isPaginated = Boolean(pagination?.enabled);
   const [internalPage, setInternalPage] = useState(1);
   const currentPage = pagination?.page ?? internalPage;
-  const totalPages = Math.max(1, Math.ceil(data.length / pageSize));
+  const totalItems = pagination?.total ?? data.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
 
   useEffect(() => {
     if (!isPaginated) return;
@@ -57,9 +59,10 @@ const AppTable = <T,>({
 
   const pagedData = useMemo(() => {
     if (!isPaginated) return data;
+    if (pagination?.total != null) return data;
     const start = (currentPage - 1) * pageSize;
     return data.slice(start, start + pageSize);
-  }, [currentPage, data, isPaginated, pageSize]);
+  }, [currentPage, data, isPaginated, pageSize, pagination?.total]);
 
   const handlePageChange = (page: number) => {
     const nextPage = Math.min(Math.max(page, 1), totalPages);

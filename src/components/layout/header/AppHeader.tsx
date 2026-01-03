@@ -91,10 +91,31 @@ const AppHeader = () => {
       icon: <IconWallet />,
       children: [
         { id: "contas", label: "Contas", to: "/financeiro/contas", icon: <IconWallet /> },
+        { id: "contas_pagar", label: "Contas a pagar", to: "/financeiro/contas-pagar", icon: <IconCash /> },
+        { id: "contas_receber", label: "Contas a receber", to: "/financeiro/contas-receber", icon: <IconCash /> },
         { id: "categorias", label: "Categorias", to: "/financeiro/categorias", icon: <IconList /> },
         { id: "movimentos", label: "Movimentos", to: "/financeiro/movimentos", icon: <IconCash /> },
         { id: "caixa_financeiro", label: "Caixa", to: "/financeiro/caixa", icon: <IconChart /> },
         { id: "prolabore", label: "Pro-labore", to: "/financeiro/prolabore", icon: <IconCash /> },
+      ],
+    },
+    {
+      id: "cadastros",
+      label: "Cadastros",
+      icon: <IconList />,
+      children: [
+        { id: "clientes", label: "Clientes", to: "/cadastros/clientes", icon: <IconList /> },
+        { id: "fornecedores", label: "Fornecedores", to: "/cadastros/fornecedores", icon: <IconList /> },
+        { id: "produtos_servicos", label: "Produtos/Servicos", to: "/cadastros/produtos-servicos", icon: <IconList /> },
+      ],
+    },
+    {
+      id: "comercial",
+      label: "Comercial",
+      icon: <IconChart />,
+      children: [
+        { id: "vendas", label: "Vendas", to: "/comercial/vendas", icon: <IconChart /> },
+        { id: "compras", label: "Compras", to: "/comercial/compras", icon: <IconChart /> },
       ],
     },
     {
@@ -103,10 +124,13 @@ const AppHeader = () => {
       icon: <IconShield />,
       children: [
         { id: "fechamento", label: "Fechamento", to: "/fiscal/fechamento", icon: <IconList /> },
+        { id: "apuracao", label: "Apuracao", to: "/fiscal/apuracao", icon: <IconList /> },
+        { id: "obrigacoes", label: "Obrigacoes", to: "/fiscal/obrigacoes", icon: <IconList /> },
         { id: "notas", label: "Notas", to: "/fiscal/notas", icon: <IconList /> },
       ],
     },
     { id: "relatorios", label: "Relatorios", to: "/relatorios", icon: <IconChart /> },
+    { id: "estoque", label: "Estoque", to: "/estoque", icon: <IconList /> },
     {
       id: "tributacao",
       label: "Tributacao",
@@ -117,6 +141,15 @@ const AppHeader = () => {
         { id: "conciliacao", label: "Conciliacao", to: "/conciliacao", icon: <IconList /> },
       ],
     },
+    {
+      id: "integracoes",
+      label: "Integracoes",
+      icon: <IconList />,
+      children: [
+        { id: "bancos", label: "Bancos", to: "/integracoes/bancos", icon: <IconList /> },
+      ],
+    },
+    { id: "folha", label: "Folha", to: "/folha", icon: <IconList /> },
     {
       id: "logout",
       label: "Sair",
