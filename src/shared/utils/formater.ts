@@ -23,6 +23,12 @@ export const formatCNPJ = (v: string) => {
     .replace(/(\d{4})(\d)/, "$1-$2");
 };
 
+export const formatCpfCnpj = (v: string) => {
+  const d = onlyDigits(v);
+  if (d.length <= 11) return formatCPF(d);
+  return formatCNPJ(d);
+};
+
 export const formatPhoneBR = (v: string) => {
   const d = onlyDigits(v).slice(0, 11);
 

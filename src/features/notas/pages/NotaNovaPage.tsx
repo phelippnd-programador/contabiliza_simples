@@ -14,7 +14,7 @@ import type { NcmItem } from "../../../shared/services/ncm";
 import { listCategorias } from "../../financeiro/services/categorias.service";
 import { listContas } from "../../financeiro/services/contas.service";
 import { listEmpresas } from "../../empresa/services/empresas.service";
-import { formatBRL } from "../../../shared/utils/formater";
+import { formatBRL, formatCpfCnpj } from "../../../shared/utils/formater";
 import { notaDraftSchema } from "../validation/notaDraft.schema";
 import { createDraft, emitir } from "../services/notas.service";
 import type {
@@ -315,6 +315,8 @@ const NotaNovaPage = () => {
               }))
             }
             sanitizeRegex={/[0-9]/g}
+            maxRawLength={14}
+            formatter={formatCpfCnpj}
             error={errors["tomador.documento"]}
           />
 

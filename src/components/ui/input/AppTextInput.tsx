@@ -46,16 +46,15 @@ const AppTextInput = forwardRef<HTMLInputElement, AppTextInputProps>(
 
     React.useEffect(() => {
       if (props.value !== undefined && props.value !== null) {
-        const nextDisplay = props.value.toString();
+        const nextRaw = props.value.toString();
+        const rawDigits = sanitizeRegex
+          ? (nextRaw.match(sanitizeRegex)?.join("") ?? "")
+          : nextRaw;
+        const nextDisplay = formatter ? formatter(rawDigits) : nextRaw;
         setDisplay(nextDisplay);
-        if (sanitizeRegex) {
-          const matches = nextDisplay.match(sanitizeRegex);
-          setRawValue(matches ? matches.join("") : "");
-        } else {
-          setRawValue(nextDisplay);
-        }
+        setRawValue(rawDigits);
       }
-    }, [props.value, sanitizeRegex]);
+    }, [props.value, sanitizeRegex, formatter]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       let v = e.target.value;
