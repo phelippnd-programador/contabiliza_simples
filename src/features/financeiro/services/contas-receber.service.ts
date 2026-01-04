@@ -9,6 +9,21 @@ export type ContaReceberResumo = {
   vencimento: string;
   valor: number;
   status?: string;
+  descricao?: string;
+  numeroDocumento?: string;
+  competencia?: string;
+  parcela?: number;
+  totalParcelas?: number;
+  valorOriginal?: number;
+  desconto?: number;
+  juros?: number;
+  multa?: number;
+  valorRecebido?: number;
+  dataRecebimento?: string;
+  formaPagamento?: string;
+  contaId?: string;
+  categoriaId?: string;
+  observacoes?: string;
 };
 
 export type ContaReceberPayload = {
@@ -16,6 +31,21 @@ export type ContaReceberPayload = {
   vencimento: string;
   valor: number;
   status?: string;
+  descricao?: string;
+  numeroDocumento?: string;
+  competencia?: string;
+  parcela?: number;
+  totalParcelas?: number;
+  valorOriginal?: number;
+  desconto?: number;
+  juros?: number;
+  multa?: number;
+  valorRecebido?: number;
+  dataRecebimento?: string;
+  formaPagamento?: string;
+  contaId?: string;
+  categoriaId?: string;
+  observacoes?: string;
 };
 
 export type ListContasReceberParams = {

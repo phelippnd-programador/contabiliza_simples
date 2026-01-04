@@ -9,6 +9,21 @@ export type ContaPagarResumo = {
   vencimento: string;
   valor: number;
   status?: string;
+  descricao?: string;
+  numeroDocumento?: string;
+  competencia?: string;
+  parcela?: number;
+  totalParcelas?: number;
+  valorOriginal?: number;
+  desconto?: number;
+  juros?: number;
+  multa?: number;
+  valorPago?: number;
+  dataPagamento?: string;
+  formaPagamento?: string;
+  contaId?: string;
+  categoriaId?: string;
+  observacoes?: string;
 };
 
 export type ContaPagarPayload = {
@@ -16,6 +31,21 @@ export type ContaPagarPayload = {
   vencimento: string;
   valor: number;
   status?: string;
+  descricao?: string;
+  numeroDocumento?: string;
+  competencia?: string;
+  parcela?: number;
+  totalParcelas?: number;
+  valorOriginal?: number;
+  desconto?: number;
+  juros?: number;
+  multa?: number;
+  valorPago?: number;
+  dataPagamento?: string;
+  formaPagamento?: string;
+  contaId?: string;
+  categoriaId?: string;
+  observacoes?: string;
 };
 
 export type ListContasPagarParams = {

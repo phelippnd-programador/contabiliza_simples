@@ -9,6 +9,14 @@ export type VendaResumo = {
   data: string;
   total: number;
   status?: string;
+  itens?: ComercialItem[];
+  subtotal?: number;
+  desconto?: number;
+  frete?: number;
+  impostos?: number;
+  observacoes?: string;
+  financeiro?: ComercialFinanceiro;
+  estoque?: ComercialEstoque;
 };
 
 export type CompraResumo = {
@@ -17,6 +25,14 @@ export type CompraResumo = {
   data: string;
   total: number;
   status?: string;
+  itens?: ComercialItem[];
+  subtotal?: number;
+  desconto?: number;
+  frete?: number;
+  impostos?: number;
+  observacoes?: string;
+  financeiro?: ComercialFinanceiro;
+  estoque?: ComercialEstoque;
 };
 
 export type VendaPayload = {
@@ -24,6 +40,14 @@ export type VendaPayload = {
   data: string;
   total: number;
   status?: string;
+  itens?: ComercialItem[];
+  subtotal?: number;
+  desconto?: number;
+  frete?: number;
+  impostos?: number;
+  observacoes?: string;
+  financeiro?: ComercialFinanceiro;
+  estoque?: ComercialEstoque;
 };
 
 export type CompraPayload = {
@@ -31,6 +55,14 @@ export type CompraPayload = {
   data: string;
   total: number;
   status?: string;
+  itens?: ComercialItem[];
+  subtotal?: number;
+  desconto?: number;
+  frete?: number;
+  impostos?: number;
+  observacoes?: string;
+  financeiro?: ComercialFinanceiro;
+  estoque?: ComercialEstoque;
 };
 
 export type ListComercialParams = {
@@ -65,6 +97,26 @@ export type VendasAnalyticsResponse = {
   maisVendidos: VendaProdutoResumo[];
   menosVendidos: VendaProdutoResumo[];
   ultimosSaidos: VendaSaidaResumo[];
+};
+
+export type ComercialItem = {
+  produtoId?: string;
+  descricao: string;
+  quantidade: number;
+  valorUnitario: number;
+  total: number;
+};
+
+export type ComercialFinanceiro = {
+  gerarConta?: boolean;
+  contaId?: string;
+  categoriaId?: string;
+  vencimento?: string;
+  formaPagamento?: string;
+};
+
+export type ComercialEstoque = {
+  gerarMovimento?: boolean;
 };
 
 export async function getVendasAnalytics(
