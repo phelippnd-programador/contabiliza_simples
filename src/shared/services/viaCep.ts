@@ -5,6 +5,7 @@ export type ViaCepResponse = {
     bairro?: string;
     localidade?: string; // cidade
     uf?: string;
+    ibge?: string;
     erro?: boolean;
 };
 

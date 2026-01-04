@@ -1,194 +1,119 @@
-import React, { useEffect, useRef, useState } from "react";
-import { formatCEP, formatPhoneBR, formatUF, onlyDigits } from "../../../../shared/utils/formater";
-import { buscarEnderecoPorCep } from "../../../../shared/services/viaCep";
+﻿import React, { useEffect, useState } from "react";
+import { formatPhoneBR, onlyDigits } from "../../../../shared/utils/formater";
 import AppTextInput from "../../../../components/ui/input/AppTextInput";
-import type { EnderecoContatoData } from "../../types";
+import AppEndereco from "../../../../components/ui/input/AppEndereco";
+import type { EnderecoContatoData, EmpresaCadastro } from "../../types";
 import AppButton from "../../../../components/ui/button/AppButton";
+import Card from "../../../../components/ui/card/Card";
+import AppTitle, { AppSubTitle } from "../../../../components/ui/text/AppTitle";
 
+interface Props {
+  empresa?: EmpresaCadastro;
+}
 
+export function EnderecoContatoTab({ empresa }: Props) {
+  const [value, setValue] = useState<EnderecoContatoData>(
+    {} as EnderecoContatoData
+  );
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-export function EnderecoContatoTab() {
-    const [value, setValue] = useState<EnderecoContatoData>({} as EnderecoContatoData);
-    const [errors, setErrors] = useState<Record<string, string>>({});
-    const [cepLoading, setCepLoading] = useState(false);
-    const [cepError, setCepError] = useState<string | null>(null);
+  useEffect(() => {
+    setValue((prev) => ({
+      ...prev,
+      email: empresa?.email ?? prev.email,
+      telefone: empresa?.telefone ?? prev.telefone,
+    }));
+  }, [empresa]);
 
-    const lastCepRef = useRef<string>("");
+  function setField<K extends keyof EnderecoContatoData>(
+    field: K,
+    val: EnderecoContatoData[K]
+  ) {
+    setValue({ ...value, [field]: val });
+    setErrors((e) => ({ ...e, [field]: "" }));
+  }
 
-    function setField<K extends keyof EnderecoContatoData>(
-        field: K,
-        val: EnderecoContatoData[K]
-    ) {
-        setValue({ ...value, [field]: val });
-        setErrors((e) => ({ ...e, [field]: "" }));
-    }
+  function validate() {
+    const e: Record<string, string> = {};
 
-    // 🔎 Busca automática por CEP
-    useEffect(() => {
-        const cepDigits = onlyDigits(value?.cep ?? '');
-        if (value.cep === undefined) return;
-        if (cepDigits.length !== 8) return;
-        if (lastCepRef.current === cepDigits) return;
+    if (!value.email) e.email = "Informe o e-mail";
+    if (!value.telefone || onlyDigits(value.telefone).length < 10)
+      e.telefone = "Telefone invalido";
+    if (onlyDigits(value.cep).length !== 8) e.cep = "CEP invalido";
+    if (!value.logradouro) e.logradouro = "Informe o endereco";
+    if (!value.numero) e.numero = "Informe o numero";
+    if (!value.bairro) e.bairro = "Informe o bairro";
+    if (!value.cidade) e.cidade = "Informe a cidade";
+    if ((value.uf ?? "").length !== 2) e.uf = "UF invalido";
 
-        const ctrl = new AbortController();
-        (async () => {
-            setCepLoading(true);
-            setCepError(null);
-            const data = await buscarEnderecoPorCep(cepDigits, ctrl.signal);
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  }
 
-            if (!data) {
-                setCepError("CEP não encontrado");
-                setCepLoading(false);
+  function handleSave() {
+    if (!validate()) return;
+  }
 
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="mb-4">
+        <AppTitle text="Endereco e contato da empresa" />
+        <AppSubTitle text="Informacoes de contato e endereco da empresa." />
+      </div>
+      <Card>
+        <AppSubTitle text="Contato" />
 
-                return;
-            }
-            lastCepRef.current = cepDigits;
-            setValue({
-                ...value,
-                logradouro: data.logradouro || value.logradouro || "",
-                bairro: data.bairro || value.bairro || "",
-                cidade: data.localidade || value.cidade || "",
-                uf: data.uf || value.uf || "",
-            });
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <AppTextInput
+            required
+            title="E-mail"
+            value={value.email}
+            onChange={(e) => setField("email", e.target.value)}
+            error={errors.email}
+          />
 
-            setCepLoading(false);
-        })();
-
-        return () => ctrl.abort();
-    }, [value.cep]);
-
-    function validate() {
-        const e: Record<string, string> = {};
-
-        if (!value.email) e.email = "Informe o e-mail";
-        if (!value.telefone || onlyDigits(value.telefone).length < 10)
-            e.telefone = "Telefone inválido";
-        if (onlyDigits(value.cep).length !== 8) e.cep = "CEP inválido";
-        if (!value.logradouro) e.logradouro = "Informe o endereço";
-        if (!value.numero) e.numero = "Informe o número";
-        if (!value.bairro) e.bairro = "Informe o bairro";
-        if (!value.cidade) e.cidade = "Informe a cidade";
-        if (value.uf.length !== 2) e.uf = "UF inválido";
-
-        setErrors(e);
-        return Object.keys(e).length === 0;
-    }
-
-    function handleSave() {
-        // if (validate()) onSave?.();
-    }
-
-    return (
-        <div className="flex flex-col gap-6">
-            {/* CONTATO */}
-            <div className="rounded-lg border border-gray-200 bg-white p-4">
-                <h2 className="mb-4 text-base font-semibold">Contato</h2>
-
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <AppTextInput
-                        required
-                        title="E-mail"
-                        value={value.email}
-                        onChange={(e) => setField("email", e.target.value)}
-                        error={errors.email}
-                    />
-
-                    <AppTextInput
-                        required
-                        title="Telefone"
-                        value={value.telefone}
-                        formatter={formatPhoneBR}
-                        sanitizeRegex={/\d/g}
-                        onValueChange={(raw) => setField("telefone", raw)}
-                        error={errors.telefone}
-                    />
-                </div>
-            </div>
-
-            {/* ENDEREÇO */}
-            <div className="rounded-lg border border-gray-200 bg-white p-4">
-                <h2 className="mb-4 text-base font-semibold">Endereço</h2>
-
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-                    <AppTextInput
-                        required
-                        title="CEP"
-                        value={formatCEP(value.cep ?? '')}
-                        formatter={formatCEP}
-                        sanitizeRegex={/\d/g}
-                        onValueChange={(raw) => setField("cep", raw)}
-                        helperText={cepLoading ? "Buscando endereço..." : cepError ?? undefined}
-                        error={errors.cep}
-                    />
-
-                    <div className="md:col-span-3">
-                        <AppTextInput
-                            disabled={true}
-                            required
-                            title="Endereço"
-                            value={value.logradouro}
-                            onChange={(e) => setField("logradouro", e.target.value)}
-                            error={errors.logradouro}
-                        />
-                    </div>
-
-                    <AppTextInput
-                        required
-                        title="Número"
-                        value={value.numero}
-                        onChange={(e) => setField("numero", e.target.value)}
-                        error={errors.numero}
-                    />
-
-                    <div className="md:col-span-3">
-                        <AppTextInput
-                            title="Complemento"
-                            value={value.complemento}
-                            onChange={(e) => setField("complemento", e.target.value)}
-                        />
-                    </div>
-
-                    <div className="md:col-span-2">
-
-                        <AppTextInput
-                            disabled={true}
-                            required
-                            title="Bairro"
-                            value={value.bairro}
-                            onChange={(e) => setField("bairro", e.target.value)}
-                            error={errors.bairro}
-                            autoComplete="off"
-                        />
-                    </div>
-
-                    <AppTextInput
-                        disabled={true}
-                        required
-                        title="Cidade"
-                        value={value.cidade}
-                        onChange={(e) => setField("cidade", e.target.value)}
-                        error={errors.cidade}
-                        autoComplete="off"
-                    />
-
-                    <AppTextInput
-                        disabled={true}
-                        required
-                        title="UF"
-                        value={value.uf}
-                        formatter={formatUF}
-                        onChange={(e) => setField("uf", e.target.value)}
-                        error={errors.uf}
-                        autoComplete="off"
-                    />
-                </div>
-            </div>
-
-            <div className="footer flex gap-4">
-                <AppButton onClick={() => { }}>Salvar</AppButton>
-                <AppButton>Cancelar</AppButton>
-            </div>
+          <AppTextInput
+            required
+            title="Telefone"
+            value={value.telefone}
+            formatter={formatPhoneBR}
+            sanitizeRegex={/\d/g}
+            onValueChange={(raw) => setField("telefone", raw)}
+            error={errors.telefone}
+          />
         </div>
-    );
+      </Card>
+
+      <Card>
+        <AppSubTitle text="Endereco" />
+
+        <AppEndereco
+          value={value}
+          onChange={(next) => setValue({ ...value, ...next })}
+          errors={{
+            cep: errors.cep,
+            logradouro: errors.logradouro,
+            numero: errors.numero,
+            bairro: errors.bairro,
+            cidade: errors.cidade,
+            uf: errors.uf,
+          }}
+          requiredFields={{
+            cep: true,
+            logradouro: true,
+            numero: true,
+            bairro: true,
+            cidade: true,
+            uf: true,
+          }}
+          disableAutoFillFields
+        />
+      </Card>
+
+      <div className="flex items-center justify-end gap-3">
+        <AppButton onClick={handleSave}>Salvar</AppButton>
+        <AppButton>Cancelar</AppButton>
+      </div>
+    </div>
+  );
 }

@@ -1,8 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import type { AppMenuItem } from "./types";
-
-
+import { getUserProfile } from "../../../shared/services/userProfile.service";
 
 type AppMenuProps = {
   title?: string;
@@ -15,30 +14,49 @@ function cx(...parts: Array<string | false | null | undefined>) {
   return parts.filter(Boolean).join(" ");
 }
 
-/** Retorna true se algum filho (direto ou profundo) estiver ativo para o pathname */
 const hasActiveChild = (item: AppMenuItem, pathname: string): boolean => {
   if (!item.children?.length) return false;
 
   return item.children.some((c) => {
-    const match =
-      !!c.to && (c.end ? pathname === c.to : pathname.startsWith(c.to));
+    const match = !!c.to && (c.end ? pathname === c.to : pathname.startsWith(c.to));
     if (match) return true;
     return hasActiveChild(c, pathname);
   });
 };
 
+const getInitials = (value?: string) => {
+  if (!value) return "U";
+  const parts = value.trim().split(/\s+/g);
+  const first = parts[0]?.[0] ?? "U";
+  const second = parts[1]?.[0] ?? "";
+  return (first + second).toUpperCase();
+};
+
 const AppMenu = ({ title = "Menu", subtitle, menu, className }: AppMenuProps) => {
-  const [open, setOpen] = useState(false);
-
-  // estado manual: só guarda o que o usuário mexeu
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
-
   const { pathname } = useLocation();
+  const [collapsed, setCollapsed] = useState(false);
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+  const [hoverGroup, setHoverGroup] = useState<string | null>(null);
+  const [profileName, setProfileName] = useState("Usuario");
+  const [profileRole, setProfileRole] = useState("Conta");
+  const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
 
-  const close = () => setOpen(false);
-  const toggle = () => setOpen((v) => !v);
+  useEffect(() => {
+    let isMounted = true;
+    const load = async () => {
+      const profile = await getUserProfile();
+      if (!isMounted) return;
+      const name = profile.nome?.trim() || "Usuario";
+      setProfileName(name);
+      setProfileRole(profile.email ? "Conta" : "Perfil");
+      setProfilePhoto(profile.fotoUrl ?? null);
+    };
+    load();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
-  // abre automaticamente grupos que têm rota ativa (DERIVADO, sem setState em effect)
   const autoOpenGroups = useMemo((): Record<string, boolean> => {
     const next: Record<string, boolean> = {};
     const walk = (items: AppMenuItem[]) => {
@@ -60,101 +78,105 @@ const AppMenu = ({ title = "Menu", subtitle, menu, className }: AppMenuProps) =>
     });
   };
 
-  // ESC fecha o drawer
-  useEffect(() => {
-    if (!open) return;
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") close();
-    };
-    document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
-  }, [open]);
-
-  // trava scroll do body quando aberto
-  useEffect(() => {
-    if (!open) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = prev;
-    };
-  }, [open]);
-
-  const renderItem = (item: AppMenuItem, level = 0) => {
-    const paddingLeft = level === 0 ? "pl-3" : level === 1 ? "pl-8" : "pl-12";
+  const renderItem = (item: AppMenuItem, level = 0, forceExpanded = false) => {
+    const isGroup = !!item.children?.length;
+    const isOpen = openGroups[item.id] ?? autoOpenGroups[item.id] ?? false;
+    const hideLabel = collapsed && !forceExpanded;
+    const basePadding = hideLabel ? "px-3" : level === 0 ? "px-4" : "pl-12 pr-4";
 
     if (item.disabled) {
       return (
         <div
           key={item.id}
           className={cx(
-            "flex items-center gap-3 rounded-lg py-2 text-sm text-gray-400",
-            paddingLeft,
-            "pr-3"
+            "flex items-center gap-3 rounded-xl py-2 text-sm text-gray-400",
+            "dark:text-gray-500",
+            basePadding
           )}
         >
           {item.icon ? <span className="shrink-0">{item.icon}</span> : null}
-          <span>{item.label}</span>
+          {!hideLabel && <span>{item.label}</span>}
         </div>
       );
     }
 
-    // Grupo (submenu)
-    if (item.children?.length) {
-      const isOpen = openGroups[item.id] ?? autoOpenGroups[item.id] ?? false;
-
+    if (isGroup) {
       return (
-        <div key={item.id} className="select-none">
+        <div
+          key={item.id}
+          className="relative"
+          onMouseEnter={() => collapsed && setHoverGroup(item.id)}
+          onMouseLeave={() => collapsed && setHoverGroup(null)}
+        >
           <button
             type="button"
-            onClick={() => toggleGroup(item.id)}
+            onClick={() => (!collapsed ? toggleGroup(item.id) : undefined)}
             className={cx(
-              "flex w-full items-center gap-3 rounded-lg py-2 text-sm transition",
-              "text-gray-800 hover:bg-gray-100 active:bg-gray-200",
-              paddingLeft,
-              "pr-3"
+              "flex w-full items-center gap-3 rounded-xl py-2 text-sm",
+              "text-gray-700 hover:bg-gray-100",
+              "dark:text-gray-200 dark:hover:bg-slate-800",
+              basePadding
             )}
-            aria-expanded={isOpen}
+            aria-expanded={collapsed ? false : isOpen}
+            title={hideLabel ? item.label : undefined}
           >
             {item.icon ? <span className="shrink-0">{item.icon}</span> : null}
-            <span className="flex-1 text-left">{item.label}</span>
-
-            {/* caret */}
-            <svg
-              className={cx(
-                "h-4 w-4 text-gray-500 transition-transform",
-                isOpen && "rotate-180"
-              )}
-              viewBox="0 0 20 20"
-              fill="currentColor"
-              aria-hidden="true"
-            >
-              <path
-                fillRule="evenodd"
-                d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 10.94l3.71-3.71a.75.75 0 1 1 1.06 1.06l-4.24 4.24a.75.75 0 0 1-1.06 0L5.21 8.29a.75.75 0 0 1 .02-1.08Z"
-                clipRule="evenodd"
-              />
-            </svg>
+            {!hideLabel && <span className="flex-1 text-left">{item.label}</span>}
+            {!hideLabel ? (
+              <svg
+                className={cx(
+                  "h-4 w-4 text-gray-400 transition",
+                  "dark:text-gray-500",
+                  isOpen && "rotate-180"
+                )}
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 10.94l3.71-3.71a.75.75 0 1 1 1.06 1.06l-4.24 4.24a.75.75 0 0 1-1.06 0L5.21 8.29a.75.75 0 0 1 .02-1.08Z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            ) : null}
           </button>
 
-          {isOpen ? (
+          {collapsed && hoverGroup === item.id ? (
+            <div className="absolute left-full top-0 z-40 ml-3 w-48 rounded-xl border border-gray-200 bg-white p-2 shadow-lg dark:border-slate-700 dark:bg-slate-900">
+              <div className="px-2 pb-2 text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500">
+                {item.label}
+              </div>
+              {item.children?.map((child) => renderItem(child, level + 1, true))}
+            </div>
+          ) : null}
+
+          {!collapsed && isOpen ? (
             <div className="mt-1 space-y-1">
-              {item.children.map((child) => renderItem(child, level + 1))}
+              {item.children?.map((child) => renderItem(child, level + 1))}
             </div>
           ) : null}
         </div>
       );
     }
 
-    // Item normal
     if (!item.to) {
       return (
-        <div
+        <button
           key={item.id}
-          className={cx("rounded-lg py-2 text-sm text-gray-500", paddingLeft, "pr-3")}
+          type="button"
+          onClick={item.onClick}
+          className={cx(
+            "flex w-full items-center gap-3 rounded-xl py-2 text-sm",
+            "text-gray-700 hover:bg-gray-100",
+            "dark:text-gray-200 dark:hover:bg-slate-800",
+            basePadding
+          )}
+          title={collapsed ? item.label : undefined}
         >
-          {item.label}
-        </div>
+          {item.icon ? <span className="shrink-0">{item.icon}</span> : null}
+          {!hideLabel && <span>{item.label}</span>}
+        </button>
       );
     }
 
@@ -163,123 +185,98 @@ const AppMenu = ({ title = "Menu", subtitle, menu, className }: AppMenuProps) =>
         key={item.id}
         to={item.to}
         end={item.end}
-        onClick={() => {
-          item.onClick?.();
-          close(); // fecha ao navegar
-        }}
         className={({ isActive }) =>
           cx(
-            "flex items-center gap-3 rounded-lg py-2 text-sm transition",
-            paddingLeft,
-            "pr-3",
+            "flex items-center gap-3 rounded-xl py-2 text-sm",
+            basePadding,
             isActive
-              ? "bg-blue-500 text-white"
-              : "text-gray-800 hover:bg-gray-100 active:bg-gray-200"
+              ? "bg-gray-900 text-white dark:bg-slate-800"
+              : "text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-slate-800"
           )
         }
+        title={hideLabel ? item.label : undefined}
       >
         {item.icon ? <span className="shrink-0">{item.icon}</span> : null}
-        <span>{item.label}</span>
+        {!hideLabel && <span>{item.label}</span>}
       </NavLink>
     );
   };
 
   return (
-    <>
-      {/* Topbar */}
-      <header className={cx("sticky top-0 z-40 flex h-14 items-center gap-3 bg-white px-4", className)}>
+    <aside
+      className={cx(
+        "sticky top-0 flex h-screen flex-col border-r border-gray-200 bg-white",
+        "dark:border-slate-800 dark:bg-slate-950",
+        collapsed ? "w-20" : "w-72",
+        className
+      )}
+    >
+      <div className="flex items-center justify-between border-b border-gray-200 px-4 py-4 dark:border-slate-800">
+        <div className="flex items-center gap-3">
+          <div className="h-11 w-11 overflow-hidden rounded-2xl bg-gray-100 text-gray-700 dark:bg-slate-800 dark:text-gray-200">
+            {profilePhoto ? (
+              <img
+                src={profilePhoto}
+                alt="Foto do usuario"
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-sm font-semibold">
+                {getInitials(profileName)}
+              </div>
+            )}
+          </div>
+          {!collapsed ? (
+            <div>
+              <div className="text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500">
+                {profileRole}
+              </div>
+              <div className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+                {profileName}
+              </div>
+            </div>
+          ) : null}
+        </div>
         <button
           type="button"
-          onClick={toggle}
-          aria-label={open ? "Fechar menu" : "Abrir menu"}
-          aria-expanded={open}
-          className="inline-flex 
-          h-10 
-          w-10 
-          items-center 
-          justify-center 
-          rounded-lg 
-          
-          hover:bg-gray-50 
-          active:scale-[0.98]"
+          aria-label={collapsed ? "Expandir menu" : "Recolher menu"}
+          onClick={() => setCollapsed((prev) => !prev)}
+          className={cx(
+            "inline-flex h-8 w-8 items-center justify-center rounded-full",
+            "border border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-700",
+            "dark:border-slate-700 dark:text-gray-300 dark:hover:border-slate-500"
+          )}
         >
-          {/* Hambúrguer / X */}
-          <div className="relative h-4 w-5">
-            <span
-              className={cx(
-                "absolute left-0 top-0 h-0.5 w-5 rounded bg-gray-800 transition",
-                open && "translate-y-[7px] rotate-45"
-              )}
+          <svg
+            viewBox="0 0 20 20"
+            fill="currentColor"
+            aria-hidden="true"
+            className={cx("h-4 w-4 transition", collapsed && "rotate-180")}
+          >
+            <path
+              fillRule="evenodd"
+              d="M12.78 4.22a.75.75 0 0 1 0 1.06L8.06 10l4.72 4.72a.75.75 0 1 1-1.06 1.06L6.47 10.53a.75.75 0 0 1 0-1.06l5.25-5.25a.75.75 0 0 1 1.06 0Z"
+              clipRule="evenodd"
             />
-            <span
-              className={cx(
-                "absolute left-0 top-[7px] h-0.5 w-5 rounded bg-gray-800 transition",
-                open ? "opacity-0" : "opacity-100"
-              )}
-            />
-            <span
-              className={cx(
-                "absolute left-0 top-[14px] h-0.5 w-5 rounded bg-gray-800 transition",
-                open && "translate-y-[-7px] -rotate-45"
-              )}
-            />
-          </div>
+          </svg>
         </button>
-      </header>
+      </div>
 
-      {/* Overlay */}
-      <div
-        className={cx(
-          "fixed inset-0 z-40 bg-black/40 transition-opacity",
-          open ? "opacity-100" : "pointer-events-none opacity-0"
-        )}
-        onClick={close}
-      />
+      <div className="px-4 pt-4 text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500">
+        {title}
+      </div>
+      {subtitle && !collapsed ? (
+        <div className="px-4 pt-1 text-xs text-gray-500 dark:text-gray-400">{subtitle}</div>
+      ) : null}
 
-      {/* Drawer */}
-      <aside
-        className={cx(
-          "fixed left-0 top-0 z-50 h-dvh w-80 max-w-[85vw] bg-white shadow-xl",
-          "transition-transform duration-300 ease-out",
-          open ? "translate-x-0" : "-translate-x-full"
-        )}
-        role="dialog"
-        aria-modal="true"
-      >
-        {/* Header do drawer */}
-        <div className="flex h-14 items-center justify-between border-b px-4">
-          <div className="flex flex-col">
-            <span className="text-sm font-semibold text-gray-900">{title}</span>
-            {subtitle ? <span className="text-xs text-gray-500">{subtitle}</span> : null}
-          </div>
+      <nav className="mt-4 flex-1 space-y-1 overflow-auto px-2 pb-4">
+        {menu.map((item) => renderItem(item, 0))}
+      </nav>
 
-          <button
-            type="button"
-            onClick={close}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-lg    hover:bg-gray-50"
-            aria-label="Fechar"
-          >
-            ✕
-          </button>
-        </div>
-
-        {/* Menu */}
-        <nav className="p-2 space-y-1">
-          {menu.map((item) => renderItem(item, 0))}
-        </nav>
-
-        {/* Rodapé */}
-        <div className="absolute bottom-0 left-0 right-0 border-t p-3">
-          <button
-            type="button"
-            className="w-full rounded-lg border px-3 py-2 text-sm hover:bg-gray-50"
-            onClick={close}
-          >
-            Fechar
-          </button>
-        </div>
-      </aside>
-    </>
+      <div className="border-t border-gray-200 p-3 text-xs text-gray-400 dark:border-slate-800 dark:text-gray-500">
+        {!collapsed ? "SETTINGS" : ""}
+      </div>
+    </aside>
   );
 };
 
