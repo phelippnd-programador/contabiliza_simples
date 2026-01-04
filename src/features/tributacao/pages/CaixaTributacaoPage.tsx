@@ -17,6 +17,7 @@ import {
 import { formatBRL } from "../../../shared/utils/formater";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
+const SIM_STORAGE_KEY = "sim_caixa_tributacao";
 
 const statusOptions = [
   { value: "ABERTO", label: "Aberto" },
@@ -24,10 +25,17 @@ const statusOptions = [
   { value: "CANCELADO", label: "Cancelado" },
 ];
 
+const paginate = <T,>(items: T[], page: number, pageSize: number) => {
+  const start = (page - 1) * pageSize;
+  return { data: items.slice(start, start + pageSize), total: items.length };
+};
+
 const CaixaTributacaoPage = () => {
   const [itens, setItens] = useState<CaixaTributacaoResumo[]>([]);
+  const [simuladas, setSimuladas] = useState<CaixaTributacaoResumo[]>([]);
   const [error, setError] = useState("");
   const [formError, setFormError] = useState("");
+  const [simError, setSimError] = useState("");
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
@@ -36,11 +44,22 @@ const CaixaTributacaoPage = () => {
     valorCents: 0,
     status: "ABERTO",
   });
+  const [simData, setSimData] = useState({
+    competencia: "",
+    conta: "Caixa principal",
+    valorCents: 0,
+  });
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const pageSize = 10;
 
   const load = async () => {
+    if (!API_BASE) {
+      const paged = paginate(simuladas, page, pageSize);
+      setItens(paged.data);
+      setTotal(paged.total);
+      return;
+    }
     try {
       setError("");
       const response = await listCaixaTributacao({ page, pageSize });
@@ -54,7 +73,24 @@ const CaixaTributacaoPage = () => {
 
   useEffect(() => {
     load();
-  }, [page]);
+  }, [page, simuladas]);
+
+  useEffect(() => {
+    if (API_BASE) return;
+    const raw = window.localStorage.getItem(SIM_STORAGE_KEY);
+    if (!raw) return;
+    try {
+      const parsed = JSON.parse(raw) as CaixaTributacaoResumo[];
+      setSimuladas(parsed);
+    } catch {
+      window.localStorage.removeItem(SIM_STORAGE_KEY);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (API_BASE) return;
+    window.localStorage.setItem(SIM_STORAGE_KEY, JSON.stringify(simuladas));
+  }, [simuladas]);
 
   const columns = useMemo(
     () => [
@@ -111,7 +147,7 @@ const CaixaTributacaoPage = () => {
               className="w-auto px-4"
               onClick={async () => {
                 if (!API_BASE) {
-                  setError("API nao configurada.");
+                  setSimuladas((prev) => prev.filter((item) => item.id !== row.id));
                   return;
                 }
                 const confirmed = window.confirm("Excluir este registro?");
@@ -151,7 +187,19 @@ const CaixaTributacaoPage = () => {
       return;
     }
     if (!API_BASE) {
-      setFormError("API nao configurada.");
+      const id = editingId ?? `sim-${Date.now()}`;
+      const next: CaixaTributacaoResumo = {
+        id,
+        competencia: formData.competencia,
+        conta: formData.conta,
+        valor: formData.valorCents,
+        status: formData.status,
+      };
+      setSimuladas((prev) =>
+        editingId ? prev.map((item) => (item.id === id ? next : item)) : [next, ...prev]
+      );
+      resetForm();
+      setFormOpen(false);
       return;
     }
     try {
@@ -174,6 +222,22 @@ const CaixaTributacaoPage = () => {
     }
   };
 
+  const handleSimular = () => {
+    setSimError("");
+    if (!simData.competencia || !simData.conta || simData.valorCents <= 0) {
+      setSimError("Informe competencia, conta e valor.");
+      return;
+    }
+    const next: CaixaTributacaoResumo = {
+      id: `sim-${Date.now()}`,
+      competencia: simData.competencia,
+      conta: simData.conta,
+      valor: simData.valorCents,
+      status: "FECHADO",
+    };
+    setSimuladas((prev) => [next, ...prev]);
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
@@ -193,6 +257,44 @@ const CaixaTributacaoPage = () => {
           {formOpen ? "Fechar" : "Novo registro"}
         </AppButton>
       </div>
+
+      <Card>
+        <AppSubTitle text="Simulador" />
+        <div className="mt-4 grid gap-4 md:grid-cols-3">
+          <AppDateInput
+            required
+            title="Competencia"
+            type="month"
+            value={simData.competencia}
+            onChange={(e) =>
+              setSimData((prev) => ({ ...prev, competencia: e.target.value }))
+            }
+          />
+          <AppTextInput
+            title="Conta"
+            value={simData.conta}
+            onChange={(e) =>
+              setSimData((prev) => ({ ...prev, conta: e.target.value }))
+            }
+          />
+          <AppTextInput
+            required
+            title="Valor"
+            value={simData.valorCents ? String(simData.valorCents) : ""}
+            sanitizeRegex={/[0-9]/g}
+            formatter={formatBRL}
+            onValueChange={(raw) =>
+              setSimData((prev) => ({ ...prev, valorCents: Number(raw || "0") }))
+            }
+          />
+        </div>
+        {simError ? <p className="mt-2 text-sm text-red-600">{simError}</p> : null}
+        <div className="mt-3">
+          <AppButton type="button" className="w-auto px-6" onClick={handleSimular}>
+            Simular fechamento
+          </AppButton>
+        </div>
+      </Card>
 
       {formOpen ? (
         <Card>
@@ -260,8 +362,7 @@ const CaixaTributacaoPage = () => {
 
       <Card tone="amber">
         <p className="text-sm text-gray-700 dark:text-gray-200">
-          API preparada para receber movimentos tributarios quando o backend
-          estiver disponivel.
+          Simulador ativo: gere fechamento de caixa tributario sem backend.
         </p>
       </Card>
 
@@ -286,4 +387,3 @@ const CaixaTributacaoPage = () => {
 };
 
 export default CaixaTributacaoPage;
-
