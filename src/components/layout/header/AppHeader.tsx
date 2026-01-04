@@ -174,7 +174,7 @@ const AppHeader = () => {
       label: "Folha",
       icon: <IconList />,
       children: [
-        { id: "folha_execucao", label: "Execucao", to: "/folha", icon: <IconList />,  end: true },
+        { id: "folha_execucao", label: "Folha de pagamento", to: "/folha", icon: <IconList />,  end: true },
         { id: "folha_simulador", label: "Simulador", to: "/folha/simulador", icon: <IconList /> },
         { id: "folha_colaboradores", label: "Colaboradores", to: "/folha/colaboradores", icon: <IconList /> },
       ],

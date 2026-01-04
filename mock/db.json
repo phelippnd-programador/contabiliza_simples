@@ -25,43 +25,24 @@
       "status": "ATIVO"
     },
     {
-      "nome": "Phelipp Nascimento Damasceno",
+      "id": "cli_2",
+      "nome": "Cliente Alpha",
       "documento": "11111111111",
       "tipoPessoa": "PF",
-      "email": "phelippnd@gmail.com",
+      "email": "alpha@demo.com",
+      "telefone": "21999990000",
       "indicadorIE": "NAO_CONTRIBUINTE",
       "endereco": {
-        "cep": "23030310",
-        "logradouro": "Estrada do Marmeleiro",
-        "numero": "576",
-        "bairro": "Guaratiba",
+        "cep": "20040002",
+        "logradouro": "Rua da Quitanda",
+        "numero": "50",
+        "bairro": "Centro",
         "cidade": "Rio de Janeiro",
         "uf": "RJ",
         "codigoMunicipioIbge": "3304557",
         "pais": "Brasil"
       },
-      "status": "ATIVO",
-      "id": "fRXgESZ"
-    },
-    {
-      "nome": "Phelipp Nascimento Damasceno",
-      "documento": "11111111111",
-      "tipoPessoa": "PF",
-      "email": "phelippnd@gmail.com",
-      "telefone": "21987599613",
-      "indicadorIE": "NAO_CONTRIBUINTE",
-      "endereco": {
-        "cep": "23030310",
-        "logradouro": "Estrada do Marmeleiro",
-        "numero": "576",
-        "bairro": "Guaratiba",
-        "cidade": "Rio de Janeiro",
-        "uf": "RJ",
-        "codigoMunicipioIbge": "3304557",
-        "pais": "Brasil"
-      },
-      "status": "ATIVO",
-      "id": "4CBxPs2"
+      "status": "ATIVO"
     }
   ],
   "fornecedores": [
@@ -81,6 +62,26 @@
         "cidade": "Rio de Janeiro",
         "uf": "RJ",
         "codigoMunicipioIbge": "3304557",
+        "pais": "Brasil"
+      },
+      "status": "ATIVO"
+    },
+    {
+      "id": "for_2",
+      "nome": "Fornecedor Beta",
+      "documento": "22445566000188",
+      "tipoPessoa": "PJ",
+      "email": "beta@demo.com",
+      "telefone": "1133334444",
+      "indicadorIE": "CONTRIBUINTE",
+      "endereco": {
+        "cep": "01310930",
+        "logradouro": "Avenida Paulista",
+        "numero": "1000",
+        "bairro": "Bela Vista",
+        "cidade": "Sao Paulo",
+        "uf": "SP",
+        "codigoMunicipioIbge": "3550308",
         "pais": "Brasil"
       },
       "status": "ATIVO"
@@ -108,6 +109,17 @@
       "valorUnitario": 3500,
       "ncm": "01012100",
       "cfop": "5101"
+    },
+    {
+      "id": "prd_3",
+      "descricao": "Produto premium",
+      "tipo": "PRODUTO",
+      "status": "ATIVO",
+      "codigo": "PROD002",
+      "unidade": "UN",
+      "valorUnitario": 9800,
+      "ncm": "22030000",
+      "cfop": "5102"
     }
   ],
   "contas": [
@@ -120,6 +132,16 @@
       "tipo": "CORRENTE",
       "categoria": "ENTRADA",
       "saldoInicial": 100000
+    },
+    {
+      "id": "cta_2",
+      "nome": "Conta secundario",
+      "banco": "Banco Demo",
+      "agencia": "0001",
+      "conta": "98765-4",
+      "tipo": "CORRENTE",
+      "categoria": "SAIDA",
+      "saldoInicial": 50000
     }
   ],
   "categorias": [
@@ -127,6 +149,96 @@
       "id": "cat_1",
       "nome": "Receita de servicos",
       "tipo": "ENTRADA"
+    },
+    {
+      "id": "cat_2",
+      "nome": "Compra de mercadorias",
+      "tipo": "SAIDA"
+    },
+    {
+      "id": "cat_3",
+      "nome": "Folha de pagamento",
+      "tipo": "SAIDA"
+    }
+  ],
+  "contasPagar": [
+    {
+      "id": "cp_1",
+      "fornecedorId": "for_1",
+      "fornecedorNome": "Fornecedor Demo",
+      "vencimento": "2025-02-10",
+      "valor": 350000,
+      "status": "ABERTA",
+      "origem": "COMPRA",
+      "origemId": "cmp_1",
+      "descricao": "Compra cmp_1",
+      "numeroDocumento": "CMP-0001",
+      "competencia": "2025-02",
+      "contaId": "cta_2",
+      "categoriaId": "cat_2"
+    },
+    {
+      "id": "cp_2",
+      "fornecedorId": "for_2",
+      "fornecedorNome": "Fornecedor Beta",
+      "vencimento": "2025-01-20",
+      "valor": 9800,
+      "status": "PAGA",
+      "origem": "MANUAL",
+      "descricao": "Servico recorrente",
+      "competencia": "2025-01",
+      "contaId": "cta_2",
+      "categoriaId": "cat_2",
+      "dataPagamento": "2025-01-18",
+      "valorPago": 9800,
+      "formaPagamento": "PIX"
+    }
+  ],
+  "contasReceber": [
+    {
+      "id": "cr_1",
+      "clienteId": "cli_1",
+      "clienteNome": "Cliente Demo",
+      "vencimento": "2025-02-05",
+      "valor": 67200,
+      "status": "ABERTA",
+      "origem": "VENDA",
+      "origemId": "ven_1",
+      "descricao": "Venda ven_1",
+      "numeroDocumento": "VEN-0001",
+      "competencia": "2025-02",
+      "contaId": "cta_1",
+      "categoriaId": "cat_1"
+    }
+  ],
+  "movimentos": [
+    {
+      "id": "mov_1",
+      "data": "2025-01-15",
+      "contaId": "cta_1",
+      "tipo": "ENTRADA",
+      "valor": 67200,
+      "descricao": "Recebimento venda ven_1",
+      "competencia": "2025-01",
+      "categoriaId": "cat_1",
+      "referencia": {
+        "tipo": "RECEITA",
+        "id": "ven_1"
+      }
+    },
+    {
+      "id": "mov_2",
+      "data": "2025-01-18",
+      "contaId": "cta_2",
+      "tipo": "SAIDA",
+      "valor": 350000,
+      "descricao": "Pagamento compra cmp_1",
+      "competencia": "2025-01",
+      "categoriaId": "cat_2",
+      "referencia": {
+        "tipo": "DESPESA",
+        "id": "cmp_1"
+      }
     }
   ],
   "empresas": [
@@ -135,30 +247,305 @@
       "razaoSocial": "Empresa Demo LTDA",
       "nomeFantasia": "Empresa Demo",
       "cnpj": "11222333000199"
+    },
+    {
+      "id": "emp_2",
+      "razaoSocial": "Empresa Alpha LTDA",
+      "nomeFantasia": "Empresa Alpha",
+      "cnpj": "55667788000122"
     }
   ],
-  "notas": [],
-  "estoque": [],
-  "colaboradores": [],
+  "integracoesBancarias": [
+    {
+      "id": "int_1",
+      "banco": "BANCO_DO_BRASIL",
+      "status": "ATIVA",
+      "ultimaAtualizacao": "2025-01-12"
+    }
+  ],
+  "vendas": [
+    {
+      "id": "ven_1",
+      "clienteId": "cli_1",
+      "clienteNome": "Cliente Demo",
+      "data": "2025-01-10",
+      "total": 67200,
+      "status": "FATURADA",
+      "itens": [
+        {
+          "produtoId": "prd_2",
+          "descricao": "Produto demo",
+          "quantidade": 8,
+          "valorUnitario": 3500,
+          "total": 28000
+        },
+        {
+          "produtoId": "prd_3",
+          "descricao": "Produto premium",
+          "quantidade": 4,
+          "valorUnitario": 9800,
+          "total": 39200
+        }
+      ],
+      "subtotal": 67200,
+      "desconto": 0,
+      "frete": 0,
+      "impostos": 0,
+      "observacoes": "Venda teste",
+      "financeiro": {
+        "gerarConta": true,
+        "contaId": "cta_1",
+        "categoriaId": "cat_1",
+        "vencimento": "2025-02-05",
+        "formaPagamento": "PIX"
+      },
+      "estoque": {
+        "gerarMovimento": true
+      }
+    },
+    {
+      "clienteId": "cli_1",
+      "clienteNome": "Cliente Demo",
+      "data": "2026-01-01",
+      "status": "APROVADA",
+      "itens": [
+        {
+          "produtoId": "prd_2",
+          "descricao": "Produto demo",
+          "quantidade": 10,
+          "valorUnitario": 3500,
+          "total": 35000
+        }
+      ],
+      "subtotal": 35000,
+      "desconto": 0,
+      "frete": 0,
+      "impostos": 0,
+      "total": 35000,
+      "financeiro": {
+        "gerarConta": false
+      },
+      "estoque": {
+        "gerarMovimento": true
+      },
+      "id": "mtNioag"
+    }
+  ],
+  "compras": [
+    {
+      "id": "cmp_1",
+      "fornecedorId": "for_1",
+      "fornecedorNome": "Fornecedor Demo",
+      "data": "2025-01-12",
+      "total": 350000,
+      "status": "RECEBIDA",
+      "itens": [
+        {
+          "produtoId": "prd_2",
+          "descricao": "Produto demo",
+          "quantidade": 100,
+          "valorUnitario": 3500,
+          "total": 350000
+        }
+      ],
+      "subtotal": 350000,
+      "desconto": 0,
+      "frete": 0,
+      "impostos": 0,
+      "observacoes": "Compra teste",
+      "financeiro": {
+        "gerarConta": true,
+        "contaId": "cta_2",
+        "categoriaId": "cat_2",
+        "vencimento": "2025-02-10",
+        "formaPagamento": "BOLETO"
+      },
+      "estoque": {
+        "gerarMovimento": true
+      }
+    }
+  ],
+  "notas": [
+    {
+      "id": "nota_1",
+      "status": "EMITIDA",
+      "tipo": "SERVICO",
+      "competencia": "2025-01",
+      "dataEmissao": "2025-01-20",
+      "numero": "123",
+      "tomador": {
+        "nomeRazao": "Cliente Demo"
+      },
+      "total": 15000
+    }
+  ],
+  "estoque": [
+    {
+      "id": "prd_2",
+      "produtoId": "prd_2",
+      "descricao": "Produto demo",
+      "quantidade": 120,
+      "custoMedio": 3500,
+      "estoqueMinimo": 10
+    },
+    {
+      "id": "prd_3",
+      "produtoId": "prd_3",
+      "descricao": "Produto premium",
+      "quantidade": 40,
+      "custoMedio": 9800,
+      "estoqueMinimo": 5
+    }
+  ],
+  "estoqueMovimentos": [
+    {
+      "id": "estmov_1",
+      "itemId": "prd_2",
+      "tipo": "ENTRADA",
+      "quantidade": 100,
+      "custoUnitario": 3500,
+      "data": "2025-01-12",
+      "lote": "L-001",
+      "serie": "S-0001",
+      "origem": "COMPRA",
+      "origemId": "cmp_1",
+      "observacoes": "Entrada compra"
+    },
+    {
+      "id": "estmov_2",
+      "itemId": "prd_2",
+      "tipo": "SAIDA",
+      "quantidade": 2,
+      "data": "2025-01-20",
+      "origem": "VENDA",
+      "origemId": "ven_1",
+      "observacoes": "Saida venda"
+    },
+    {
+      "tipo": "SAIDA",
+      "data": "2026-01-01",
+      "quantidade": 10,
+      "origem": "VENDA",
+      "origemId": "mtNioag",
+      "observacoes": "Venda mtNioag",
+      "id": "seK3Zxy"
+    }
+  ],
+  "folha": [
+    {
+      "referencia": "2026-03",
+      "colaboradores": 1,
+      "colaboradorId": "col_1",
+      "salarioBase": 450000,
+      "horasExtras": 0,
+      "outrosProventos": 0,
+      "descontos": 0,
+      "dependentes": 0,
+      "inssPercentBps": 800,
+      "irrfPercentBps": 750,
+      "fgtsPercentBps": 800,
+      "verbasRescisorias": 0,
+      "status": "CANCELADA",
+      "totalProventos": 450000,
+      "totalDescontos": 67050,
+      "totalLiquido": 382950,
+      "inss": 36000,
+      "fgts": 36000,
+      "irrf": 31050,
+      "id": "0ddM-tO"
+    }
+  ],
+  "colaboradores": [
+    {
+      "id": "col_1",
+      "nome": "Joao Silva",
+      "documento": "12345678901",
+      "tipoColaborador": "CLT",
+      "email": "joao@demo.com",
+      "telefone": "11955550000",
+      "dataAdmissao": "2024-06-01",
+      "cargo": "Analista",
+      "pis": "12345678900",
+      "categoriaInss": "Empregado",
+      "salarioBase": 450000,
+      "percentualInss": 800,
+      "endereco": {
+        "cep": "01310930",
+        "logradouro": "Avenida Paulista",
+        "numero": "1000",
+        "bairro": "Bela Vista",
+        "cidade": "Sao Paulo",
+        "uf": "SP",
+        "codigoMunicipioIbge": "3550308",
+        "pais": "Brasil"
+      },
+      "status": "ATIVO"
+    }
+  ],
+  "receitasTributacao": [
+    {
+      "id": "rec_1",
+      "competencia": "2025-01",
+      "valor": 67200,
+      "origem": "Receitas operacionais",
+      "status": "APURADA"
+    }
+  ],
+  "caixaTributacao": [
+    {
+      "id": "cx_1",
+      "competencia": "2025-01",
+      "conta": "cta_1",
+      "valor": 67200,
+      "status": "FECHADO"
+    }
+  ],
+  "conciliacaoTributacao": [
+    {
+      "id": "conc_1",
+      "data": "2025-01-31",
+      "conta": "cta_1",
+      "valor": 67200,
+      "status": "CONCILIADO"
+    }
+  ],
+  "apuracoes": [
+    {
+      "id": "apu_1",
+      "competencia": "2025-01",
+      "tributo": "DAS",
+      "valor": 25000,
+      "status": "EMITIDA",
+      "vencimento": "2025-02-20"
+    }
+  ],
+  "obrigacoes": [
+    {
+      "id": "obr_1",
+      "obrigacao": "DCTFWeb",
+      "vencimento": "2025-02-15",
+      "status": "PENDENTE"
+    }
+  ],
   "vendasAnalytics": {
     "totais": {
       "quantidade": 12,
-      "total": 420000
+      "total": 67200
     },
     "maisVendidos": [
       {
         "produtoId": "prd_2",
         "descricao": "Produto demo",
         "quantidade": 8,
-        "total": 280000
+        "total": 28000
       }
     ],
     "menosVendidos": [
       {
         "produtoId": "prd_1",
         "descricao": "Servico de consultoria",
-        "quantidade": 4,
-        "total": 140000
+        "quantidade": 1,
+        "total": 15000
       }
     ],
     "ultimosSaidos": [
@@ -167,8 +554,15 @@
         "data": "2025-01-10",
         "produto": "Produto demo",
         "quantidade": 2,
-        "total": 70000
+        "total": 7000
       }
     ]
+  },
+  "usuarioPerfil": {
+    "id": "user_1",
+    "nome": "Usuario Demo",
+    "email": "usuario@demo.com",
+    "telefone": "11999990000",
+    "fotoUrl": ""
   }
 }

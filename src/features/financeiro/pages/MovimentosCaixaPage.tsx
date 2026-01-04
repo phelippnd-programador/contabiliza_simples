@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import AppTitle, { AppSubTitle } from "../../../components/ui/text/AppTitle";
 import Card from "../../../components/ui/card/Card";
 import AppButton from "../../../components/ui/button/AppButton";
+import AppIconButton from "../../../components/ui/button/AppIconButton";
 import AppTextInput from "../../../components/ui/input/AppTextInput";
 import AppDateInput from "../../../components/ui/input/AppDateInput";
 import { CnaePicker } from "../../../components/ui/picked/CnaePicker";
@@ -23,17 +24,8 @@ import {
   type MovimentoCaixa,
 } from "../types";
 import { formatBRL } from "../../../shared/utils/formater";
+import { EditIcon, TrashIcon } from "../../../components/ui/icon/AppIcons";
 
-const EditIcon = () => (
-  <svg
-    className="h-4 w-4"
-    viewBox="0 0 20 20"
-    fill="currentColor"
-    aria-hidden="true"
-  >
-    <path d="M13.586 2.586a2 2 0 0 1 2.828 2.828l-9.5 9.5a1 1 0 0 1-.39.242l-4 1.333a.5.5 0 0 1-.632-.632l1.333-4a1 1 0 0 1 .242-.39l9.5-9.5Z" />
-  </svg>
-);
 
 const tipoMovimentoOptions = [
   { value: TipoMovimentoCaixa.ENTRADA, label: "Entrada" },
@@ -338,23 +330,17 @@ const MovimentosCaixaPage = () => {
                 align: "right",
                 render: (movimento) => (
                   <div className="flex justify-end gap-2">
-                    <button
-                      type="button"
-                      className="inline-flex items-center gap-2 rounded-md border border-gray-200 px-3 py-2 text-xs font-medium text-gray-700 hover:border-blue-500"
+                    <AppIconButton
+                      icon={<EditIcon className="h-4 w-4" />}
+                      label="Editar movimento"
                       onClick={() => handleEdit(movimento)}
-                      aria-label="Editar movimento"
-                    >
-                      <EditIcon />
-                      Editar
-                    </button>
-                    <button
-                      type="button"
-                      className="inline-flex items-center gap-2 rounded-md border border-red-200 px-3 py-2 text-xs font-medium text-red-600 hover:border-red-400"
+                    />
+                    <AppIconButton
+                      icon={<TrashIcon className="h-4 w-4" />}
+                      label="Remover movimento"
+                      variant="danger"
                       onClick={() => handleRemove(movimento)}
-                      aria-label="Remover movimento"
-                    >
-                      Remover
-                    </button>
+                    />
                   </div>
                 ),
               },

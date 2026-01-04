@@ -7,6 +7,30 @@ type ApiOptions = RequestInit & {
   auth?: boolean;
 };
 
+export type ApiErrorPayload = {
+  message?: string;
+  error?: string;
+  title?: string;
+  code?: string;
+  errorCode?: string;
+  details?: unknown;
+  errors?: unknown;
+};
+
+export class ApiError extends Error {
+  status: number;
+  code?: string;
+  details?: unknown;
+
+  constructor(message: string, status: number, code?: string, details?: unknown) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+    this.code = code;
+    this.details = details;
+  }
+}
+
 let refreshPromise: Promise<boolean> | null = null;
 
 async function ensureRefresh(): Promise<boolean> {
@@ -23,6 +47,42 @@ async function ensureRefresh(): Promise<boolean> {
 function handleUnauthorized() {
   clearAuthTokens();
   window.location.assign("/login");
+}
+
+export async function toApiError(
+  response: Response,
+  fallbackMessage = "Erro ao comunicar com o servidor."
+): Promise<ApiError> {
+  let message = fallbackMessage;
+  let code: string | undefined;
+  let details: unknown;
+
+  try {
+    const data = (await response.clone().json()) as ApiErrorPayload;
+    if (data) {
+      message = data.message || data.error || data.title || message;
+      code = data.code || data.errorCode;
+      details = data.details ?? data.errors;
+    }
+  } catch {
+    try {
+      const text = await response.text();
+      if (text) message = text;
+    } catch {
+      // ignore
+    }
+  }
+
+  return new ApiError(message, response.status, code, details);
+}
+
+export function getErrorMessage(
+  error: unknown,
+  fallback = "Erro inesperado."
+): string {
+  if (error instanceof ApiError) return error.message || fallback;
+  if (error instanceof Error && error.message) return error.message;
+  return fallback;
 }
 
 export async function apiFetch(

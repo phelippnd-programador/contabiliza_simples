@@ -30,6 +30,7 @@ import type {
   NotaTipo,
 } from "../types";
 import type { ProdutoServicoResumo } from "../../cadastros/services/cadastros.service";
+import { getErrorMessage } from "../../../shared/services/apiClient";
 
 type ItemForm = NotaDraftRequest["itens"][number];
 
@@ -102,6 +103,9 @@ const NotaNovaPage = () => {
   const [draftId, setDraftId] = useState<string | null>(null);
   const [emissao, setEmissao] = useState<NotaEmissaoResponse | null>(null);
   const [submitError, setSubmitError] = useState("");
+  const [isLoadingBase, setIsLoadingBase] = useState(false);
+  const [isDraftLoading, setIsDraftLoading] = useState(false);
+  const [isEmitLoading, setIsEmitLoading] = useState(false);
   const [cnaeSelections, setCnaeSelections] = useState<Record<number, CnaeItem | null>>({});
   const [ncmSelections, setNcmSelections] = useState<Record<number, NcmItem | null>>({});
   const [catalogSelections, setCatalogSelections] = useState<Record<number, string>>({});
@@ -110,6 +114,7 @@ const NotaNovaPage = () => {
   useEffect(() => {
     let isMounted = true;
     const load = async () => {
+      setIsLoadingBase(true);
       const [
         contasResult,
         categoriasResult,
@@ -172,6 +177,7 @@ const NotaNovaPage = () => {
       } else {
         setClientes([]);
       }
+      if (isMounted) setIsLoadingBase(false);
     };
     load();
     return () => {
@@ -317,6 +323,7 @@ const NotaNovaPage = () => {
   const handleCreateDraft = async () => {
     if (!validateForm()) return;
     try {
+      setIsDraftLoading(true);
       setSubmitError("");
       setApiErrors([]);
       setEmissao(null);
@@ -324,19 +331,24 @@ const NotaNovaPage = () => {
       setDraftId(res.draftId);
       setPreview(res.preview);
       setApiErrors(res.faltando ?? []);
-    } catch {
-      setSubmitError("Nao foi possivel criar o rascunho.");
+    } catch (err) {
+      setSubmitError(getErrorMessage(err, "Nao foi possivel criar o rascunho."));
+    } finally {
+      setIsDraftLoading(false);
     }
   };
 
   const handleEmitir = async () => {
     if (!draftId) return;
     try {
+      setIsEmitLoading(true);
       setSubmitError("");
       const res = await emitir(draftId);
       setEmissao(res);
-    } catch {
-      setSubmitError("Nao foi possivel emitir a nota.");
+    } catch (err) {
+      setSubmitError(getErrorMessage(err, "Nao foi possivel emitir a nota."));
+    } finally {
+      setIsEmitLoading(false);
     }
   };
 
@@ -358,6 +370,9 @@ const NotaNovaPage = () => {
 
       <Card>
         <AppSubTitle text="Dados da nota" />
+        {isLoadingBase ? (
+          <p className="mt-2 text-sm text-gray-500">Carregando dados auxiliares...</p>
+        ) : null}
         <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
           <AppSelectInput
             required
@@ -741,7 +756,12 @@ const NotaNovaPage = () => {
         ) : null}
 
         <div className="mt-6 flex flex-wrap gap-3">
-          <AppButton type="button" className="w-auto" onClick={handleCreateDraft}>
+          <AppButton
+            type="button"
+            className="w-auto"
+            onClick={handleCreateDraft}
+            loading={isDraftLoading}
+          >
             Validar / Criar rascunho
           </AppButton>
           <AppButton
@@ -749,6 +769,7 @@ const NotaNovaPage = () => {
             className="w-auto"
             onClick={handleEmitir}
             disabled={!draftId}
+            loading={isEmitLoading}
           >
             Emitir nota
           </AppButton>

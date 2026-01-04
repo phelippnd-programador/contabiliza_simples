@@ -5,25 +5,30 @@ import Card from "../../../components/ui/card/Card";
 import AppButton from "../../../components/ui/button/AppButton";
 import { getNota } from "../services/notas.service";
 import type { NotaEmissaoResponse } from "../types";
+import { getErrorMessage } from "../../../shared/services/apiClient";
 
 const NotaDetalhePage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [nota, setNota] = useState<NotaEmissaoResponse | null>(null);
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
     const load = async () => {
       if (!id) return;
       try {
+        setIsLoading(true);
         setError("");
         const data = await getNota(id);
         if (!isMounted) return;
         setNota(data);
-      } catch {
+      } catch (err) {
         if (!isMounted) return;
-        setError("Nao foi possivel carregar a nota.");
+        setError(getErrorMessage(err, "Nao foi possivel carregar a nota."));
+      } finally {
+        if (isMounted) setIsLoading(false);
       }
     };
     load();
@@ -49,8 +54,31 @@ const NotaDetalhePage = () => {
       </div>
 
       <Card>
-        {error ? <p className="text-sm text-red-600">{error}</p> : null}
-        {!nota && !error ? (
+        {error ? (
+          <div className="flex items-center gap-3 text-sm text-red-600">
+            <span>{error}</span>
+            <AppButton
+              type="button"
+              className="w-auto px-4"
+              onClick={() => {
+                setNota(null);
+                setError("");
+                setIsLoading(true);
+                if (id) {
+                  getNota(id)
+                    .then((data) => setNota(data))
+                    .catch((err) =>
+                      setError(getErrorMessage(err, "Nao foi possivel carregar a nota."))
+                    )
+                    .finally(() => setIsLoading(false));
+                }
+              }}
+            >
+              Tentar novamente
+            </AppButton>
+          </div>
+        ) : null}
+        {isLoading && !nota ? (
           <p className="text-sm text-gray-500">Carregando...</p>
         ) : null}
 

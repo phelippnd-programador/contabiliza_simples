@@ -4,6 +4,7 @@ import Card from "../../../components/ui/card/Card";
 import AppTable from "../../../components/ui/table/AppTable";
 import AppListNotFound from "../../../components/ui/AppListNotFound";
 import AppButton from "../../../components/ui/button/AppButton";
+import AppIconButton from "../../../components/ui/button/AppIconButton";
 import AppTextInput from "../../../components/ui/input/AppTextInput";
 import AppDateInput from "../../../components/ui/input/AppDateInput";
 import AppSelectInput from "../../../components/ui/input/AppSelectInput";
@@ -15,6 +16,7 @@ import {
   type CaixaTributacaoResumo,
 } from "../services/caixa-tributacao.service";
 import { formatBRL } from "../../../shared/utils/formater";
+import { EditIcon, TrashIcon } from "../../../components/ui/icon/AppIcons";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 const SIM_STORAGE_KEY = "sim_caixa_tributacao";
@@ -125,9 +127,9 @@ const CaixaTributacaoPage = () => {
         align: "right" as const,
         render: (row: CaixaTributacaoResumo) => (
           <div className="flex justify-end gap-2">
-            <AppButton
-              type="button"
-              className="w-auto px-4"
+            <AppIconButton
+              icon={<EditIcon className="h-4 w-4" />}
+              label={`Editar caixa ${row.id}`}
               onClick={() => {
                 setEditingId(row.id);
                 setFormData({
@@ -139,12 +141,11 @@ const CaixaTributacaoPage = () => {
                 setFormError("");
                 setFormOpen(true);
               }}
-            >
-              Editar
-            </AppButton>
-            <AppButton
-              type="button"
-              className="w-auto px-4"
+            />
+            <AppIconButton
+              icon={<TrashIcon className="h-4 w-4" />}
+              label={`Excluir caixa ${row.id}`}
+              variant="danger"
               onClick={async () => {
                 if (!API_BASE) {
                   setSimuladas((prev) => prev.filter((item) => item.id !== row.id));
@@ -160,9 +161,7 @@ const CaixaTributacaoPage = () => {
                   setError("Nao foi possivel excluir o registro.");
                 }
               }}
-            >
-              Excluir
-            </AppButton>
+            />
           </div>
         ),
       },

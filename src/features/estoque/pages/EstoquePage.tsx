@@ -11,10 +11,13 @@ import {
   type EstoqueResumo,
 } from "../services/estoque.service";
 import AppButton from "../../../components/ui/button/AppButton";
+import AppIconButton from "../../../components/ui/button/AppIconButton";
 import AppTextInput from "../../../components/ui/input/AppTextInput";
 import AppSelectInput from "../../../components/ui/input/AppSelectInput";
 import { formatBRL } from "../../../shared/utils/formater";
 import { listProdutosServicos, type ProdutoServicoResumo } from "../../cadastros/services/cadastros.service";
+import DashboardStatCard from "../../../components/ui/card/DashboardStatCard";
+import { EditIcon, TrashIcon } from "../../../components/ui/icon/AppIcons";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 
@@ -140,9 +143,9 @@ const EstoquePage = () => {
         align: "right" as const,
         render: (row: EstoqueResumo) => (
           <div className="flex justify-end gap-2">
-            <AppButton
-              type="button"
-              className="w-auto px-4"
+            <AppIconButton
+              icon={<EditIcon className="h-4 w-4" />}
+              label={`Editar estoque ${row.descricao ?? row.id}`}
               onClick={() => {
                 setEditingId(row.id);
                 setFormData({
@@ -154,12 +157,11 @@ const EstoquePage = () => {
                 setFormError("");
                 setFormOpen(true);
               }}
-            >
-              Editar
-            </AppButton>
-            <AppButton
-              type="button"
-              className="w-auto px-4"
+            />
+            <AppIconButton
+              icon={<TrashIcon className="h-4 w-4" />}
+              label={`Excluir estoque ${row.descricao ?? row.id}`}
+              variant="danger"
               onClick={async () => {
                 if (!API_BASE) {
                   setError("API nao configurada.");
@@ -175,15 +177,27 @@ const EstoquePage = () => {
                   setError("Nao foi possivel excluir o item.");
                 }
               }}
-            >
-              Excluir
-            </AppButton>
+            />
           </div>
         ),
       },
     ],
     [catalogoMap]
   );
+
+  const summary = useMemo(() => {
+    const totalItens = itens.length;
+    const totalQuantidade = itens.reduce((acc, item) => acc + item.quantidade, 0);
+    const abaixoMinimo = itens.filter((item) => {
+      const minimo = item.estoqueMinimo ?? 0;
+      return minimo > 0 && item.quantidade <= minimo;
+    }).length;
+    const custoTotal = itens.reduce((acc, item) => {
+      const custo = item.custoMedio ?? 0;
+      return acc + item.quantidade * custo;
+    }, 0);
+    return { totalItens, totalQuantidade, abaixoMinimo, custoTotal };
+  }, [itens]);
 
   const resetForm = () => {
     setEditingId(null);
@@ -323,6 +337,32 @@ const EstoquePage = () => {
           </div>
         </Card>
       ) : null}
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+        <DashboardStatCard
+          title="Itens em estoque"
+          value={String(summary.totalItens)}
+          tone="blue"
+        />
+        <DashboardStatCard
+          title="Quantidade total"
+          value={String(summary.totalQuantidade)}
+          tone="green"
+        />
+        <DashboardStatCard
+          title="Abaixo do minimo"
+          value={String(summary.abaixoMinimo)}
+          tone="amber"
+        />
+        <DashboardStatCard
+          title="Custo total estimado"
+          value={(summary.custoTotal / 100).toLocaleString("pt-BR", {
+            style: "currency",
+            currency: "BRL",
+          })}
+          tone="purple"
+        />
+      </div>
 
       <Card tone="amber">
         <p className="text-sm text-gray-700 dark:text-gray-200">

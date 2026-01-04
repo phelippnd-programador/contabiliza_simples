@@ -4,6 +4,7 @@ import Card from "../../../components/ui/card/Card";
 import AppTable from "../../../components/ui/table/AppTable";
 import AppListNotFound from "../../../components/ui/AppListNotFound";
 import AppButton from "../../../components/ui/button/AppButton";
+import AppIconButton from "../../../components/ui/button/AppIconButton";
 import AppTextInput from "../../../components/ui/input/AppTextInput";
 import AppSelectInput from "../../../components/ui/input/AppSelectInput";
 import { CnaePicker } from "../../../components/ui/picked/CnaePicker";
@@ -18,6 +19,7 @@ import {
   type ProdutoServicoResumo,
 } from "../services/cadastros.service";
 import { formatBRL } from "../../../shared/utils/formater";
+import { EditIcon, TrashIcon } from "../../../components/ui/icon/AppIcons";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 
@@ -111,9 +113,9 @@ const ProdutosServicosPage = () => {
         align: "right" as const,
         render: (row: ProdutoServicoResumo) => (
           <div className="flex justify-end gap-2">
-            <AppButton
-              type="button"
-              className="w-auto px-4"
+            <AppIconButton
+              icon={<EditIcon className="h-4 w-4" />}
+              label={`Editar item ${row.descricao}`}
               onClick={() => {
                 setEditingId(row.id);
                 setFormData({
@@ -137,12 +139,11 @@ const ProdutosServicosPage = () => {
                 setFormError("");
                 setFormOpen(true);
               }}
-            >
-              Editar
-            </AppButton>
-            <AppButton
-              type="button"
-              className="w-auto px-4"
+            />
+            <AppIconButton
+              icon={<TrashIcon className="h-4 w-4" />}
+              label={`Excluir item ${row.descricao}`}
+              variant="danger"
               onClick={async () => {
                 if (!API_BASE) {
                   setError("API nao configurada.");
@@ -158,9 +159,7 @@ const ProdutosServicosPage = () => {
                   setError("Nao foi possivel excluir o item.");
                 }
               }}
-            >
-              Excluir
-            </AppButton>
+            />
           </div>
         ),
       },

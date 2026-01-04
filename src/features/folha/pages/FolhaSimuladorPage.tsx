@@ -4,11 +4,17 @@ import Card from "../../../components/ui/card/Card";
 import AppTable from "../../../components/ui/table/AppTable";
 import AppListNotFound from "../../../components/ui/AppListNotFound";
 import AppButton from "../../../components/ui/button/AppButton";
+import AppIconButton from "../../../components/ui/button/AppIconButton";
 import AppTextInput from "../../../components/ui/input/AppTextInput";
 import AppDateInput from "../../../components/ui/input/AppDateInput";
 import AppSelectInput from "../../../components/ui/input/AppSelectInput";
 import type { FolhaResumo } from "../services/folha.service";
 import { formatBRL, formatPercentBR } from "../../../shared/utils/formater";
+import { TrashIcon } from "../../../components/ui/icon/AppIcons";
+import {
+  listColaboradores,
+  type ColaboradorResumo,
+} from "../services/colaboradores.service";
 
 const SIM_STORAGE_KEY = "sim_folha";
 const DEPENDENTE_DEDUCAO_CENTS = 18959;
@@ -41,8 +47,10 @@ const FolhaSimuladorPage = () => {
   const [simuladas, setSimuladas] = useState<FolhaResumo[]>([]);
   const [itens, setItens] = useState<FolhaResumo[]>([]);
   const [eventos, setEventos] = useState<EsocialEvento[]>([]);
+  const [colaboradores, setColaboradores] = useState<ColaboradorResumo[]>([]);
   const [simError, setSimError] = useState("");
   const [eventError, setEventError] = useState("");
+  const [colaboradoresError, setColaboradoresError] = useState("");
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const pageSize = 10;
@@ -50,6 +58,7 @@ const FolhaSimuladorPage = () => {
   const [simData, setSimData] = useState({
     referencia: "",
     colaboradores: 1,
+    colaboradorId: "",
     salarioBaseCents: 0,
     horasExtrasCents: 0,
     outrosProventosCents: 0,
@@ -82,6 +91,26 @@ const FolhaSimuladorPage = () => {
     setItens(paged.data);
     setTotal(paged.total);
   }, [page, simuladas]);
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadColaboradores = async () => {
+      try {
+        setColaboradoresError("");
+        const response = await listColaboradores({ page: 1, pageSize: 200 });
+        if (!isMounted) return;
+        setColaboradores(response.data);
+      } catch {
+        if (!isMounted) return;
+        setColaboradores([]);
+        setColaboradoresError("Nao foi possivel carregar os colaboradores.");
+      }
+    };
+    loadColaboradores();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const calculo = useMemo(() => {
     const baseProventos =
@@ -122,9 +151,10 @@ const FolhaSimuladorPage = () => {
       },
       {
         key: "colaboradores",
-        header: "Colaboradores",
+        header: "Colaborador",
         align: "right" as const,
-        render: (row: FolhaResumo) => row.colaboradores,
+        render: (row: FolhaResumo) =>
+          row.colaborador?.nome ?? (row.colaboradores ? row.colaboradores : "-"),
       },
       {
         key: "proventos",
@@ -158,15 +188,14 @@ const FolhaSimuladorPage = () => {
         align: "right" as const,
         render: (row: FolhaResumo) => (
           <div className="flex justify-end gap-2">
-            <AppButton
-              type="button"
-              className="w-auto px-4"
+            <AppIconButton
+              icon={<TrashIcon className="h-4 w-4" />}
+              label={`Excluir simulacao ${row.id}`}
+              variant="danger"
               onClick={() =>
                 setSimuladas((prev) => prev.filter((item) => item.id !== row.id))
               }
-            >
-              Excluir
-            </AppButton>
+            />
           </div>
         ),
       },
@@ -202,19 +231,25 @@ const FolhaSimuladorPage = () => {
 
   const handleSimularFolha = () => {
     setSimError("");
-    if (!simData.referencia || simData.colaboradores <= 0) {
-      setSimError("Informe referencia e quantidade de colaboradores.");
+    if (!simData.referencia || !simData.colaboradorId) {
+      setSimError("Informe a referencia e o colaborador.");
       return;
     }
     if (simData.salarioBaseCents <= 0) {
       setSimError("Informe o salario base.");
       return;
     }
+    const colaboradorSelecionado =
+      colaboradores.find((item) => item.id === simData.colaboradorId) ?? null;
     const id = `sim-${Date.now()}`;
     const next: FolhaResumo = {
       id,
       referencia: simData.referencia,
       colaboradores: simData.colaboradores,
+      colaboradorId: simData.colaboradorId,
+      colaborador: colaboradorSelecionado
+        ? { id: colaboradorSelecionado.id, nome: colaboradorSelecionado.nome }
+        : undefined,
       status: "SIMULADA",
       totalProventos: calculo.totalProventos,
       totalDescontos: calculo.totalDescontos,
@@ -289,17 +324,33 @@ const FolhaSimuladorPage = () => {
               setSimData((prev) => ({ ...prev, referencia: e.target.value }))
             }
           />
-          <AppTextInput
+          <AppSelectInput
             required
-            title="Colaboradores"
-            value={simData.colaboradores ? String(simData.colaboradores) : ""}
-            sanitizeRegex={/[0-9]/g}
-            onValueChange={(raw) =>
+            title="Colaborador"
+            value={simData.colaboradorId}
+            onChange={(e) => {
+              const colaboradorId = e.target.value;
+              const selecionado =
+                colaboradores.find((item) => item.id === colaboradorId) ?? null;
+              const percentualInss = selecionado?.percentualInss ?? 0;
+              const inssPercentBps =
+                percentualInss > 0 && percentualInss <= 100
+                  ? percentualInss * 100
+                  : percentualInss;
               setSimData((prev) => ({
                 ...prev,
-                colaboradores: Number(raw || "0"),
-              }))
-            }
+                colaboradorId,
+                colaboradores: colaboradorId ? 1 : 0,
+                salarioBaseCents: selecionado?.salarioBase ?? prev.salarioBaseCents,
+                inssPercentBps: inssPercentBps || prev.inssPercentBps,
+              }));
+            }}
+            data={colaboradores.map((colaborador) => ({
+              value: colaborador.id,
+              label: colaborador.nome,
+            }))}
+            placeholder="Selecione"
+            error={colaboradoresError}
           />
           <AppTextInput
             required

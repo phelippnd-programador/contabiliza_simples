@@ -4,6 +4,7 @@ import Card from "../../../components/ui/card/Card";
 import AppTable from "../../../components/ui/table/AppTable";
 import AppListNotFound from "../../../components/ui/AppListNotFound";
 import AppButton from "../../../components/ui/button/AppButton";
+import AppIconButton from "../../../components/ui/button/AppIconButton";
 import AppTextInput from "../../../components/ui/input/AppTextInput";
 import AppDateInput from "../../../components/ui/input/AppDateInput";
 import AppSelectInput from "../../../components/ui/input/AppSelectInput";
@@ -25,6 +26,7 @@ import { listCategorias } from "../../financeiro/services/categorias.service";
 import { createContaPagar } from "../../financeiro/services/contas-pagar.service";
 import { createMovimento } from "../../estoque/services/estoque.service";
 import { formatBRL } from "../../../shared/utils/formater";
+import { EditIcon, TrashIcon } from "../../../components/ui/icon/AppIcons";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 
@@ -217,9 +219,9 @@ const ComprasPage = () => {
         align: "right" as const,
         render: (row: CompraResumo) => (
           <div className="flex justify-end gap-2">
-            <AppButton
-              type="button"
-              className="w-auto px-4"
+            <AppIconButton
+              icon={<EditIcon className="h-4 w-4" />}
+              label={`Editar compra ${row.id}`}
               onClick={() => {
                 setEditingId(row.id);
                 setFormData({
@@ -245,12 +247,11 @@ const ComprasPage = () => {
                 setFormError("");
                 setFormOpen(true);
               }}
-            >
-              Editar
-            </AppButton>
-            <AppButton
-              type="button"
-              className="w-auto px-4"
+            />
+            <AppIconButton
+              icon={<TrashIcon className="h-4 w-4" />}
+              label={`Excluir compra ${row.id}`}
+              variant="danger"
               onClick={async () => {
                 if (!API_BASE) {
                   setError("API nao configurada.");
@@ -266,9 +267,7 @@ const ComprasPage = () => {
                   setError("Nao foi possivel excluir a compra.");
                 }
               }}
-            >
-              Excluir
-            </AppButton>
+            />
           </div>
         ),
       },
@@ -349,6 +348,13 @@ const ComprasPage = () => {
     if (!formData.itens.length || hasInvalidItem) {
       setFormError("Informe os itens com quantidade e valor.");
       return;
+    }
+    if (formData.estoque.gerarMovimento === "SIM") {
+      const missingProduto = formData.itens.some((item) => !item.produtoId);
+      if (missingProduto) {
+        setFormError("Selecione o item do catalogo para movimentar o estoque.");
+        return;
+      }
     }
     if (!API_BASE) {
       setFormError("API nao configurada.");

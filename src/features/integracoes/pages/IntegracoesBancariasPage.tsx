@@ -12,9 +12,11 @@ import {
   type IntegracaoBancariaResumo,
 } from "../services/integracoes-bancarias.service";
 import AppButton from "../../../components/ui/button/AppButton";
+import AppIconButton from "../../../components/ui/button/AppIconButton";
 import AppTextInput from "../../../components/ui/input/AppTextInput";
 import AppSelectInput from "../../../components/ui/input/AppSelectInput";
 import { getErrorMessage } from "../../../shared/services/apiClient";
+import { EditIcon, TrashIcon } from "../../../components/ui/icon/AppIcons";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 
@@ -94,9 +96,9 @@ const IntegracoesBancariasPage = () => {
         align: "right" as const,
         render: (row: IntegracaoBancariaResumo) => (
           <div className="flex justify-end gap-2">
-            <AppButton
-              type="button"
-              className="w-auto px-4"
+            <AppIconButton
+              icon={<EditIcon className="h-4 w-4" />}
+              label={`Editar integracao ${row.banco}`}
               onClick={() => {
                 setEditingId(row.id);
                 setFormData({
@@ -106,12 +108,11 @@ const IntegracoesBancariasPage = () => {
                 setFormError("");
                 setFormOpen(true);
               }}
-            >
-              Editar
-            </AppButton>
-            <AppButton
-              type="button"
-              className="w-auto px-4"
+            />
+            <AppIconButton
+              icon={<TrashIcon className="h-4 w-4" />}
+              label={`Excluir integracao ${row.banco}`}
+              variant="danger"
               onClick={async () => {
                 if (!API_BASE) {
                   setError("API nao configurada.");
@@ -127,9 +128,7 @@ const IntegracoesBancariasPage = () => {
                   setError(getErrorMessage(err, "Nao foi possivel excluir a integracao."));
                 }
               }}
-            >
-              Excluir
-            </AppButton>
+            />
           </div>
         ),
       },

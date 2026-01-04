@@ -11,10 +11,12 @@ import {
   type ApuracaoResumo,
 } from "../services/fiscal.service";
 import AppButton from "../../../components/ui/button/AppButton";
+import AppIconButton from "../../../components/ui/button/AppIconButton";
 import AppTextInput from "../../../components/ui/input/AppTextInput";
 import AppDateInput from "../../../components/ui/input/AppDateInput";
 import AppSelectInput from "../../../components/ui/input/AppSelectInput";
 import { formatBRL } from "../../../shared/utils/formater";
+import { EditIcon, TrashIcon } from "../../../components/ui/icon/AppIcons";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 const SIM_STORAGE_KEY = "sim_apuracoes";
@@ -153,9 +155,9 @@ const ApuracaoImpostosPage = () => {
         align: "right" as const,
         render: (row: ApuracaoResumo) => (
           <div className="flex justify-end gap-2">
-            <AppButton
-              type="button"
-              className="w-auto px-4"
+            <AppIconButton
+              icon={<EditIcon className="h-4 w-4" />}
+              label={`Editar apuracao ${row.id}`}
               onClick={() => {
                 setEditingId(row.id);
                 setFormData({
@@ -168,12 +170,11 @@ const ApuracaoImpostosPage = () => {
                 setFormError("");
                 setFormOpen(true);
               }}
-            >
-              Editar
-            </AppButton>
-            <AppButton
-              type="button"
-              className="w-auto px-4"
+            />
+            <AppIconButton
+              icon={<TrashIcon className="h-4 w-4" />}
+              label={`Excluir apuracao ${row.id}`}
+              variant="danger"
               onClick={async () => {
                 if (!API_BASE) {
                   setSimulacoes((prev) => prev.filter((item) => item.id !== row.id));
@@ -189,9 +190,7 @@ const ApuracaoImpostosPage = () => {
                   setError("Nao foi possivel excluir a apuracao.");
                 }
               }}
-            >
-              Excluir
-            </AppButton>
+            />
           </div>
         ),
       },

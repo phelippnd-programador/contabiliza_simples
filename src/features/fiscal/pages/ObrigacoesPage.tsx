@@ -11,9 +11,11 @@ import {
   type ObrigacaoResumo,
 } from "../services/fiscal.service";
 import AppButton from "../../../components/ui/button/AppButton";
+import AppIconButton from "../../../components/ui/button/AppIconButton";
 import AppTextInput from "../../../components/ui/input/AppTextInput";
 import AppDateInput from "../../../components/ui/input/AppDateInput";
 import AppSelectInput from "../../../components/ui/input/AppSelectInput";
+import { EditIcon, TrashIcon } from "../../../components/ui/icon/AppIcons";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 const SIM_STORAGE_KEY = "sim_obrigacoes";
@@ -172,9 +174,9 @@ const ObrigacoesPage = () => {
         align: "right" as const,
         render: (row: ObrigacaoResumo) => (
           <div className="flex justify-end gap-2">
-            <AppButton
-              type="button"
-              className="w-auto px-4"
+            <AppIconButton
+              icon={<EditIcon className="h-4 w-4" />}
+              label={`Editar obrigacao ${row.id}`}
               onClick={() => {
                 setEditingId(row.id);
                 setFormData({
@@ -185,12 +187,11 @@ const ObrigacoesPage = () => {
                 setFormError("");
                 setFormOpen(true);
               }}
-            >
-              Editar
-            </AppButton>
-            <AppButton
-              type="button"
-              className="w-auto px-4"
+            />
+            <AppIconButton
+              icon={<TrashIcon className="h-4 w-4" />}
+              label={`Excluir obrigacao ${row.id}`}
+              variant="danger"
               onClick={async () => {
                 if (!API_BASE) {
                   setSimuladas((prev) => prev.filter((item) => item.id !== row.id));
@@ -206,9 +207,7 @@ const ObrigacoesPage = () => {
                   setError("Nao foi possivel excluir a obrigacao.");
                 }
               }}
-            >
-              Excluir
-            </AppButton>
+            />
           </div>
         ),
       },

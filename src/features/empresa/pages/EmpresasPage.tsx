@@ -3,8 +3,10 @@ import { useNavigate } from "react-router-dom";
 import AppTitle, { AppSubTitle } from "../../../components/ui/text/AppTitle";
 import Card from "../../../components/ui/card/Card";
 import AppButton from "../../../components/ui/button/AppButton";
+import AppIconButton from "../../../components/ui/button/AppIconButton";
 import AppTable from "../../../components/ui/table/AppTable";
 import AppListNotFound from "../../../components/ui/AppListNotFound";
+import { SettingsIcon } from "../../../components/ui/icon/AppIcons";
 import type { EmpresaResumo } from "../types";
 import { listEmpresas } from "../services/empresas.service";
 
@@ -54,13 +56,11 @@ const EmpresasPage = () => {
         header: "Acoes",
         align: "right" as const,
         render: (row: EmpresaResumo) => (
-          <AppButton
-            type="button"
-            className="w-auto px-4"
+          <AppIconButton
+            icon={<SettingsIcon className="h-4 w-4" />}
+            label="Configurar empresa"
             onClick={() => navigate(`/empresa/${row.id}`)}
-          >
-            Configurar
-          </AppButton>
+          />
         ),
       },
     ],

@@ -4,6 +4,7 @@ import Card from "../../../components/ui/card/Card";
 import AppTable from "../../../components/ui/table/AppTable";
 import AppListNotFound from "../../../components/ui/AppListNotFound";
 import AppButton from "../../../components/ui/button/AppButton";
+import AppIconButton from "../../../components/ui/button/AppIconButton";
 import AppTextInput from "../../../components/ui/input/AppTextInput";
 import AppSelectInput from "../../../components/ui/input/AppSelectInput";
 import AppDateInput from "../../../components/ui/input/AppDateInput";
@@ -17,6 +18,7 @@ import {
 } from "../services/colaboradores.service";
 import { categoriaInssOptions } from "../../../shared/types/select-type";
 import { formatBRL, formatCpfCnpj, formatPercentBR } from "../../../shared/utils/formater";
+import { EditIcon, TrashIcon } from "../../../components/ui/icon/AppIcons";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 
@@ -121,9 +123,9 @@ const ColaboradoresPage = () => {
         align: "right" as const,
         render: (row: ColaboradorResumo) => (
           <div className="flex justify-end gap-2">
-            <AppButton
-              type="button"
-              className="w-auto px-4"
+            <AppIconButton
+              icon={<EditIcon className="h-4 w-4" />}
+              label={`Editar colaborador ${row.nome}`}
               onClick={() => {
                 setEditingId(row.id);
                 setFormData({
@@ -155,12 +157,11 @@ const ColaboradoresPage = () => {
                 setFormError("");
                 setFormOpen(true);
               }}
-            >
-              Editar
-            </AppButton>
-            <AppButton
-              type="button"
-              className="w-auto px-4"
+            />
+            <AppIconButton
+              icon={<TrashIcon className="h-4 w-4" />}
+              label={`Excluir colaborador ${row.nome}`}
+              variant="danger"
               onClick={async () => {
                 if (!API_BASE) {
                   setError("API nao configurada.");
@@ -176,9 +177,7 @@ const ColaboradoresPage = () => {
                   setError("Nao foi possivel excluir o colaborador.");
                 }
               }}
-            >
-              Excluir
-            </AppButton>
+            />
           </div>
         ),
       },
