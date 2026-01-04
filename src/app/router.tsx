@@ -41,6 +41,9 @@ const ContasPagarPage = lazy(
 const ContasReceberPage = lazy(
   () => import("../features/financeiro/pages/ContasReceberPage")
 );
+const ProjecaoPage = lazy(
+  () => import("../features/financeiro/pages/ProjecaoPage")
+);
 const DashboardPage = lazy(() => import("../features/dashboard/pages/DashboardPage"));
 const EmpresasPage = lazy(() => import("../features/empresa/pages/EmpresasPage"));
 const UsuarioConfigPage = lazy(
@@ -231,6 +234,14 @@ export const router = createBrowserRouter([
         element: withLoading(
           <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
             <CaixaPage />
+          </RequireRole>
+        ),
+      },
+      {
+        path: "financeiro/projecao",
+        element: withLoading(
+          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
+            <ProjecaoPage />
           </RequireRole>
         ),
       },

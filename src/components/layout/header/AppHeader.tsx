@@ -96,6 +96,7 @@ const AppHeader = () => {
         { id: "categorias", label: "Categorias", to: "/financeiro/categorias", icon: <IconList /> },
         { id: "movimentos", label: "Movimentos", to: "/financeiro/movimentos", icon: <IconCash /> },
         { id: "caixa_financeiro", label: "Caixa", to: "/financeiro/caixa", icon: <IconChart /> },
+        { id: "projecao_financeira", label: "Projecao", to: "/financeiro/projecao", icon: <IconChart /> },
         { id: "prolabore", label: "Pro-labore", to: "/financeiro/prolabore", icon: <IconCash /> },
       ],
     },
