@@ -5,7 +5,9 @@ const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 
 export type VendaResumo = {
   id: string;
-  cliente: string;
+  clienteId?: string;
+  clienteNome?: string;
+  cliente?: string;
   data: string;
   total: number;
   status?: string;
@@ -21,7 +23,9 @@ export type VendaResumo = {
 
 export type CompraResumo = {
   id: string;
-  fornecedor: string;
+  fornecedorId?: string;
+  fornecedorNome?: string;
+  fornecedor?: string;
   data: string;
   total: number;
   status?: string;
@@ -36,7 +40,8 @@ export type CompraResumo = {
 };
 
 export type VendaPayload = {
-  cliente: string;
+  clienteId: string;
+  clienteNome?: string;
   data: string;
   total: number;
   status?: string;
@@ -51,7 +56,8 @@ export type VendaPayload = {
 };
 
 export type CompraPayload = {
-  fornecedor: string;
+  fornecedorId: string;
+  fornecedorNome?: string;
   data: string;
   total: number;
   status?: string;

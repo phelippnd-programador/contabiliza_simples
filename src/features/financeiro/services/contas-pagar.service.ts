@@ -5,7 +5,9 @@ const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 
 export type ContaPagarResumo = {
   id: string;
-  fornecedor: string;
+  fornecedorId?: string;
+  fornecedorNome?: string;
+  fornecedor?: string;
   vencimento: string;
   valor: number;
   status?: string;
@@ -29,7 +31,8 @@ export type ContaPagarResumo = {
 };
 
 export type ContaPagarPayload = {
-  fornecedor: string;
+  fornecedorId: string;
+  fornecedorNome?: string;
   vencimento: string;
   valor: number;
   status?: string;

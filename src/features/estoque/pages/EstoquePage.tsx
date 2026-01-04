@@ -12,7 +12,9 @@ import {
 } from "../services/estoque.service";
 import AppButton from "../../../components/ui/button/AppButton";
 import AppTextInput from "../../../components/ui/input/AppTextInput";
+import AppSelectInput from "../../../components/ui/input/AppSelectInput";
 import { formatBRL } from "../../../shared/utils/formater";
+import { listProdutosServicos, type ProdutoServicoResumo } from "../../cadastros/services/cadastros.service";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 
@@ -22,8 +24,9 @@ const EstoquePage = () => {
   const [formError, setFormError] = useState("");
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [catalogo, setCatalogo] = useState<ProdutoServicoResumo[]>([]);
   const [formData, setFormData] = useState({
-    item: "",
+    produtoId: "",
     quantidade: 0,
     custoMedioCents: 0,
     estoqueMinimo: 0,
@@ -48,12 +51,46 @@ const EstoquePage = () => {
     load();
   }, [page]);
 
+  useEffect(() => {
+    let isMounted = true;
+    const loadCatalogo = async () => {
+      const result = await listProdutosServicos({ page: 1, pageSize: 200 });
+      if (!isMounted) return;
+      setCatalogo(result.data);
+    };
+    loadCatalogo().catch(() => setCatalogo([]));
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const catalogoMap = useMemo(() => {
+    const map = new Map<string, string>();
+    catalogo.forEach((produto) => {
+      map.set(produto.id, produto.descricao);
+    });
+    return map;
+  }, [catalogo]);
+
+  const catalogoOptions = useMemo(
+    () =>
+      catalogo.map((produto) => ({
+        value: produto.id,
+        label: produto.descricao,
+      })),
+    [catalogo]
+  );
+
   const columns = useMemo(
     () => [
       {
         key: "item",
         header: "Item",
-        render: (row: EstoqueResumo) => row.item,
+        render: (row: EstoqueResumo) =>
+          catalogoMap.get(row.produtoId ?? row.id) ||
+          row.descricao ||
+          row.item ||
+          "-",
       },
       {
         key: "quantidade",
@@ -109,7 +146,7 @@ const EstoquePage = () => {
               onClick={() => {
                 setEditingId(row.id);
                 setFormData({
-                  item: row.item,
+                  produtoId: row.produtoId ?? row.id,
                   quantidade: row.quantidade,
                   custoMedioCents: row.custoMedio ?? 0,
                   estoqueMinimo: row.estoqueMinimo ?? 0,
@@ -145,13 +182,13 @@ const EstoquePage = () => {
         ),
       },
     ],
-    []
+    [catalogoMap]
   );
 
   const resetForm = () => {
     setEditingId(null);
     setFormData({
-      item: "",
+      produtoId: "",
       quantidade: 0,
       custoMedioCents: 0,
       estoqueMinimo: 0,
@@ -160,7 +197,7 @@ const EstoquePage = () => {
 
   const handleSubmit = async () => {
     setFormError("");
-    if (!formData.item || formData.quantidade <= 0) {
+    if (!formData.produtoId || formData.quantidade <= 0) {
       setFormError("Preencha os campos obrigatorios.");
       return;
     }
@@ -169,8 +206,10 @@ const EstoquePage = () => {
       return;
     }
     try {
+      const descricao = catalogoMap.get(formData.produtoId);
       const payload = {
-        item: formData.item,
+        produtoId: formData.produtoId,
+        descricao,
         quantidade: formData.quantidade,
         custoMedio: formData.custoMedioCents || undefined,
         estoqueMinimo: formData.estoqueMinimo || undefined,
@@ -211,13 +250,15 @@ const EstoquePage = () => {
       {formOpen ? (
         <Card>
           <div className="grid gap-4 md:grid-cols-2">
-            <AppTextInput
+            <AppSelectInput
               required
               title="Item"
-              value={formData.item}
+              value={formData.produtoId}
               onChange={(e) =>
-                setFormData((prev) => ({ ...prev, item: e.target.value }))
+                setFormData((prev) => ({ ...prev, produtoId: e.target.value }))
               }
+              data={catalogoOptions}
+              placeholder={catalogoOptions.length ? "Selecione" : "Cadastre um produto/servico"}
             />
             <AppTextInput
               required

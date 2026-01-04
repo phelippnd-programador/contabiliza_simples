@@ -84,7 +84,7 @@ const ComprasPage = () => {
     Array<{ value: string; label: string }>
   >([]);
   const [formData, setFormData] = useState({
-    fornecedor: "",
+    fornecedorId: "",
     data: "",
     status: "ABERTA",
     itens: [emptyItem()],
@@ -167,12 +167,24 @@ const ComprasPage = () => {
     };
   }, []);
 
+  const fornecedorMap = useMemo(() => {
+    const map = new Map<string, string>();
+    fornecedores.forEach((fornecedor) => {
+      map.set(fornecedor.id, fornecedor.nome);
+    });
+    return map;
+  }, [fornecedores]);
+
   const columns = useMemo(
     () => [
       {
         key: "fornecedor",
         header: "Fornecedor",
-        render: (row: CompraResumo) => row.fornecedor,
+        render: (row: CompraResumo) =>
+          fornecedorMap.get(row.fornecedorId ?? "") ||
+          row.fornecedorNome ||
+          row.fornecedor ||
+          "-",
       },
       {
         key: "data",
@@ -211,7 +223,7 @@ const ComprasPage = () => {
               onClick={() => {
                 setEditingId(row.id);
                 setFormData({
-                  fornecedor: row.fornecedor,
+                  fornecedorId: row.fornecedorId ?? row.fornecedor ?? "",
                   data: row.data,
                   status: row.status ?? "ABERTA",
                   itens: row.itens?.length ? row.itens : [emptyItem()],
@@ -261,13 +273,13 @@ const ComprasPage = () => {
         ),
       },
     ],
-    []
+    [fornecedorMap]
   );
 
   const resetForm = () => {
     setEditingId(null);
     setFormData({
-      fornecedor: "",
+      fornecedorId: "",
       data: "",
       status: "ABERTA",
       itens: [emptyItem()],
@@ -327,7 +339,7 @@ const ComprasPage = () => {
 
   const handleSubmit = async () => {
     setFormError("");
-    if (!formData.fornecedor || !formData.data) {
+    if (!formData.fornecedorId || !formData.data) {
       setFormError("Preencha os campos obrigatorios.");
       return;
     }
@@ -354,7 +366,8 @@ const ComprasPage = () => {
       subtotal + formData.freteCents + formData.impostosCents - formData.descontoCents;
 
     const payload = {
-      fornecedor: formData.fornecedor,
+      fornecedorId: formData.fornecedorId,
+      fornecedorNome: fornecedorMap.get(formData.fornecedorId),
       data: formData.data,
       status: formData.status,
       itens: formData.itens,
@@ -386,7 +399,8 @@ const ComprasPage = () => {
       if (!editingId && formData.financeiro.gerarConta === "SIM") {
         try {
           await createContaPagar({
-            fornecedor: formData.fornecedor,
+            fornecedorId: formData.fornecedorId,
+            fornecedorNome: fornecedorMap.get(formData.fornecedorId),
             vencimento: formData.financeiro.vencimento || formData.data,
             valor: totalCents,
             status: "ABERTA",
@@ -444,7 +458,7 @@ const ComprasPage = () => {
   const fornecedorOptions = useMemo(
     () =>
       fornecedores.map((fornecedor) => ({
-        value: fornecedor.nome,
+        value: fornecedor.id,
         label: fornecedor.nome,
       })),
     [fornecedores]
@@ -458,8 +472,6 @@ const ComprasPage = () => {
       })),
     [catalogo]
   );
-
-  const hasFornecedores = fornecedorOptions.length > 0;
 
   return (
     <div className="flex flex-col gap-6">
@@ -484,27 +496,16 @@ const ComprasPage = () => {
       {formOpen ? (
         <Card>
           <div className="grid gap-4 md:grid-cols-3">
-            {hasFornecedores ? (
-              <AppSelectInput
-                required
-                title="Fornecedor"
-                value={formData.fornecedor}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, fornecedor: e.target.value }))
-                }
-                data={fornecedorOptions}
-                placeholder="Selecione"
-              />
-            ) : (
-              <AppTextInput
-                required
-                title="Fornecedor"
-                value={formData.fornecedor}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, fornecedor: e.target.value }))
-                }
-              />
-            )}
+            <AppSelectInput
+              required
+              title="Fornecedor"
+              value={formData.fornecedorId}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, fornecedorId: e.target.value }))
+              }
+              data={fornecedorOptions}
+              placeholder={fornecedorOptions.length ? "Selecione" : "Cadastre um fornecedor"}
+            />
             <AppDateInput
               required
               title="Data"

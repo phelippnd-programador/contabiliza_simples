@@ -84,7 +84,7 @@ const VendasPage = () => {
     Array<{ value: string; label: string }>
   >([]);
   const [formData, setFormData] = useState({
-    cliente: "",
+    clienteId: "",
     data: "",
     status: "ABERTA",
     itens: [emptyItem()],
@@ -167,12 +167,24 @@ const VendasPage = () => {
     };
   }, []);
 
+  const clienteMap = useMemo(() => {
+    const map = new Map<string, string>();
+    clientes.forEach((cliente) => {
+      map.set(cliente.id, cliente.nome);
+    });
+    return map;
+  }, [clientes]);
+
   const columns = useMemo(
     () => [
       {
         key: "cliente",
         header: "Cliente",
-        render: (row: VendaResumo) => row.cliente,
+        render: (row: VendaResumo) =>
+          clienteMap.get(row.clienteId ?? "") ||
+          row.clienteNome ||
+          row.cliente ||
+          "-",
       },
       {
         key: "data",
@@ -211,7 +223,7 @@ const VendasPage = () => {
               onClick={() => {
                 setEditingId(row.id);
                 setFormData({
-                  cliente: row.cliente,
+                  clienteId: row.clienteId ?? row.cliente ?? "",
                   data: row.data,
                   status: row.status ?? "ABERTA",
                   itens: row.itens?.length ? row.itens : [emptyItem()],
@@ -261,13 +273,13 @@ const VendasPage = () => {
         ),
       },
     ],
-    []
+    [clienteMap]
   );
 
   const resetForm = () => {
     setEditingId(null);
     setFormData({
-      cliente: "",
+      clienteId: "",
       data: "",
       status: "ABERTA",
       itens: [emptyItem()],
@@ -327,7 +339,7 @@ const VendasPage = () => {
 
   const handleSubmit = async () => {
     setFormError("");
-    if (!formData.cliente || !formData.data) {
+    if (!formData.clienteId || !formData.data) {
       setFormError("Preencha os campos obrigatorios.");
       return;
     }
@@ -354,7 +366,8 @@ const VendasPage = () => {
       subtotal + formData.freteCents + formData.impostosCents - formData.descontoCents;
 
     const payload = {
-      cliente: formData.cliente,
+      clienteId: formData.clienteId,
+      clienteNome: clienteMap.get(formData.clienteId),
       data: formData.data,
       status: formData.status,
       itens: formData.itens,
@@ -386,7 +399,8 @@ const VendasPage = () => {
       if (!editingId && formData.financeiro.gerarConta === "SIM") {
         try {
           await createContaReceber({
-            cliente: formData.cliente,
+            clienteId: formData.clienteId,
+            clienteNome: clienteMap.get(formData.clienteId),
             vencimento: formData.financeiro.vencimento || formData.data,
             valor: totalCents,
             status: "ABERTA",
@@ -443,7 +457,7 @@ const VendasPage = () => {
   const clienteOptions = useMemo(
     () =>
       clientes.map((cliente) => ({
-        value: cliente.nome,
+        value: cliente.id,
         label: cliente.nome,
       })),
     [clientes]
@@ -457,8 +471,6 @@ const VendasPage = () => {
       })),
     [catalogo]
   );
-
-  const hasClientes = clienteOptions.length > 0;
 
   return (
     <div className="flex flex-col gap-6">
@@ -483,27 +495,16 @@ const VendasPage = () => {
       {formOpen ? (
         <Card>
           <div className="grid gap-4 md:grid-cols-3">
-            {hasClientes ? (
-              <AppSelectInput
-                required
-                title="Cliente"
-                value={formData.cliente}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, cliente: e.target.value }))
-                }
-                data={clienteOptions}
-                placeholder="Selecione"
-              />
-            ) : (
-              <AppTextInput
-                required
-                title="Cliente"
-                value={formData.cliente}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, cliente: e.target.value }))
-                }
-              />
-            )}
+            <AppSelectInput
+              required
+              title="Cliente"
+              value={formData.clienteId}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, clienteId: e.target.value }))
+              }
+              data={clienteOptions}
+              placeholder={clienteOptions.length ? "Selecione" : "Cadastre um cliente"}
+            />
             <AppDateInput
               required
               title="Data"

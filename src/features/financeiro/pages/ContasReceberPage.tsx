@@ -16,6 +16,7 @@ import {
 } from "../services/contas-receber.service";
 import { listContas } from "../services/contas.service";
 import { listCategorias } from "../services/categorias.service";
+import { listClientes, type ClienteResumo } from "../../cadastros/services/cadastros.service";
 import { formatBRL } from "../../../shared/utils/formater";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
@@ -40,6 +41,7 @@ const ContasReceberPage = () => {
   const [formError, setFormError] = useState("");
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [clientes, setClientes] = useState<ClienteResumo[]>([]);
   const [contas, setContas] = useState<Array<{ value: string; label: string }>>(
     []
   );
@@ -47,7 +49,7 @@ const ContasReceberPage = () => {
     Array<{ value: string; label: string }>
   >([]);
   const [formData, setFormData] = useState({
-    cliente: "",
+    clienteId: "",
     descricao: "",
     numeroDocumento: "",
     competencia: "",
@@ -89,9 +91,10 @@ const ContasReceberPage = () => {
   useEffect(() => {
     let isMounted = true;
     const loadLookups = async () => {
-      const [contasResult, categoriasResult] = await Promise.allSettled([
+      const [contasResult, categoriasResult, clientesResult] = await Promise.allSettled([
         listContas(),
         listCategorias(),
+        listClientes({ page: 1, pageSize: 200 }),
       ]);
       if (!isMounted) return;
       if (contasResult.status === "fulfilled") {
@@ -114,6 +117,11 @@ const ContasReceberPage = () => {
       } else {
         setCategorias([]);
       }
+      if (clientesResult.status === "fulfilled") {
+        setClientes(clientesResult.value.data);
+      } else {
+        setClientes([]);
+      }
     };
     loadLookups();
     return () => {
@@ -121,12 +129,33 @@ const ContasReceberPage = () => {
     };
   }, []);
 
+  const clienteMap = useMemo(() => {
+    const map = new Map<string, string>();
+    clientes.forEach((cliente) => {
+      map.set(cliente.id, cliente.nome);
+    });
+    return map;
+  }, [clientes]);
+
+  const clienteOptions = useMemo(
+    () =>
+      clientes.map((cliente) => ({
+        value: cliente.id,
+        label: cliente.nome,
+      })),
+    [clientes]
+  );
+
   const columns = useMemo(
     () => [
       {
         key: "cliente",
         header: "Cliente",
-        render: (row: ContaReceberResumo) => row.cliente,
+        render: (row: ContaReceberResumo) =>
+          clienteMap.get(row.clienteId ?? "") ||
+          row.clienteNome ||
+          row.cliente ||
+          "-",
       },
       {
         key: "descricao",
@@ -179,7 +208,7 @@ const ContasReceberPage = () => {
               onClick={() => {
                 setEditingId(row.id);
                 setFormData({
-                  cliente: row.cliente,
+                  clienteId: row.clienteId ?? row.cliente ?? "",
                   descricao: row.descricao ?? "",
                   numeroDocumento: row.numeroDocumento ?? "",
                   competencia: row.competencia ?? "",
@@ -229,13 +258,13 @@ const ContasReceberPage = () => {
         ),
       },
     ],
-    []
+    [clienteMap]
   );
 
   const resetForm = () => {
     setEditingId(null);
     setFormData({
-      cliente: "",
+      clienteId: "",
       descricao: "",
       numeroDocumento: "",
       competencia: "",
@@ -264,7 +293,7 @@ const ContasReceberPage = () => {
 
   const handleSubmit = async () => {
     setFormError("");
-    if (!formData.cliente || !formData.descricao || !formData.vencimento) {
+    if (!formData.clienteId || !formData.descricao || !formData.vencimento) {
       setFormError("Preencha os campos obrigatorios.");
       return;
     }
@@ -284,7 +313,8 @@ const ContasReceberPage = () => {
     }
     try {
       const payload = {
-        cliente: formData.cliente,
+        clienteId: formData.clienteId,
+        clienteNome: clienteMap.get(formData.clienteId),
         vencimento: formData.vencimento,
         valor: valorLiquidoCents,
         status: formData.status,
@@ -340,13 +370,15 @@ const ContasReceberPage = () => {
       {formOpen ? (
         <Card>
           <div className="grid gap-4 md:grid-cols-3">
-            <AppTextInput
+            <AppSelectInput
               required
               title="Cliente"
-              value={formData.cliente}
+              value={formData.clienteId}
               onChange={(e) =>
-                setFormData((prev) => ({ ...prev, cliente: e.target.value }))
+                setFormData((prev) => ({ ...prev, clienteId: e.target.value }))
               }
+              data={clienteOptions}
+              placeholder={clienteOptions.length ? "Selecione" : "Cadastre um cliente"}
             />
             <AppTextInput
               required

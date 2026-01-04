@@ -128,7 +128,9 @@ const EstoqueMovimentosPage = () => {
     }
   };
 
-  const selectedItem = itens.find((item) => item.id === movimentoData.itemId);
+  const selectedItem = itens.find(
+    (item) => (item.produtoId ?? item.id) === movimentoData.itemId
+  );
   const previewSaldo =
     selectedItem && movimentoData.quantidade
       ? movimentoData.tipo === "SAIDA"
@@ -200,7 +202,10 @@ const EstoqueMovimentosPage = () => {
             onChange={(e) =>
               setMovimentoData((prev) => ({ ...prev, itemId: e.target.value }))
             }
-            data={itens.map((item) => ({ value: item.id, label: item.item }))}
+            data={itens.map((item) => ({
+              value: item.produtoId ?? item.id,
+              label: item.descricao || item.item || item.id,
+            }))}
             placeholder="Selecione"
           />
           <AppSelectInput

@@ -5,14 +5,17 @@ const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 
 export type EstoqueResumo = {
   id: string;
-  item: string;
+  produtoId?: string;
+  descricao?: string;
+  item?: string;
   quantidade: number;
   custoMedio?: number;
   estoqueMinimo?: number;
 };
 
 export type EstoquePayload = {
-  item: string;
+  produtoId: string;
+  descricao?: string;
   quantidade: number;
   custoMedio?: number;
   estoqueMinimo?: number;

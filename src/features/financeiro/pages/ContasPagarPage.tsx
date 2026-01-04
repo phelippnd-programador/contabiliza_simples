@@ -16,6 +16,7 @@ import {
 } from "../services/contas-pagar.service";
 import { listContas } from "../services/contas.service";
 import { listCategorias } from "../services/categorias.service";
+import { listFornecedores, type FornecedorResumo } from "../../cadastros/services/cadastros.service";
 import { formatBRL } from "../../../shared/utils/formater";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
@@ -40,6 +41,7 @@ const ContasPagarPage = () => {
   const [formError, setFormError] = useState("");
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [fornecedores, setFornecedores] = useState<FornecedorResumo[]>([]);
   const [contas, setContas] = useState<Array<{ value: string; label: string }>>(
     []
   );
@@ -47,7 +49,7 @@ const ContasPagarPage = () => {
     Array<{ value: string; label: string }>
   >([]);
   const [formData, setFormData] = useState({
-    fornecedor: "",
+    fornecedorId: "",
     descricao: "",
     numeroDocumento: "",
     competencia: "",
@@ -89,9 +91,10 @@ const ContasPagarPage = () => {
   useEffect(() => {
     let isMounted = true;
     const loadLookups = async () => {
-      const [contasResult, categoriasResult] = await Promise.allSettled([
+      const [contasResult, categoriasResult, fornecedoresResult] = await Promise.allSettled([
         listContas(),
         listCategorias(),
+        listFornecedores({ page: 1, pageSize: 200 }),
       ]);
       if (!isMounted) return;
       if (contasResult.status === "fulfilled") {
@@ -114,6 +117,11 @@ const ContasPagarPage = () => {
       } else {
         setCategorias([]);
       }
+      if (fornecedoresResult.status === "fulfilled") {
+        setFornecedores(fornecedoresResult.value.data);
+      } else {
+        setFornecedores([]);
+      }
     };
     loadLookups();
     return () => {
@@ -121,12 +129,33 @@ const ContasPagarPage = () => {
     };
   }, []);
 
+  const fornecedorMap = useMemo(() => {
+    const map = new Map<string, string>();
+    fornecedores.forEach((fornecedor) => {
+      map.set(fornecedor.id, fornecedor.nome);
+    });
+    return map;
+  }, [fornecedores]);
+
+  const fornecedorOptions = useMemo(
+    () =>
+      fornecedores.map((fornecedor) => ({
+        value: fornecedor.id,
+        label: fornecedor.nome,
+      })),
+    [fornecedores]
+  );
+
   const columns = useMemo(
     () => [
       {
         key: "fornecedor",
         header: "Fornecedor",
-        render: (row: ContaPagarResumo) => row.fornecedor,
+        render: (row: ContaPagarResumo) =>
+          fornecedorMap.get(row.fornecedorId ?? "") ||
+          row.fornecedorNome ||
+          row.fornecedor ||
+          "-",
       },
       {
         key: "descricao",
@@ -179,7 +208,7 @@ const ContasPagarPage = () => {
               onClick={() => {
                 setEditingId(row.id);
                 setFormData({
-                  fornecedor: row.fornecedor,
+                  fornecedorId: row.fornecedorId ?? row.fornecedor ?? "",
                   descricao: row.descricao ?? "",
                   numeroDocumento: row.numeroDocumento ?? "",
                   competencia: row.competencia ?? "",
@@ -229,13 +258,13 @@ const ContasPagarPage = () => {
         ),
       },
     ],
-    []
+    [fornecedorMap]
   );
 
   const resetForm = () => {
     setEditingId(null);
     setFormData({
-      fornecedor: "",
+      fornecedorId: "",
       descricao: "",
       numeroDocumento: "",
       competencia: "",
@@ -264,7 +293,7 @@ const ContasPagarPage = () => {
 
   const handleSubmit = async () => {
     setFormError("");
-    if (!formData.fornecedor || !formData.descricao || !formData.vencimento) {
+    if (!formData.fornecedorId || !formData.descricao || !formData.vencimento) {
       setFormError("Preencha os campos obrigatorios.");
       return;
     }
@@ -284,7 +313,8 @@ const ContasPagarPage = () => {
     }
     try {
       const payload = {
-        fornecedor: formData.fornecedor,
+        fornecedorId: formData.fornecedorId,
+        fornecedorNome: fornecedorMap.get(formData.fornecedorId),
         vencimento: formData.vencimento,
         valor: valorLiquidoCents,
         status: formData.status,
@@ -340,13 +370,15 @@ const ContasPagarPage = () => {
       {formOpen ? (
         <Card>
           <div className="grid gap-4 md:grid-cols-3">
-            <AppTextInput
+            <AppSelectInput
               required
               title="Fornecedor"
-              value={formData.fornecedor}
+              value={formData.fornecedorId}
               onChange={(e) =>
-                setFormData((prev) => ({ ...prev, fornecedor: e.target.value }))
+                setFormData((prev) => ({ ...prev, fornecedorId: e.target.value }))
               }
+              data={fornecedorOptions}
+              placeholder={fornecedorOptions.length ? "Selecione" : "Cadastre um fornecedor"}
             />
             <AppTextInput
               required

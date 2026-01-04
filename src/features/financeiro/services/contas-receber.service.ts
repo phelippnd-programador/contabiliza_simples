@@ -5,7 +5,9 @@ const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 
 export type ContaReceberResumo = {
   id: string;
-  cliente: string;
+  clienteId?: string;
+  clienteNome?: string;
+  cliente?: string;
   vencimento: string;
   valor: number;
   status?: string;
@@ -29,7 +31,8 @@ export type ContaReceberResumo = {
 };
 
 export type ContaReceberPayload = {
-  cliente: string;
+  clienteId: string;
+  clienteNome?: string;
   vencimento: string;
   valor: number;
   status?: string;
