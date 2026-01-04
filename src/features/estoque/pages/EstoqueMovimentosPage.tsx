@@ -16,6 +16,7 @@ import {
   type EstoqueMovimentoTipo,
 } from "../services/estoque.service";
 import { formatBRL } from "../../../shared/utils/formater";
+import { listVendas, listCompras, type VendaResumo, type CompraResumo } from "../../comercial/services/comercial.service";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 
@@ -36,6 +37,8 @@ const EstoqueMovimentosPage = () => {
     origemId: "",
     observacoes: "",
   });
+  const [vendas, setVendas] = useState<VendaResumo[]>([]);
+  const [compras, setCompras] = useState<CompraResumo[]>([]);
   const [movimentoPage, setMovimentoPage] = useState(1);
   const [movimentoTotal, setMovimentoTotal] = useState(0);
 
@@ -52,6 +55,27 @@ const EstoqueMovimentosPage = () => {
 
   useEffect(() => {
     loadItens();
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadOrigens = async () => {
+      const [vendasResult, comprasResult] = await Promise.allSettled([
+        listVendas({ page: 1, pageSize: 200 }),
+        listCompras({ page: 1, pageSize: 200 }),
+      ]);
+      if (!isMounted) return;
+      setVendas(vendasResult.status === "fulfilled" ? vendasResult.value.data : []);
+      setCompras(comprasResult.status === "fulfilled" ? comprasResult.value.data : []);
+    };
+    loadOrigens().catch(() => {
+      if (!isMounted) return;
+      setVendas([]);
+      setCompras([]);
+    });
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -78,6 +102,10 @@ const EstoqueMovimentosPage = () => {
     };
     loadMovimentos();
   }, [movimentoData.itemId, movimentoPage]);
+
+  useEffect(() => {
+    setMovimentoData((prev) => ({ ...prev, origemId: "" }));
+  }, [movimentoData.origem]);
 
   const handleMovimento = async () => {
     setMovimentoError("");
@@ -187,6 +215,28 @@ const EstoqueMovimentosPage = () => {
     []
   );
 
+  const origemOptions = useMemo(() => {
+    if (movimentoData.origem === "VENDA") {
+      return vendas.map((venda) => ({
+        value: venda.id,
+        label: `${venda.id} - ${venda.data} - ${(venda.total / 100).toLocaleString("pt-BR", {
+          style: "currency",
+          currency: "BRL",
+        })}`,
+      }));
+    }
+    if (movimentoData.origem === "COMPRA") {
+      return compras.map((compra) => ({
+        value: compra.id,
+        label: `${compra.id} - ${compra.data} - ${(compra.total / 100).toLocaleString("pt-BR", {
+          style: "currency",
+          currency: "BRL",
+        })}`,
+      }));
+    }
+    return [];
+  }, [compras, vendas, movimentoData.origem]);
+
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -283,13 +333,29 @@ const EstoqueMovimentosPage = () => {
               { value: "COMPRA", label: "Compra" },
             ]}
           />
-          <AppTextInput
-            title="Referencia"
-            value={movimentoData.origemId}
-            onChange={(e) =>
-              setMovimentoData((prev) => ({ ...prev, origemId: e.target.value }))
-            }
-          />
+          {movimentoData.origem === "MANUAL" ? (
+            <AppTextInput
+              title="Referencia"
+              value={movimentoData.origemId}
+              onChange={(e) =>
+                setMovimentoData((prev) => ({ ...prev, origemId: e.target.value }))
+              }
+            />
+          ) : (
+            <AppSelectInput
+              title="Referencia"
+              value={movimentoData.origemId}
+              onChange={(e) =>
+                setMovimentoData((prev) => ({ ...prev, origemId: e.target.value }))
+              }
+              data={origemOptions}
+              placeholder={
+                movimentoData.origem === "VENDA"
+                  ? "Selecione a venda"
+                  : "Selecione a compra"
+              }
+            />
+          )}
           <AppTextInput
             title="Observacoes"
             value={movimentoData.observacoes}
