@@ -6,6 +6,7 @@ import AppListNotFound from "../../../components/ui/AppListNotFound";
 import AppButton from "../../../components/ui/button/AppButton";
 import AppTextInput from "../../../components/ui/input/AppTextInput";
 import AppSelectInput from "../../../components/ui/input/AppSelectInput";
+import AppEndereco from "../../../components/ui/input/AppEndereco";
 import {
   listClientes,
   createCliente,
@@ -368,99 +369,17 @@ const ClientesPage = () => {
               }
               data={indicadorIeOptions}
             />
-            <AppTextInput
-              title="CEP"
-              value={formData.endereco.cep}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  endereco: { ...prev.endereco, cep: e.target.value },
-                }))
-              }
-            />
-            <AppTextInput
-              title="Logradouro"
-              value={formData.endereco.logradouro}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  endereco: { ...prev.endereco, logradouro: e.target.value },
-                }))
-              }
-            />
-            <AppTextInput
-              title="Numero"
-              value={formData.endereco.numero}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  endereco: { ...prev.endereco, numero: e.target.value },
-                }))
-              }
-            />
-            <AppTextInput
-              title="Complemento"
-              value={formData.endereco.complemento}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  endereco: { ...prev.endereco, complemento: e.target.value },
-                }))
-              }
-            />
-            <AppTextInput
-              title="Bairro"
-              value={formData.endereco.bairro}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  endereco: { ...prev.endereco, bairro: e.target.value },
-                }))
-              }
-            />
-            <AppTextInput
-              title="Cidade"
-              value={formData.endereco.cidade}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  endereco: { ...prev.endereco, cidade: e.target.value },
-                }))
-              }
-            />
-            <AppTextInput
-              title="UF"
-              value={formData.endereco.uf}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  endereco: { ...prev.endereco, uf: e.target.value },
-                }))
-              }
-            />
-            <AppTextInput
-              title="Codigo IBGE"
-              value={formData.endereco.codigoMunicipioIbge}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  endereco: {
-                    ...prev.endereco,
-                    codigoMunicipioIbge: e.target.value,
-                  },
-                }))
-              }
-            />
-            <AppTextInput
-              title="Pais"
-              value={formData.endereco.pais}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  endereco: { ...prev.endereco, pais: e.target.value },
-                }))
-              }
-            />
+            <div className="md:col-span-3">
+              <AppEndereco
+                value={formData.endereco}
+                onChange={(next) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    endereco: { ...prev.endereco, ...next },
+                  }))
+                }
+              />
+            </div>
             <AppSelectInput
               title="Status"
               value={formData.status}

@@ -150,7 +150,15 @@ const AppHeader = () => {
         { id: "bancos", label: "Bancos", to: "/integracoes/bancos", icon: <IconList /> },
       ],
     },
-    { id: "folha", label: "Folha", to: "/folha", icon: <IconList /> },
+    {
+      id: "folha",
+      label: "Folha",
+      icon: <IconList />,
+      children: [
+        { id: "folha_execucao", label: "Execucao", to: "/folha", icon: <IconList /> },
+        { id: "folha_colaboradores", label: "Colaboradores", to: "/folha/colaboradores", icon: <IconList /> },
+      ],
+    },
     {
       id: "logout",
       label: "Sair",
@@ -192,7 +200,7 @@ const AppHeader = () => {
 
   return (
     <>
-      <AppMenu title="Main" subtitle="Menu" menu={menu} />
+      <AppMenu title="Contabiliza Simples" subtitle="" menu={menu} />
       <div className="fixed right-6 top-4 z-50" ref={settingsRef}>
         <button
           type="button"

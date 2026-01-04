@@ -7,6 +7,7 @@ import AppTextInput from "../../../components/ui/input/AppTextInput";
 import AppSelectInput from "../../../components/ui/input/AppSelectInput";
 import AppDateInput from "../../../components/ui/input/AppDateInput";
 import AppListNotFound from "../../../components/ui/AppListNotFound";
+import AppEndereco from "../../../components/ui/input/AppEndereco";
 import { CnaePicker } from "../../../components/ui/picked/CnaePicker";
 import { NcmPicker } from "../../../components/ui/picked/NcmPicker";
 import type { CnaeItem } from "../../../shared/services/ibgeCnae";
@@ -464,140 +465,20 @@ const NotaNovaPage = () => {
             }
           />
 
-          <AppTextInput
-            title="CEP"
-            value={form.tomador.endereco?.cep ?? ""}
-            onChange={(e) =>
-              setForm((prev) => ({
-                ...prev,
-                tomador: {
-                  ...prev.tomador,
-                  endereco: { ...prev.tomador.endereco, cep: e.target.value },
-                },
-              }))
-            }
-          />
-
-          <AppTextInput
-            title="Logradouro"
-            value={form.tomador.endereco?.logradouro ?? ""}
-            onChange={(e) =>
-              setForm((prev) => ({
-                ...prev,
-                tomador: {
-                  ...prev.tomador,
-                  endereco: {
-                    ...prev.tomador.endereco,
-                    logradouro: e.target.value,
+          <div className="md:col-span-3">
+            <AppEndereco
+              value={form.tomador.endereco ?? {}}
+              onChange={(next) =>
+                setForm((prev) => ({
+                  ...prev,
+                  tomador: {
+                    ...prev.tomador,
+                    endereco: { ...prev.tomador.endereco, ...next },
                   },
-                },
-              }))
-            }
-          />
-
-          <AppTextInput
-            title="Numero"
-            value={form.tomador.endereco?.numero ?? ""}
-            onChange={(e) =>
-              setForm((prev) => ({
-                ...prev,
-                tomador: {
-                  ...prev.tomador,
-                  endereco: { ...prev.tomador.endereco, numero: e.target.value },
-                },
-              }))
-            }
-          />
-
-          <AppTextInput
-            title="Complemento"
-            value={form.tomador.endereco?.complemento ?? ""}
-            onChange={(e) =>
-              setForm((prev) => ({
-                ...prev,
-                tomador: {
-                  ...prev.tomador,
-                  endereco: {
-                    ...prev.tomador.endereco,
-                    complemento: e.target.value,
-                  },
-                },
-              }))
-            }
-          />
-
-          <AppTextInput
-            title="Bairro"
-            value={form.tomador.endereco?.bairro ?? ""}
-            onChange={(e) =>
-              setForm((prev) => ({
-                ...prev,
-                tomador: {
-                  ...prev.tomador,
-                  endereco: { ...prev.tomador.endereco, bairro: e.target.value },
-                },
-              }))
-            }
-          />
-
-          <AppTextInput
-            title="Cidade"
-            value={form.tomador.endereco?.cidade ?? ""}
-            onChange={(e) =>
-              setForm((prev) => ({
-                ...prev,
-                tomador: {
-                  ...prev.tomador,
-                  endereco: { ...prev.tomador.endereco, cidade: e.target.value },
-                },
-              }))
-            }
-          />
-
-          <AppTextInput
-            title="UF"
-            value={form.tomador.endereco?.uf ?? ""}
-            onChange={(e) =>
-              setForm((prev) => ({
-                ...prev,
-                tomador: {
-                  ...prev.tomador,
-                  endereco: { ...prev.tomador.endereco, uf: e.target.value },
-                },
-              }))
-            }
-          />
-
-          <AppTextInput
-            title="Codigo IBGE"
-            value={form.tomador.endereco?.codigoMunicipioIbge ?? ""}
-            onChange={(e) =>
-              setForm((prev) => ({
-                ...prev,
-                tomador: {
-                  ...prev.tomador,
-                  endereco: {
-                    ...prev.tomador.endereco,
-                    codigoMunicipioIbge: e.target.value,
-                  },
-                },
-              }))
-            }
-          />
-
-          <AppTextInput
-            title="Pais"
-            value={form.tomador.endereco?.pais ?? ""}
-            onChange={(e) =>
-              setForm((prev) => ({
-                ...prev,
-                tomador: {
-                  ...prev.tomador,
-                  endereco: { ...prev.tomador.endereco, pais: e.target.value },
-                },
-              }))
-            }
-          />
+                }))
+              }
+            />
+          </div>
         </div>
       </Card>
 

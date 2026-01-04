@@ -142,6 +142,11 @@ Folha
 - `POST /folha`
 - `PUT /folha/:id`
 - `DELETE /folha/:id`
+- `GET /folha/colaboradores`
+- `GET /folha/colaboradores/:id`
+- `POST /folha/colaboradores`
+- `PUT /folha/colaboradores/:id`
+- `DELETE /folha/colaboradores/:id`
 
 Currently, two official plugins are available:
 

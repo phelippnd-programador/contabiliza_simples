@@ -83,6 +83,9 @@ const IntegracoesBancariasPage = lazy(
 const FolhaPagamentoPage = lazy(
   () => import("../features/folha/pages/FolhaPagamentoPage")
 );
+const ColaboradoresPage = lazy(
+  () => import("../features/folha/pages/ColaboradoresPage")
+);
 
 const withLoading = (node: React.ReactNode) => (
   <Suspense fallback={<PageLoading />}>{node}</Suspense>
@@ -355,6 +358,14 @@ export const router = createBrowserRouter([
         element: withLoading(
           <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
             <FolhaPagamentoPage />
+          </RequireRole>
+        ),
+      },
+      {
+        path: "folha/colaboradores",
+        element: withLoading(
+          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
+            <ColaboradoresPage />
           </RequireRole>
         ),
       },
