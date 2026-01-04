@@ -8,12 +8,14 @@ export type EstoqueResumo = {
   item: string;
   quantidade: number;
   custoMedio?: number;
+  estoqueMinimo?: number;
 };
 
 export type EstoquePayload = {
   item: string;
   quantidade: number;
   custoMedio?: number;
+  estoqueMinimo?: number;
 };
 
 export type ListEstoqueParams = {

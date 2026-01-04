@@ -42,6 +42,48 @@ export type ListComercialParams = {
   q?: string;
 };
 
+export type VendaProdutoResumo = {
+  produtoId?: string;
+  descricao: string;
+  quantidade: number;
+  total: number;
+};
+
+export type VendaSaidaResumo = {
+  id: string;
+  data: string;
+  produto: string;
+  quantidade: number;
+  total: number;
+};
+
+export type VendasAnalyticsResponse = {
+  totais?: {
+    quantidade: number;
+    total: number;
+  };
+  maisVendidos: VendaProdutoResumo[];
+  menosVendidos: VendaProdutoResumo[];
+  ultimosSaidos: VendaSaidaResumo[];
+};
+
+export async function getVendasAnalytics(
+  params: { dataInicio?: string; dataFim?: string } = {}
+): Promise<VendasAnalyticsResponse> {
+  if (!API_BASE) {
+    return { maisVendidos: [], menosVendidos: [], ultimosSaidos: [] };
+  }
+  const query = new URLSearchParams();
+  if (params.dataInicio) query.set("dataInicio", params.dataInicio);
+  if (params.dataFim) query.set("dataFim", params.dataFim);
+  const suffix = query.toString() ? `?${query.toString()}` : "";
+  const res = await apiFetch(`/comercial/vendas/analytics${suffix}`);
+  if (!res.ok) {
+    throw new Error("GET_VENDAS_ANALYTICS_FAILED");
+  }
+  return (await res.json()) as VendasAnalyticsResponse;
+}
+
 export async function getVenda(id: string): Promise<VendaResumo> {
   if (!API_BASE) {
     throw new Error("API_NOT_CONFIGURED");

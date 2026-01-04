@@ -60,6 +60,9 @@ const ConciliacaoTributacaoPage = lazy(
 );
 const VendasPage = lazy(() => import("../features/comercial/pages/VendasPage"));
 const ComprasPage = lazy(() => import("../features/comercial/pages/ComprasPage"));
+const VendasAnalyticsPage = lazy(
+  () => import("../features/comercial/pages/VendasAnalyticsPage")
+);
 const ClientesPage = lazy(() => import("../features/cadastros/pages/ClientesPage"));
 const FornecedoresPage = lazy(
   () => import("../features/cadastros/pages/FornecedoresPage")
@@ -296,6 +299,14 @@ export const router = createBrowserRouter([
         element: withLoading(
           <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
             <ComprasPage />
+          </RequireRole>
+        ),
+      },
+      {
+        path: "comercial/vendas/analytics",
+        element: withLoading(
+          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
+            <VendasAnalyticsPage />
           </RequireRole>
         ),
       },

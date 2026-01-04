@@ -116,6 +116,7 @@ const AppHeader = () => {
       children: [
         { id: "vendas", label: "Vendas", to: "/comercial/vendas", icon: <IconChart /> },
         { id: "compras", label: "Compras", to: "/comercial/compras", icon: <IconChart /> },
+        { id: "vendas_analytics", label: "Analise de vendas", to: "/comercial/vendas/analytics", icon: <IconChart /> },
       ],
     },
     {

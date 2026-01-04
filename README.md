@@ -97,6 +97,7 @@ Comercial
 - `POST /comercial/vendas`
 - `PUT /comercial/vendas/:id`
 - `DELETE /comercial/vendas/:id`
+- `GET /comercial/vendas/analytics`
 - `GET /comercial/compras`
 - `GET /comercial/compras/:id`
 - `POST /comercial/compras`
