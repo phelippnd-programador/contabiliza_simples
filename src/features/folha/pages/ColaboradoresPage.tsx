@@ -19,6 +19,8 @@ import {
 import { categoriaInssOptions } from "../../../shared/types/select-type";
 import { formatBRL, formatCpfCnpj, formatPercentBR } from "../../../shared/utils/formater";
 import { EditIcon, TrashIcon } from "../../../components/ui/icon/AppIcons";
+import AppPopup from "../../../components/ui/popup/AppPopup";
+import useConfirmPopup from "../../../shared/hooks/useConfirmPopup";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 
@@ -42,6 +44,7 @@ const ColaboradoresPage = () => {
   const [formError, setFormError] = useState("");
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const { popupProps, openConfirm } = useConfirmPopup();
   const [formData, setFormData] = useState({
     nome: "",
     documento: "",
@@ -167,15 +170,23 @@ const ColaboradoresPage = () => {
                   setError("API nao configurada.");
                   return;
                 }
-                const confirmed = window.confirm("Excluir este colaborador?");
-                if (!confirmed) return;
-                try {
-                  setError("");
-                  await deleteColaborador(row.id);
-                  load();
-                } catch {
-                  setError("Nao foi possivel excluir o colaborador.");
-                }
+                openConfirm(
+                  {
+                    title: "Excluir colaborador",
+                    description: "Deseja excluir este colaborador?",
+                    confirmLabel: "Excluir",
+                    tone: "danger",
+                  },
+                  async () => {
+                    try {
+                      setError("");
+                      await deleteColaborador(row.id);
+                      load();
+                    } catch {
+                      setError("Nao foi possivel excluir o colaborador.");
+                    }
+                  }
+                );
               }}
             />
           </div>
@@ -476,6 +487,7 @@ const ColaboradoresPage = () => {
           columns={columns}
         />
       </Card>
+      <AppPopup {...popupProps} />
     </div>
   );
 };

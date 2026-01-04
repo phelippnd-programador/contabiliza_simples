@@ -20,6 +20,8 @@ import {
 } from "../services/cadastros.service";
 import { formatBRL } from "../../../shared/utils/formater";
 import { EditIcon, TrashIcon } from "../../../components/ui/icon/AppIcons";
+import AppPopup from "../../../components/ui/popup/AppPopup";
+import useConfirmPopup from "../../../shared/hooks/useConfirmPopup";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 
@@ -39,6 +41,7 @@ const ProdutosServicosPage = () => {
   const [formError, setFormError] = useState("");
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const { popupProps, openConfirm } = useConfirmPopup();
   const [formData, setFormData] = useState({
     descricao: "",
     tipo: "PRODUTO",
@@ -144,21 +147,29 @@ const ProdutosServicosPage = () => {
               icon={<TrashIcon className="h-4 w-4" />}
               label={`Excluir item ${row.descricao}`}
               variant="danger"
-              onClick={async () => {
-                if (!API_BASE) {
-                  setError("API nao configurada.");
-                  return;
-                }
-                const confirmed = window.confirm("Excluir este item?");
-                if (!confirmed) return;
-                try {
-                  setError("");
-                  await deleteProdutoServico(row.id);
-                  load();
-                } catch {
-                  setError("Nao foi possivel excluir o item.");
-                }
-              }}
+              onClick={() =>
+                openConfirm(
+                  {
+                    title: "Excluir item",
+                    description: "Deseja excluir este item?",
+                    confirmLabel: "Excluir",
+                    tone: "danger",
+                  },
+                  async () => {
+                    if (!API_BASE) {
+                      setError("API nao configurada.");
+                      return;
+                    }
+                    try {
+                      setError("");
+                      await deleteProdutoServico(row.id);
+                      load();
+                    } catch {
+                      setError("Nao foi possivel excluir o item.");
+                    }
+                  }
+                )
+              }
             />
           </div>
         ),
@@ -398,6 +409,7 @@ const ProdutosServicosPage = () => {
           columns={columns}
         />
       </Card>
+      <AppPopup {...popupProps} />
     </div>
   );
 };

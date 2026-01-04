@@ -16,7 +16,10 @@ import AppIconButton from "../../../components/ui/button/AppIconButton";
 import AppTextInput from "../../../components/ui/input/AppTextInput";
 import AppSelectInput from "../../../components/ui/input/AppSelectInput";
 import { getErrorMessage } from "../../../shared/services/apiClient";
+import { formatLocalDate } from "../../../shared/utils/formater";
 import { EditIcon, TrashIcon } from "../../../components/ui/icon/AppIcons";
+import AppPopup from "../../../components/ui/popup/AppPopup";
+import useConfirmPopup from "../../../shared/hooks/useConfirmPopup";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 
@@ -46,6 +49,7 @@ const IntegracoesBancariasPage = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const { popupProps, openConfirm } = useConfirmPopup();
   const [formData, setFormData] = useState({
     banco: "",
     status: "ATIVA",
@@ -83,7 +87,8 @@ const IntegracoesBancariasPage = () => {
       {
         key: "ultimaAtualizacao",
         header: "Ultima atualizacao",
-        render: (row: IntegracaoBancariaResumo) => row.ultimaAtualizacao ?? "-",
+        render: (row: IntegracaoBancariaResumo) =>
+          row.ultimaAtualizacao ? formatLocalDate(row.ultimaAtualizacao) : "-",
       },
       {
         key: "status",
@@ -113,21 +118,31 @@ const IntegracoesBancariasPage = () => {
               icon={<TrashIcon className="h-4 w-4" />}
               label={`Excluir integracao ${row.banco}`}
               variant="danger"
-              onClick={async () => {
-                if (!API_BASE) {
-                  setError("API nao configurada.");
-                  return;
-                }
-                const confirmed = window.confirm("Excluir esta integracao?");
-                if (!confirmed) return;
-                try {
-                  setError("");
-                  await deleteIntegracaoBancaria(row.id);
-                  load();
-                } catch (err) {
-                  setError(getErrorMessage(err, "Nao foi possivel excluir a integracao."));
-                }
-              }}
+              onClick={() =>
+                openConfirm(
+                  {
+                    title: "Excluir integracao",
+                    description: "Deseja excluir esta integracao?",
+                    confirmLabel: "Excluir",
+                    tone: "danger",
+                  },
+                  async () => {
+                    if (!API_BASE) {
+                      setError("API nao configurada.");
+                      return;
+                    }
+                    try {
+                      setError("");
+                      await deleteIntegracaoBancaria(row.id);
+                      load();
+                    } catch (err) {
+                      setError(
+                        getErrorMessage(err, "Nao foi possivel excluir a integracao.")
+                      );
+                    }
+                  }
+                )
+              }
             />
           </div>
         ),
@@ -274,6 +289,7 @@ const IntegracoesBancariasPage = () => {
           />
         )}
       </Card>
+      <AppPopup {...popupProps} />
     </div>
   );
 };

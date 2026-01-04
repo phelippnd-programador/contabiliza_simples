@@ -15,8 +15,10 @@ import {
   deleteReceitaTributacao,
   type ReceitaTributacaoResumo,
 } from "../services/receitas-tributacao.service";
-import { formatBRL } from "../../../shared/utils/formater";
+import { formatBRL, formatLocalDate } from "../../../shared/utils/formater";
 import { EditIcon, TrashIcon } from "../../../components/ui/icon/AppIcons";
+import AppPopup from "../../../components/ui/popup/AppPopup";
+import useConfirmPopup from "../../../shared/hooks/useConfirmPopup";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 const SIM_STORAGE_KEY = "sim_receitas_tributacao";
@@ -40,6 +42,7 @@ const ReceitasTributacaoPage = () => {
   const [simError, setSimError] = useState("");
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const { popupProps, openConfirm } = useConfirmPopup();
   const [formData, setFormData] = useState({
     competencia: "",
     origem: "",
@@ -99,7 +102,8 @@ const ReceitasTributacaoPage = () => {
       {
         key: "competencia",
         header: "Competencia",
-        render: (row: ReceitaTributacaoResumo) => row.competencia,
+        render: (row: ReceitaTributacaoResumo) =>
+          formatLocalDate(row.competencia),
       },
       {
         key: "origem",
@@ -146,21 +150,29 @@ const ReceitasTributacaoPage = () => {
               icon={<TrashIcon className="h-4 w-4" />}
               label={`Excluir receita ${row.id}`}
               variant="danger"
-              onClick={async () => {
-                if (!API_BASE) {
-                  setSimuladas((prev) => prev.filter((item) => item.id !== row.id));
-                  return;
-                }
-                const confirmed = window.confirm("Excluir esta receita?");
-                if (!confirmed) return;
-                try {
-                  setError("");
-                  await deleteReceitaTributacao(row.id);
-                  load();
-                } catch {
-                  setError("Nao foi possivel excluir a receita.");
-                }
-              }}
+              onClick={() =>
+                openConfirm(
+                  {
+                    title: "Excluir receita",
+                    description: "Deseja excluir esta receita?",
+                    confirmLabel: "Excluir",
+                    tone: "danger",
+                  },
+                  async () => {
+                    if (!API_BASE) {
+                      setSimuladas((prev) => prev.filter((item) => item.id !== row.id));
+                      return;
+                    }
+                    try {
+                      setError("");
+                      await deleteReceitaTributacao(row.id);
+                      load();
+                    } catch {
+                      setError("Nao foi possivel excluir a receita.");
+                    }
+                  }
+                )
+              }
             />
           </div>
         ),
@@ -383,6 +395,7 @@ const ReceitasTributacaoPage = () => {
           columns={columns}
         />
       </Card>
+      <AppPopup {...popupProps} />
     </div>
   );
 };

@@ -9,10 +9,13 @@ import type { ContaBancaria } from "../types";
 import AppListNotFound from "../../../components/ui/AppListNotFound";
 import AppTable from "../../../components/ui/table/AppTable";
 import { EditIcon, TrashIcon } from "../../../components/ui/icon/AppIcons";
+import AppPopup from "../../../components/ui/popup/AppPopup";
+import useConfirmPopup from "../../../shared/hooks/useConfirmPopup";
 
 const ContasBancariasPage = () => {
   const navigate = useNavigate();
   const [contas, setContas] = useState<ContaBancaria[]>([]);
+  const { popupProps, openConfirm } = useConfirmPopup();
 
   useEffect(() => {
     let isMounted = true;
@@ -27,13 +30,19 @@ const ContasBancariasPage = () => {
     };
   }, []);
 
-  const handleRemove = async (conta: ContaBancaria) => {
-    const confirmed = window.confirm(
-      `Deseja remover a conta "${conta.nome}"?`
+  const handleRemove = (conta: ContaBancaria) => {
+    openConfirm(
+      {
+        title: "Remover conta",
+        description: `Deseja remover a conta "${conta.nome}"?`,
+        confirmLabel: "Remover",
+        tone: "danger",
+      },
+      async () => {
+        await deleteConta(conta.id);
+        setContas(await listContas());
+      }
     );
-    if (!confirmed) return;
-    await deleteConta(conta.id);
-    setContas(await listContas());
   };
 
   return (
@@ -108,6 +117,7 @@ const ContasBancariasPage = () => {
           />
         </div>
       </Card>
+      <AppPopup {...popupProps} />
     </div>
   );
 };

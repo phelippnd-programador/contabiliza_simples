@@ -15,8 +15,10 @@ import {
   deleteCaixaTributacao,
   type CaixaTributacaoResumo,
 } from "../services/caixa-tributacao.service";
-import { formatBRL } from "../../../shared/utils/formater";
+import { formatBRL, formatLocalDate } from "../../../shared/utils/formater";
 import { EditIcon, TrashIcon } from "../../../components/ui/icon/AppIcons";
+import AppPopup from "../../../components/ui/popup/AppPopup";
+import useConfirmPopup from "../../../shared/hooks/useConfirmPopup";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 const SIM_STORAGE_KEY = "sim_caixa_tributacao";
@@ -40,6 +42,7 @@ const CaixaTributacaoPage = () => {
   const [simError, setSimError] = useState("");
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const { popupProps, openConfirm } = useConfirmPopup();
   const [formData, setFormData] = useState({
     competencia: "",
     conta: "",
@@ -99,7 +102,8 @@ const CaixaTributacaoPage = () => {
       {
         key: "competencia",
         header: "Competencia",
-        render: (row: CaixaTributacaoResumo) => row.competencia,
+        render: (row: CaixaTributacaoResumo) =>
+          formatLocalDate(row.competencia),
       },
       {
         key: "conta",
@@ -146,21 +150,29 @@ const CaixaTributacaoPage = () => {
               icon={<TrashIcon className="h-4 w-4" />}
               label={`Excluir caixa ${row.id}`}
               variant="danger"
-              onClick={async () => {
-                if (!API_BASE) {
-                  setSimuladas((prev) => prev.filter((item) => item.id !== row.id));
-                  return;
-                }
-                const confirmed = window.confirm("Excluir este registro?");
-                if (!confirmed) return;
-                try {
-                  setError("");
-                  await deleteCaixaTributacao(row.id);
-                  load();
-                } catch {
-                  setError("Nao foi possivel excluir o registro.");
-                }
-              }}
+              onClick={() =>
+                openConfirm(
+                  {
+                    title: "Excluir registro",
+                    description: "Deseja excluir este registro?",
+                    confirmLabel: "Excluir",
+                    tone: "danger",
+                  },
+                  async () => {
+                    if (!API_BASE) {
+                      setSimuladas((prev) => prev.filter((item) => item.id !== row.id));
+                      return;
+                    }
+                    try {
+                      setError("");
+                      await deleteCaixaTributacao(row.id);
+                      load();
+                    } catch {
+                      setError("Nao foi possivel excluir o registro.");
+                    }
+                  }
+                )
+              }
             />
           </div>
         ),
@@ -381,6 +393,7 @@ const CaixaTributacaoPage = () => {
           columns={columns}
         />
       </Card>
+      <AppPopup {...popupProps} />
     </div>
   );
 };

@@ -12,6 +12,7 @@ import AppListNotFound from "../../../components/ui/AppListNotFound";
 import { listNotas } from "../services/notas.service";
 import type { NotaResumo, NotaStatus } from "../types";
 import { getErrorMessage } from "../../../shared/services/apiClient";
+import { formatLocalDate } from "../../../shared/utils/formater";
 import { EyeIcon } from "../../../components/ui/icon/AppIcons";
 
 const statusOptions = [
@@ -69,7 +70,11 @@ const NotasListPage = () => {
     () => [
       { key: "status", header: "Status", render: (row: NotaResumo) => row.status },
       { key: "tipo", header: "Tipo", render: (row: NotaResumo) => row.tipo },
-      { key: "competencia", header: "Competencia", render: (row: NotaResumo) => row.competencia },
+      {
+        key: "competencia",
+        header: "Competencia",
+        render: (row: NotaResumo) => formatLocalDate(row.competencia),
+      },
       { key: "tomador", header: "Tomador", render: (row: NotaResumo) => row.tomador?.nomeRazao ?? "-" },
       {
         key: "total",

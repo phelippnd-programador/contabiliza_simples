@@ -18,8 +18,10 @@ import {
 import { listContas } from "../services/contas.service";
 import { listCategorias } from "../services/categorias.service";
 import { listFornecedores, type FornecedorResumo } from "../../cadastros/services/cadastros.service";
-import { formatBRL } from "../../../shared/utils/formater";
+import { formatBRL, formatLocalDate } from "../../../shared/utils/formater";
 import { EditIcon, TrashIcon } from "../../../components/ui/icon/AppIcons";
+import AppPopup from "../../../components/ui/popup/AppPopup";
+import useConfirmPopup from "../../../shared/hooks/useConfirmPopup";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 
@@ -44,6 +46,7 @@ const ContasPagarPage = () => {
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [fornecedores, setFornecedores] = useState<FornecedorResumo[]>([]);
+  const { popupProps, openConfirm } = useConfirmPopup();
   const [contas, setContas] = useState<Array<{ value: string; label: string }>>(
     []
   );
@@ -173,7 +176,7 @@ const ContasPagarPage = () => {
       {
         key: "vencimento",
         header: "Vencimento",
-        render: (row: ContaPagarResumo) => row.vencimento,
+        render: (row: ContaPagarResumo) => formatLocalDate(row.vencimento),
       },
       {
         key: "parcela",
@@ -237,21 +240,29 @@ const ContasPagarPage = () => {
               icon={<TrashIcon className="h-4 w-4" />}
               label={`Excluir conta ${row.id}`}
               variant="danger"
-              onClick={async () => {
-                if (!API_BASE) {
-                  setError("API nao configurada.");
-                  return;
-                }
-                const confirmed = window.confirm("Excluir esta conta?");
-                if (!confirmed) return;
-                try {
-                  setError("");
-                  await deleteContaPagar(row.id);
-                  load();
-                } catch {
-                  setError("Nao foi possivel excluir a conta.");
-                }
-              }}
+              onClick={() =>
+                openConfirm(
+                  {
+                    title: "Excluir conta",
+                    description: "Deseja excluir esta conta a pagar?",
+                    confirmLabel: "Excluir",
+                    tone: "danger",
+                  },
+                  async () => {
+                    if (!API_BASE) {
+                      setError("API nao configurada.");
+                      return;
+                    }
+                    try {
+                      setError("");
+                      await deleteContaPagar(row.id);
+                      load();
+                    } catch {
+                      setError("Nao foi possivel excluir a conta.");
+                    }
+                  }
+                )
+              }
             />
           </div>
         ),
@@ -595,6 +606,7 @@ const ContasPagarPage = () => {
           columns={columns}
         />
       </Card>
+      <AppPopup {...popupProps} />
     </div>
   );
 };

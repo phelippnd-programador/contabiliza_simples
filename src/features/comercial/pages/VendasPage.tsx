@@ -25,8 +25,10 @@ import { listContas } from "../../financeiro/services/contas.service";
 import { listCategorias } from "../../financeiro/services/categorias.service";
 import { createContaReceber } from "../../financeiro/services/contas-receber.service";
 import { createMovimento } from "../../estoque/services/estoque.service";
-import { formatBRL } from "../../../shared/utils/formater";
+import { formatBRL, formatLocalDate } from "../../../shared/utils/formater";
 import { EditIcon, TrashIcon } from "../../../components/ui/icon/AppIcons";
+import AppPopup from "../../../components/ui/popup/AppPopup";
+import useConfirmPopup from "../../../shared/hooks/useConfirmPopup";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 
@@ -77,6 +79,7 @@ const VendasPage = () => {
   const [formError, setFormError] = useState("");
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const { popupProps, openConfirm } = useConfirmPopup();
   const [clientes, setClientes] = useState<ClienteResumo[]>([]);
   const [catalogo, setCatalogo] = useState<ProdutoServicoResumo[]>([]);
   const [contas, setContas] = useState<Array<{ value: string; label: string }>>(
@@ -191,7 +194,7 @@ const VendasPage = () => {
       {
         key: "data",
         header: "Data",
-        render: (row: VendaResumo) => row.data,
+        render: (row: VendaResumo) => formatLocalDate(row.data),
       },
       {
         key: "itens",
@@ -252,21 +255,29 @@ const VendasPage = () => {
               icon={<TrashIcon className="h-4 w-4" />}
               label={`Excluir venda ${row.id}`}
               variant="danger"
-              onClick={async () => {
-                if (!API_BASE) {
-                  setError("API nao configurada.");
-                  return;
-                }
-                const confirmed = window.confirm("Excluir esta venda?");
-                if (!confirmed) return;
-                try {
-                  setError("");
-                  await deleteVenda(row.id);
-                  load();
-                } catch {
-                  setError("Nao foi possivel excluir a venda.");
-                }
-              }}
+              onClick={() =>
+                openConfirm(
+                  {
+                    title: "Excluir venda",
+                    description: "Deseja excluir esta venda?",
+                    confirmLabel: "Excluir",
+                    tone: "danger",
+                  },
+                  async () => {
+                    if (!API_BASE) {
+                      setError("API nao configurada.");
+                      return;
+                    }
+                    try {
+                      setError("");
+                      await deleteVenda(row.id);
+                      load();
+                    } catch {
+                      setError("Nao foi possivel excluir a venda.");
+                    }
+                  }
+                )
+              }
             />
           </div>
         ),
@@ -772,6 +783,7 @@ const VendasPage = () => {
           columns={columns}
         />
       </Card>
+      <AppPopup {...popupProps} />
     </div>
   );
 };

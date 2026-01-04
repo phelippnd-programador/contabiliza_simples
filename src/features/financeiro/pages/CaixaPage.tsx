@@ -6,6 +6,7 @@ import AppDateInput from "../../../components/ui/input/AppDateInput";
 import AppSelectInput from "../../../components/ui/input/AppSelectInput";
 import AppTable from "../../../components/ui/table/AppTable";
 import AppListNotFound from "../../../components/ui/AppListNotFound";
+import { formatLocalDate } from "../../../shared/utils/formater";
 import { listContas } from "../services/contas.service";
 import { listCategorias } from "../services/categorias.service";
 import { listMovimentos } from "../services/movimentos.service";
@@ -208,7 +209,7 @@ const CaixaPage = () => {
               {
                 key: "data",
                 header: "Data",
-                render: (movimento) => movimento.data,
+                render: (movimento) => formatLocalDate(movimento.data),
               },
               {
                 key: "conta",

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+ï»¿import React, { useEffect, useState } from "react";
 import { formatPhoneBR, onlyDigits } from "../../../../shared/utils/formater";
 import AppTextInput from "../../../../components/ui/input/AppTextInput";
 import AppEndereco from "../../../../components/ui/input/AppEndereco";
@@ -57,8 +57,8 @@ export function EnderecoContatoTab({ empresa }: Props) {
   return (
     <div className="flex flex-col gap-6">
       <div className="mb-4">
-        <AppTitle text='Endereco e Contato da empresa' />
-        <AppSubTitle text="InformaÇõÇœo de contato e endereco da empresa." />
+        <AppTitle text="Endereco e contato da empresa" />
+        <AppSubTitle text="Informacoes de contato e endereco da empresa." />
       </div>
       <Card>
         <AppSubTitle text="Contato" />
@@ -85,7 +85,7 @@ export function EnderecoContatoTab({ empresa }: Props) {
       </Card>
 
       <Card>
-        <AppSubTitle text="EndereÇõo" />
+        <AppSubTitle text="Endereco" />
 
         <AppEndereco
           value={value}
@@ -110,7 +110,7 @@ export function EnderecoContatoTab({ empresa }: Props) {
         />
       </Card>
 
-      <div className="footer flex gap-4">
+      <div className="flex items-center justify-end gap-3">
         <AppButton onClick={handleSave}>Salvar</AppButton>
         <AppButton>Cancelar</AppButton>
       </div>

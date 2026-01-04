@@ -26,45 +26,47 @@ export const DadosTab = ({ empresa }: Props) => {
 
       </div>
       <Card>
-        <AppTextInput
-          required
-          title='Razao Social'
-          placeholder=''
-          value={form?.razaoSocial ?? ''}
-          onChange={(e) =>
-            setForm((prev) => (prev ? { ...prev, razaoSocial: e.target.value } : prev))
-          }
-          error={errors.razaoSocial}
-        />
-        <AppTextInput
-          required
-          title='Nome Fantasia'
-          placeholder=''
-          value={form?.nomeFantasia ?? ''}
-          onChange={(e) =>
-            setForm((prev) => (prev ? { ...prev, nomeFantasia: e.target.value } : prev))
-          }
-          error={errors.nomeFantasia}
-        />
-        <AppTextInput
-          disabled
-          value={formatCNPJ(form?.cnpj ?? '')}
-          required
-          title='CNPJ'
-          placeholder=''
-          error={errors.cnpj}
-        />
-        <AppTextInput
-          required
-          title='Inscricao Estadual'
-          placeholder=''
-          value={form?.inscricaoEstadual ?? ''}
-          onChange={(e) =>
-            setForm((prev) => (prev ? { ...prev, inscricaoEstadual: e.target.value } : prev))
-          }
-        />
+        <div className="grid gap-4 md:grid-cols-2">
+          <AppTextInput
+            required
+            title='Razao Social'
+            placeholder=''
+            value={form?.razaoSocial ?? ''}
+            onChange={(e) =>
+              setForm((prev) => (prev ? { ...prev, razaoSocial: e.target.value } : prev))
+            }
+            error={errors.razaoSocial}
+          />
+          <AppTextInput
+            required
+            title='Nome Fantasia'
+            placeholder=''
+            value={form?.nomeFantasia ?? ''}
+            onChange={(e) =>
+              setForm((prev) => (prev ? { ...prev, nomeFantasia: e.target.value } : prev))
+            }
+            error={errors.nomeFantasia}
+          />
+          <AppTextInput
+            disabled
+            value={formatCNPJ(form?.cnpj ?? '')}
+            required
+            title='CNPJ'
+            placeholder=''
+            error={errors.cnpj}
+          />
+          <AppTextInput
+            required
+            title='Inscricao Estadual'
+            placeholder=''
+            value={form?.inscricaoEstadual ?? ''}
+            onChange={(e) =>
+              setForm((prev) => (prev ? { ...prev, inscricaoEstadual: e.target.value } : prev))
+            }
+          />
+        </div>
       </Card>
-      <div className="footer flex gap-4">
+      <div className="flex items-center justify-end gap-3">
         <AppButton onClick={() => { }}>Salvar</AppButton>
         <AppButton>Cancelar</AppButton>
       </div>

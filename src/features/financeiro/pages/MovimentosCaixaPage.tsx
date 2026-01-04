@@ -23,8 +23,10 @@ import {
   type ContaBancaria,
   type MovimentoCaixa,
 } from "../types";
-import { formatBRL } from "../../../shared/utils/formater";
+import { formatBRL, formatLocalDate } from "../../../shared/utils/formater";
 import { EditIcon, TrashIcon } from "../../../components/ui/icon/AppIcons";
+import AppPopup from "../../../components/ui/popup/AppPopup";
+import useConfirmPopup from "../../../shared/hooks/useConfirmPopup";
 
 
 const tipoMovimentoOptions = [
@@ -50,6 +52,7 @@ const MovimentosCaixaPage = () => {
   const [form, setForm] = useState({ id: "", ...emptyForm });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [cnaeItem, setCnaeItem] = useState<CnaeItem | null>(null);
+  const { popupProps, openConfirm } = useConfirmPopup();
 
   const refresh = async () => setMovimentos(await listMovimentos());
 
@@ -138,16 +141,22 @@ const MovimentosCaixaPage = () => {
     setErrors({});
   };
 
-  const handleRemove = async (movimento: MovimentoCaixa) => {
-    const confirmed = window.confirm(
-      "Deseja remover este movimento de caixa?"
+  const handleRemove = (movimento: MovimentoCaixa) => {
+    openConfirm(
+      {
+        title: "Remover movimento",
+        description: "Deseja remover este movimento de caixa?",
+        confirmLabel: "Remover",
+        tone: "danger",
+      },
+      async () => {
+        await deleteMovimento(movimento.id);
+        if (form.id === movimento.id) {
+          setForm({ id: "", ...emptyForm });
+        }
+        await refresh();
+      }
     );
-    if (!confirmed) return;
-    await deleteMovimento(movimento.id);
-    if (form.id === movimento.id) {
-      setForm({ id: "", ...emptyForm });
-    }
-    await refresh();
   };
 
   const handleReset = () => {
@@ -290,7 +299,7 @@ const MovimentosCaixaPage = () => {
               {
                 key: "data",
                 header: "Data",
-                render: (movimento) => movimento.data,
+                render: (movimento) => formatLocalDate(movimento.data),
               },
               {
                 key: "conta",
@@ -348,6 +357,7 @@ const MovimentosCaixaPage = () => {
           />
         </div>
       </Card>
+      <AppPopup {...popupProps} />
     </div>
   );
 };

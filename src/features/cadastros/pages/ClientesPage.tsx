@@ -17,6 +17,8 @@ import {
   type ClienteResumo,
 } from "../services/cadastros.service";
 import { EditIcon, TrashIcon } from "../../../components/ui/icon/AppIcons";
+import AppPopup from "../../../components/ui/popup/AppPopup";
+import useConfirmPopup from "../../../shared/hooks/useConfirmPopup";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 
@@ -42,6 +44,7 @@ const ClientesPage = () => {
   const [formError, setFormError] = useState("");
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const { popupProps, openConfirm } = useConfirmPopup();
   const [addressErrors, setAddressErrors] = useState<
     Partial<Record<keyof EnderecoValue, string>>
   >({});
@@ -149,21 +152,29 @@ const ClientesPage = () => {
               icon={<TrashIcon className="h-4 w-4" />}
               label={`Excluir cliente ${row.nome}`}
               variant="danger"
-              onClick={async () => {
-                if (!API_BASE) {
-                  setError("API nao configurada.");
-                  return;
-                }
-                const confirmed = window.confirm("Excluir este cliente?");
-                if (!confirmed) return;
-                try {
-                  setError("");
-                  await deleteCliente(row.id);
-                  load();
-                } catch {
-                  setError("Nao foi possivel excluir o cliente.");
-                }
-              }}
+              onClick={() =>
+                openConfirm(
+                  {
+                    title: "Excluir cliente",
+                    description: "Deseja excluir este cliente?",
+                    confirmLabel: "Excluir",
+                    tone: "danger",
+                  },
+                  async () => {
+                    if (!API_BASE) {
+                      setError("API nao configurada.");
+                      return;
+                    }
+                    try {
+                      setError("");
+                      await deleteCliente(row.id);
+                      load();
+                    } catch {
+                      setError("Nao foi possivel excluir o cliente.");
+                    }
+                  }
+                )
+              }
             />
           </div>
         ),
@@ -486,6 +497,7 @@ const ClientesPage = () => {
           columns={columns}
         />
       </Card>
+      <AppPopup {...popupProps} />
     </div>
   );
 };

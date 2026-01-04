@@ -21,7 +21,9 @@ import {
   type ColaboradorResumo,
 } from "../services/colaboradores.service";
 import { EditIcon, TrashIcon } from "../../../components/ui/icon/AppIcons";
-import { formatBRL, formatPercentBR } from "../../../shared/utils/formater";
+import { formatBRL, formatLocalDate, formatPercentBR } from "../../../shared/utils/formater";
+import AppPopup from "../../../components/ui/popup/AppPopup";
+import useConfirmPopup from "../../../shared/hooks/useConfirmPopup";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 const SIM_STORAGE_KEY = "sim_folha";
@@ -59,6 +61,7 @@ const FolhaPagamentoPage = () => {
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [statusDrafts, setStatusDrafts] = useState<Record<string, string>>({});
+  const { popupProps, openConfirm } = useConfirmPopup();
   const [formData, setFormData] = useState({
     referencia: "",
     colaboradores: 0,
@@ -227,7 +230,7 @@ const FolhaPagamentoPage = () => {
       {
         key: "referencia",
         header: "Referencia",
-        render: (row: FolhaResumo) => row.referencia,
+        render: (row: FolhaResumo) => formatLocalDate(row.referencia),
       },
       {
         key: "colaboradores",
@@ -357,15 +360,23 @@ const FolhaPagamentoPage = () => {
                   setSimuladas((prev) => prev.filter((item) => item.id !== row.id));
                   return;
                 }
-                const confirmed = window.confirm("Excluir esta folha?");
-                if (!confirmed) return;
-                try {
-                  setError("");
-                  await deleteFolha(row.id);
-                  load();
-                } catch {
-                  setError("Nao foi possivel excluir a folha.");
-                }
+                openConfirm(
+                  {
+                    title: "Excluir folha",
+                    description: "Deseja excluir esta folha?",
+                    confirmLabel: "Excluir",
+                    tone: "danger",
+                  },
+                  async () => {
+                    try {
+                      setError("");
+                      await deleteFolha(row.id);
+                      load();
+                    } catch {
+                      setError("Nao foi possivel excluir a folha.");
+                    }
+                  }
+                );
               }}
             />
           </div>
@@ -766,6 +777,7 @@ const FolhaPagamentoPage = () => {
           columns={columns}
         />
       </Card>
+      <AppPopup {...popupProps} />
     </div>
   );
 };

@@ -25,8 +25,10 @@ import { listContas } from "../../financeiro/services/contas.service";
 import { listCategorias } from "../../financeiro/services/categorias.service";
 import { createContaPagar } from "../../financeiro/services/contas-pagar.service";
 import { createMovimento } from "../../estoque/services/estoque.service";
-import { formatBRL } from "../../../shared/utils/formater";
+import { formatBRL, formatLocalDate } from "../../../shared/utils/formater";
 import { EditIcon, TrashIcon } from "../../../components/ui/icon/AppIcons";
+import AppPopup from "../../../components/ui/popup/AppPopup";
+import useConfirmPopup from "../../../shared/hooks/useConfirmPopup";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 
@@ -77,6 +79,7 @@ const ComprasPage = () => {
   const [formError, setFormError] = useState("");
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const { popupProps, openConfirm } = useConfirmPopup();
   const [fornecedores, setFornecedores] = useState<FornecedorResumo[]>([]);
   const [catalogo, setCatalogo] = useState<ProdutoServicoResumo[]>([]);
   const [contas, setContas] = useState<Array<{ value: string; label: string }>>(
@@ -191,7 +194,7 @@ const ComprasPage = () => {
       {
         key: "data",
         header: "Data",
-        render: (row: CompraResumo) => row.data,
+        render: (row: CompraResumo) => formatLocalDate(row.data),
       },
       {
         key: "itens",
@@ -252,21 +255,29 @@ const ComprasPage = () => {
               icon={<TrashIcon className="h-4 w-4" />}
               label={`Excluir compra ${row.id}`}
               variant="danger"
-              onClick={async () => {
-                if (!API_BASE) {
-                  setError("API nao configurada.");
-                  return;
-                }
-                const confirmed = window.confirm("Excluir esta compra?");
-                if (!confirmed) return;
-                try {
-                  setError("");
-                  await deleteCompra(row.id);
-                  load();
-                } catch {
-                  setError("Nao foi possivel excluir a compra.");
-                }
-              }}
+              onClick={() =>
+                openConfirm(
+                  {
+                    title: "Excluir compra",
+                    description: "Deseja excluir esta compra?",
+                    confirmLabel: "Excluir",
+                    tone: "danger",
+                  },
+                  async () => {
+                    if (!API_BASE) {
+                      setError("API nao configurada.");
+                      return;
+                    }
+                    try {
+                      setError("");
+                      await deleteCompra(row.id);
+                      load();
+                    } catch {
+                      setError("Nao foi possivel excluir a compra.");
+                    }
+                  }
+                )
+              }
             />
           </div>
         ),
@@ -773,6 +784,7 @@ const ComprasPage = () => {
           columns={columns}
         />
       </Card>
+      <AppPopup {...popupProps} />
     </div>
   );
 };

@@ -17,6 +17,8 @@ import {
   type FornecedorResumo,
 } from "../services/cadastros.service";
 import { EditIcon, TrashIcon } from "../../../components/ui/icon/AppIcons";
+import AppPopup from "../../../components/ui/popup/AppPopup";
+import useConfirmPopup from "../../../shared/hooks/useConfirmPopup";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 
@@ -42,6 +44,7 @@ const FornecedoresPage = () => {
   const [formError, setFormError] = useState("");
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const { popupProps, openConfirm } = useConfirmPopup();
   const [addressErrors, setAddressErrors] = useState<
     Partial<Record<keyof EnderecoValue, string>>
   >({});
@@ -149,21 +152,29 @@ const FornecedoresPage = () => {
               icon={<TrashIcon className="h-4 w-4" />}
               label={`Excluir fornecedor ${row.nome}`}
               variant="danger"
-              onClick={async () => {
-                if (!API_BASE) {
-                  setError("API nao configurada.");
-                  return;
-                }
-                const confirmed = window.confirm("Excluir este fornecedor?");
-                if (!confirmed) return;
-                try {
-                  setError("");
-                  await deleteFornecedor(row.id);
-                  load();
-                } catch {
-                  setError("Nao foi possivel excluir o fornecedor.");
-                }
-              }}
+              onClick={() =>
+                openConfirm(
+                  {
+                    title: "Excluir fornecedor",
+                    description: "Deseja excluir este fornecedor?",
+                    confirmLabel: "Excluir",
+                    tone: "danger",
+                  },
+                  async () => {
+                    if (!API_BASE) {
+                      setError("API nao configurada.");
+                      return;
+                    }
+                    try {
+                      setError("");
+                      await deleteFornecedor(row.id);
+                      load();
+                    } catch {
+                      setError("Nao foi possivel excluir o fornecedor.");
+                    }
+                  }
+                )
+              }
             />
           </div>
         ),
@@ -513,6 +524,7 @@ const FornecedoresPage = () => {
           columns={columns}
         />
       </Card>
+      <AppPopup {...popupProps} />
     </div>
   );
 };

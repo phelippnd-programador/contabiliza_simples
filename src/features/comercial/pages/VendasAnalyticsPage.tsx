@@ -10,6 +10,7 @@ import {
   getVendasAnalytics,
   type VendasAnalyticsResponse,
 } from "../services/comercial.service";
+import { formatLocalDate } from "../../../shared/utils/formater";
 
 const VendasAnalyticsPage = () => {
   const [filters, setFilters] = useState({ dataInicio: "", dataFim: "" });
@@ -69,7 +70,11 @@ const VendasAnalyticsPage = () => {
 
   const saidaColumns = useMemo(
     () => [
-      { key: "data", header: "Data", render: (row: { data: string }) => row.data },
+      {
+        key: "data",
+        header: "Data",
+        render: (row: { data: string }) => formatLocalDate(row.data),
+      },
       {
         key: "produto",
         header: "Produto",

@@ -3,6 +3,8 @@ import AppButton from "../../../../components/ui/button/AppButton";
 import { AppTributacaoInput, type TributacaoErrors, type TributacaoValue } from "../../../../components/ui/input/AppTributacaoInput";
 import { CnaePicker } from "../../../../components/ui/picked/CnaePicker";
 import { CnaePickerMulti } from "../../../../components/ui/picked/CnaePickerMulti";
+import Card from "../../../../components/ui/card/Card";
+import AppTitle, { AppSubTitle } from "../../../../components/ui/text/AppTitle";
 
 import type { CnaeItem } from "../../../../shared/services/ibgeCnae";
 import { maskCnae } from "../../../../shared/services/ibgeCnae";
@@ -99,14 +101,16 @@ export function TributacaoTab({ empresaId, empresa, onSave }: Props) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="rounded-lg border border-gray-200 bg-white p-4">
-        <div className="mb-4">
-          <h2 className="text-base font-semibold">Atividade (CNAE)</h2>
-          <p className="text-sm text-gray-500">
-            Defina o CNAE principal e os CNAEs secundarios (se houver). Isso impacta regras fiscais.
-          </p>
-        </div>
+      <div className="mb-4">
+        <AppTitle text="Fiscal / Tributacao" />
+        <AppSubTitle text="Configure as regras fiscais e CNAEs da empresa." />
+      </div>
 
+      <Card>
+        <AppSubTitle text="Atividade (CNAE)" />
+        <p className="text-sm text-gray-600 dark:text-gray-300">
+          Defina o CNAE principal e os CNAEs secundarios (se houver). Isso impacta regras fiscais.
+        </p>
         <div className="grid grid-cols-1 gap-4">
           <CnaePicker
             required
@@ -134,15 +138,13 @@ export function TributacaoTab({ empresaId, empresa, onSave }: Props) {
             error={errors.cnaesSecundarios}
           />
         </div>
-      </div>
+      </Card>
 
-      <div className="rounded-lg border border-gray-200 bg-white p-4">
-        <div className="mb-4">
-          <h2 className="text-base font-semibold">Tributacao</h2>
-          <p className="text-sm text-gray-500">
-            Informe o regime e, se Simples Nacional, preencha os campos obrigatorios.
-          </p>
-        </div>
+      <Card>
+        <AppSubTitle text="Tributacao" />
+        <p className="text-sm text-gray-600 dark:text-gray-300">
+          Informe o regime e, se Simples Nacional, preencha os campos obrigatorios.
+        </p>
 
         <AppTributacaoInput
           syncKey={empresaId ?? "novo"}
@@ -151,7 +153,7 @@ export function TributacaoTab({ empresaId, empresa, onSave }: Props) {
           errors={errors as unknown as TributacaoErrors}
           rbt12Max={4_800_000}
         />
-      </div>
+      </Card>
 
       <div className="flex items-center justify-end gap-3">
         <AppButton onClick={handleSave}>Salvar</AppButton>

@@ -16,6 +16,9 @@ import AppTextInput from "../../../components/ui/input/AppTextInput";
 import AppDateInput from "../../../components/ui/input/AppDateInput";
 import AppSelectInput from "../../../components/ui/input/AppSelectInput";
 import { EditIcon, TrashIcon } from "../../../components/ui/icon/AppIcons";
+import { formatLocalDate } from "../../../shared/utils/formater";
+import AppPopup from "../../../components/ui/popup/AppPopup";
+import useConfirmPopup from "../../../shared/hooks/useConfirmPopup";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 const SIM_STORAGE_KEY = "sim_obrigacoes";
@@ -99,6 +102,7 @@ const ObrigacoesPage = () => {
   const [simError, setSimError] = useState("");
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const { popupProps, openConfirm } = useConfirmPopup();
   const [formData, setFormData] = useState({
     obrigacao: "",
     vencimento: "",
@@ -161,7 +165,7 @@ const ObrigacoesPage = () => {
       {
         key: "vencimento",
         header: "Vencimento",
-        render: (row: ObrigacaoResumo) => row.vencimento,
+        render: (row: ObrigacaoResumo) => formatLocalDate(row.vencimento),
       },
       {
         key: "status",
@@ -192,21 +196,29 @@ const ObrigacoesPage = () => {
               icon={<TrashIcon className="h-4 w-4" />}
               label={`Excluir obrigacao ${row.id}`}
               variant="danger"
-              onClick={async () => {
-                if (!API_BASE) {
-                  setSimuladas((prev) => prev.filter((item) => item.id !== row.id));
-                  return;
-                }
-                const confirmed = window.confirm("Excluir esta obrigacao?");
-                if (!confirmed) return;
-                try {
-                  setError("");
-                  await deleteObrigacao(row.id);
-                  load();
-                } catch {
-                  setError("Nao foi possivel excluir a obrigacao.");
-                }
-              }}
+              onClick={() =>
+                openConfirm(
+                  {
+                    title: "Excluir obrigacao",
+                    description: "Deseja excluir esta obrigacao?",
+                    confirmLabel: "Excluir",
+                    tone: "danger",
+                  },
+                  async () => {
+                    if (!API_BASE) {
+                      setSimuladas((prev) => prev.filter((item) => item.id !== row.id));
+                      return;
+                    }
+                    try {
+                      setError("");
+                      await deleteObrigacao(row.id);
+                      load();
+                    } catch {
+                      setError("Nao foi possivel excluir a obrigacao.");
+                    }
+                  }
+                )
+              }
             />
           </div>
         ),
@@ -392,6 +404,7 @@ const ObrigacoesPage = () => {
           columns={columns}
         />
       </Card>
+      <AppPopup {...popupProps} />
     </div>
   );
 };

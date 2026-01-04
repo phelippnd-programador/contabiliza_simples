@@ -11,6 +11,7 @@ import PeriodCashChart, {
 import { listContas } from "../../financeiro/services/contas.service";
 import { listCategorias } from "../../financeiro/services/categorias.service";
 import { listMovimentos } from "../../financeiro/services/movimentos.service";
+import { formatLocalDate } from "../../../shared/utils/formater";
 import {
   TipoMovimentoCaixa,
   type CategoriaMovimento,
@@ -238,11 +239,15 @@ const DashboardPage = () => {
               {
                 key: "data",
                 header: "Data",
-                render: (movimento) => movimento.data,
+                headerClassName: "text-left whitespace-nowrap",
+                className: "whitespace-nowrap",
+                render: (movimento) => formatLocalDate(movimento.data),
               },
               {
                 key: "conta",
                 header: "Conta",
+                headerClassName: "text-left",
+                className: "text-left",
                 render: (movimento) =>
                   contas.find((conta) => conta.id === movimento.contaId)?.nome ??
                   "Conta removida",
@@ -251,7 +256,28 @@ const DashboardPage = () => {
                 key: "valor",
                 header: "Valor",
                 align: "right",
-                render: (movimento) => formatCurrency(movimento.valor),
+                render: (movimento) => {
+                  const isEntrada = movimento.tipo === TipoMovimentoCaixa.ENTRADA;
+                  return (
+                    <div className="flex items-center justify-end gap-2">
+                      <span
+                        className={isEntrada ? "text-emerald-500" : "text-red-500"}
+                        aria-hidden="true"
+                      >
+                        {isEntrada ? (
+                          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
+                            <path d="M12 4 5 11h4v9h6v-9h4z" />
+                          </svg>
+                        ) : (
+                          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
+                            <path d="m12 20 7-7h-4V4H9v9H5z" />
+                          </svg>
+                        )}
+                      </span>
+                      <span>{formatCurrency(movimento.valor)}</span>
+                    </div>
+                  );
+                },
               },
             ]}
           />

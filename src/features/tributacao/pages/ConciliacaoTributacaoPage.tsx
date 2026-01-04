@@ -15,8 +15,10 @@ import {
   deleteConciliacaoTributacao,
   type ConciliacaoTributacaoResumo,
 } from "../services/conciliacao-tributacao.service";
-import { formatBRL } from "../../../shared/utils/formater";
+import { formatBRL, formatLocalDate } from "../../../shared/utils/formater";
 import { EditIcon, TrashIcon } from "../../../components/ui/icon/AppIcons";
+import AppPopup from "../../../components/ui/popup/AppPopup";
+import useConfirmPopup from "../../../shared/hooks/useConfirmPopup";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 const SIM_STORAGE_KEY = "sim_conciliacao_tributacao";
@@ -40,6 +42,7 @@ const ConciliacaoTributacaoPage = () => {
   const [simError, setSimError] = useState("");
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const { popupProps, openConfirm } = useConfirmPopup();
   const [formData, setFormData] = useState({
     data: "",
     conta: "",
@@ -99,7 +102,8 @@ const ConciliacaoTributacaoPage = () => {
       {
         key: "data",
         header: "Data",
-        render: (row: ConciliacaoTributacaoResumo) => row.data,
+        render: (row: ConciliacaoTributacaoResumo) =>
+          formatLocalDate(row.data),
       },
       {
         key: "conta",
@@ -146,21 +150,29 @@ const ConciliacaoTributacaoPage = () => {
               icon={<TrashIcon className="h-4 w-4" />}
               label={`Excluir conciliacao ${row.id}`}
               variant="danger"
-              onClick={async () => {
-                if (!API_BASE) {
-                  setSimuladas((prev) => prev.filter((item) => item.id !== row.id));
-                  return;
-                }
-                const confirmed = window.confirm("Excluir esta conciliacao?");
-                if (!confirmed) return;
-                try {
-                  setError("");
-                  await deleteConciliacaoTributacao(row.id);
-                  load();
-                } catch {
-                  setError("Nao foi possivel excluir a conciliacao.");
-                }
-              }}
+              onClick={() =>
+                openConfirm(
+                  {
+                    title: "Excluir conciliacao",
+                    description: "Deseja excluir esta conciliacao?",
+                    confirmLabel: "Excluir",
+                    tone: "danger",
+                  },
+                  async () => {
+                    if (!API_BASE) {
+                      setSimuladas((prev) => prev.filter((item) => item.id !== row.id));
+                      return;
+                    }
+                    try {
+                      setError("");
+                      await deleteConciliacaoTributacao(row.id);
+                      load();
+                    } catch {
+                      setError("Nao foi possivel excluir a conciliacao.");
+                    }
+                  }
+                )
+              }
             />
           </div>
         ),
@@ -378,6 +390,7 @@ const ConciliacaoTributacaoPage = () => {
           columns={columns}
         />
       </Card>
+      <AppPopup {...popupProps} />
     </div>
   );
 };

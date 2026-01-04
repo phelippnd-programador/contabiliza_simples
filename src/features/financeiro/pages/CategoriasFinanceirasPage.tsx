@@ -15,6 +15,8 @@ import {
 } from "../services/categorias.service";
 import { TipoMovimentoCaixa, type CategoriaMovimento } from "../types";
 import { EditIcon, TrashIcon } from "../../../components/ui/icon/AppIcons";
+import AppPopup from "../../../components/ui/popup/AppPopup";
+import useConfirmPopup from "../../../shared/hooks/useConfirmPopup";
 
 const CategoriasFinanceirasPage = () => {
   const [categorias, setCategorias] = useState<CategoriaMovimento[]>([]);
@@ -24,6 +26,7 @@ const CategoriasFinanceirasPage = () => {
     tipo: TipoMovimentoCaixa.SAIDA as TipoMovimentoCaixa,
   });
   const [errors, setErrors] = useState<{ nome?: string }>({});
+  const { popupProps, openConfirm } = useConfirmPopup();
 
   const refresh = async () => setCategorias(await listCategorias());
 
@@ -57,16 +60,22 @@ const CategoriasFinanceirasPage = () => {
     setErrors({});
   };
 
-  const handleRemove = async (categoria: CategoriaMovimento) => {
-    const confirmed = window.confirm(
-      `Deseja remover a categoria "${categoria.nome}"?`
+  const handleRemove = (categoria: CategoriaMovimento) => {
+    openConfirm(
+      {
+        title: "Remover categoria",
+        description: `Deseja remover a categoria "${categoria.nome}"?`,
+        confirmLabel: "Remover",
+        tone: "danger",
+      },
+      async () => {
+        await deleteCategoria(categoria.id);
+        if (form.id === categoria.id) {
+          setForm({ id: "", nome: "", tipo: TipoMovimentoCaixa.SAIDA });
+        }
+        await refresh();
+      }
     );
-    if (!confirmed) return;
-    await deleteCategoria(categoria.id);
-    if (form.id === categoria.id) {
-      setForm({ id: "", nome: "", tipo: TipoMovimentoCaixa.SAIDA });
-    }
-    await refresh();
   };
 
   const handleReset = () => {
@@ -169,6 +178,7 @@ const CategoriasFinanceirasPage = () => {
           />
         </div>
       </Card>
+      <AppPopup {...popupProps} />
     </div>
   );
 };

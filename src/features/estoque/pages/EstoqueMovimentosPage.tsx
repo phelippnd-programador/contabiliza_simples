@@ -17,7 +17,7 @@ import {
   type EstoqueMovimentoResumo,
   type EstoqueMovimentoTipo,
 } from "../services/estoque.service";
-import { formatBRL } from "../../../shared/utils/formater";
+import { formatBRL, formatLocalDate } from "../../../shared/utils/formater";
 import { listVendas, listCompras, type VendaResumo, type CompraResumo } from "../../comercial/services/comercial.service";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
@@ -280,7 +280,11 @@ const EstoqueMovimentosPage = () => {
 
   const movimentoColumns = useMemo(
     () => [
-      { key: "data", header: "Data", render: (row: EstoqueMovimentoResumo) => row.data },
+      {
+        key: "data",
+        header: "Data",
+        render: (row: EstoqueMovimentoResumo) => formatLocalDate(row.data),
+      },
       { key: "tipo", header: "Tipo", render: (row: EstoqueMovimentoResumo) => row.tipo },
       {
         key: "quantidade",

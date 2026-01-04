@@ -15,8 +15,10 @@ import AppIconButton from "../../../components/ui/button/AppIconButton";
 import AppTextInput from "../../../components/ui/input/AppTextInput";
 import AppDateInput from "../../../components/ui/input/AppDateInput";
 import AppSelectInput from "../../../components/ui/input/AppSelectInput";
-import { formatBRL } from "../../../shared/utils/formater";
+import { formatBRL, formatLocalDate } from "../../../shared/utils/formater";
 import { EditIcon, TrashIcon } from "../../../components/ui/icon/AppIcons";
+import AppPopup from "../../../components/ui/popup/AppPopup";
+import useConfirmPopup from "../../../shared/hooks/useConfirmPopup";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 const SIM_STORAGE_KEY = "sim_apuracoes";
@@ -60,6 +62,7 @@ const ApuracaoImpostosPage = () => {
   const [simError, setSimError] = useState("");
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const { popupProps, openConfirm } = useConfirmPopup();
   const [formData, setFormData] = useState({
     competencia: "",
     tributo: "",
@@ -122,7 +125,7 @@ const ApuracaoImpostosPage = () => {
       {
         key: "competencia",
         header: "Competencia",
-        render: (row: ApuracaoResumo) => row.competencia,
+        render: (row: ApuracaoResumo) => formatLocalDate(row.competencia),
       },
       {
         key: "tributo",
@@ -132,7 +135,8 @@ const ApuracaoImpostosPage = () => {
       {
         key: "vencimento",
         header: "Vencimento",
-        render: (row: ApuracaoResumo) => row.vencimento ?? "-",
+        render: (row: ApuracaoResumo) =>
+          row.vencimento ? formatLocalDate(row.vencimento) : "-",
       },
       {
         key: "valor",
@@ -175,21 +179,29 @@ const ApuracaoImpostosPage = () => {
               icon={<TrashIcon className="h-4 w-4" />}
               label={`Excluir apuracao ${row.id}`}
               variant="danger"
-              onClick={async () => {
-                if (!API_BASE) {
-                  setSimulacoes((prev) => prev.filter((item) => item.id !== row.id));
-                  return;
-                }
-                const confirmed = window.confirm("Excluir esta apuracao?");
-                if (!confirmed) return;
-                try {
-                  setError("");
-                  await deleteApuracao(row.id);
-                  load();
-                } catch {
-                  setError("Nao foi possivel excluir a apuracao.");
-                }
-              }}
+              onClick={() =>
+                openConfirm(
+                  {
+                    title: "Excluir apuracao",
+                    description: "Deseja excluir esta apuracao?",
+                    confirmLabel: "Excluir",
+                    tone: "danger",
+                  },
+                  async () => {
+                    if (!API_BASE) {
+                      setSimulacoes((prev) => prev.filter((item) => item.id !== row.id));
+                      return;
+                    }
+                    try {
+                      setError("");
+                      await deleteApuracao(row.id);
+                      load();
+                    } catch {
+                      setError("Nao foi possivel excluir a apuracao.");
+                    }
+                  }
+                )
+              }
             />
           </div>
         ),
@@ -506,6 +518,7 @@ const ApuracaoImpostosPage = () => {
           columns={columns}
         />
       </Card>
+      <AppPopup {...popupProps} />
     </div>
   );
 };

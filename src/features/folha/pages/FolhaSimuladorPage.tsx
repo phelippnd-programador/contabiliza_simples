@@ -9,7 +9,7 @@ import AppTextInput from "../../../components/ui/input/AppTextInput";
 import AppDateInput from "../../../components/ui/input/AppDateInput";
 import AppSelectInput from "../../../components/ui/input/AppSelectInput";
 import type { FolhaResumo } from "../services/folha.service";
-import { formatBRL, formatPercentBR } from "../../../shared/utils/formater";
+import { formatBRL, formatLocalDate, formatPercentBR } from "../../../shared/utils/formater";
 import { TrashIcon } from "../../../components/ui/icon/AppIcons";
 import {
   listColaboradores,
@@ -147,7 +147,7 @@ const FolhaSimuladorPage = () => {
       {
         key: "referencia",
         header: "Referencia",
-        render: (row: FolhaResumo) => row.referencia,
+        render: (row: FolhaResumo) => formatLocalDate(row.referencia),
       },
       {
         key: "colaboradores",
@@ -218,7 +218,7 @@ const FolhaSimuladorPage = () => {
       {
         key: "referencia",
         header: "Referencia",
-        render: (row: EsocialEvento) => row.referencia,
+        render: (row: EsocialEvento) => formatLocalDate(row.referencia),
       },
       {
         key: "status",
