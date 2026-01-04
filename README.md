@@ -120,6 +120,17 @@ Estoque
 - `POST /estoque`
 - `PUT /estoque/:id`
 - `DELETE /estoque/:id`
+- `GET /estoque/:id/movimentos`
+- `POST /estoque/:id/movimentos`
+
+Regra de custo medio (backend sugerido)
+- Entrada: custo medio = ((saldoAtual * custoMedioAtual) + (qtdEntrada * custoUnitario)) / (saldoAtual + qtdEntrada)
+- Saida: custo medio mantem o mesmo da ultima entrada (nao recalcula)
+- Ajuste/inventario: se vier custoUnitario, recalcula como entrada; se nao vier, mantem o custo medio atual
+
+CSV inventario (front)
+- Colunas: itemId ou item, tipo (ENTRADA/SAIDA/AJUSTE), data, quantidade, custoUnitario (centavos), lote, serie, origem, origemId, observacoes
+- Datas: YYYY-MM-DD
 
 Fiscal
 - `GET /fiscal/apuracoes`
