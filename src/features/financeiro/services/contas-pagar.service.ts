@@ -9,6 +9,8 @@ export type ContaPagarResumo = {
   vencimento: string;
   valor: number;
   status?: string;
+  origem?: "COMPRA" | "MANUAL";
+  origemId?: string;
   descricao?: string;
   numeroDocumento?: string;
   competencia?: string;
@@ -31,6 +33,8 @@ export type ContaPagarPayload = {
   vencimento: string;
   valor: number;
   status?: string;
+  origem?: "COMPRA" | "MANUAL";
+  origemId?: string;
   descricao?: string;
   numeroDocumento?: string;
   competencia?: string;

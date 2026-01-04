@@ -134,6 +134,12 @@ const ContasReceberPage = () => {
         render: (row: ContaReceberResumo) => row.descricao ?? "-",
       },
       {
+        key: "origem",
+        header: "Origem",
+        render: (row: ContaReceberResumo) =>
+          row.origem ? `${row.origem}${row.origemId ? ` (${row.origemId})` : ""}` : "-",
+      },
+      {
         key: "vencimento",
         header: "Vencimento",
         render: (row: ContaReceberResumo) => row.vencimento,

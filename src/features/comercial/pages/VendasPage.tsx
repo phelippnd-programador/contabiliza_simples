@@ -22,6 +22,8 @@ import {
 } from "../../cadastros/services/cadastros.service";
 import { listContas } from "../../financeiro/services/contas.service";
 import { listCategorias } from "../../financeiro/services/categorias.service";
+import { createContaReceber } from "../../financeiro/services/contas-receber.service";
+import { createMovimento } from "../../estoque/services/estoque.service";
 import { formatBRL } from "../../../shared/utils/formater";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
@@ -64,6 +66,8 @@ const emptyItem = (): VendaItemForm => ({
 
 const calcSubtotal = (itens: VendaItemForm[]) =>
   itens.reduce((acc, item) => acc + item.total, 0);
+
+const getCompetencia = (data: string) => (data ? data.slice(0, 7) : "");
 
 const VendasPage = () => {
   const [itens, setItens] = useState<VendaResumo[]>([]);
@@ -373,14 +377,60 @@ const VendasPage = () => {
     };
 
     try {
-      if (editingId) {
-        await updateVenda(editingId, payload);
-      } else {
-        await createVenda(payload);
+      let postError = "";
+      const saved = editingId
+        ? await updateVenda(editingId, payload)
+        : await createVenda(payload);
+      const vendaId = editingId || saved.id;
+
+      if (!editingId && formData.financeiro.gerarConta === "SIM") {
+        try {
+          await createContaReceber({
+            cliente: formData.cliente,
+            vencimento: formData.financeiro.vencimento || formData.data,
+            valor: totalCents,
+            status: "ABERTA",
+            origem: "VENDA",
+            origemId: vendaId,
+            descricao: `Venda ${vendaId}`,
+            numeroDocumento: vendaId,
+            competencia: getCompetencia(formData.data),
+            formaPagamento: formData.financeiro.formaPagamento || undefined,
+            contaId: formData.financeiro.contaId || undefined,
+            categoriaId: formData.financeiro.categoriaId || undefined,
+          });
+        } catch {
+          postError = "Venda salva, mas nao foi possivel gerar a conta a receber.";
+        }
       }
+
+      if (!editingId && formData.estoque.gerarMovimento === "SIM") {
+        try {
+          await Promise.all(
+            formData.itens
+              .filter((item) => item.produtoId)
+              .map((item) =>
+                createMovimento(item.produtoId as string, {
+                  tipo: "SAIDA",
+                  data: formData.data,
+                  quantidade: item.quantidade,
+                  origem: "VENDA",
+                  origemId: vendaId,
+                  observacoes: `Venda ${vendaId}`,
+                })
+              )
+          );
+        } catch {
+          postError =
+            postError ||
+            "Venda salva, mas nao foi possivel movimentar o estoque.";
+        }
+      }
+
       resetForm();
       setFormOpen(false);
       load();
+      if (postError) setError(postError);
     } catch {
       setFormError("Nao foi possivel salvar a venda.");
     }

@@ -9,6 +9,8 @@ export type ContaReceberResumo = {
   vencimento: string;
   valor: number;
   status?: string;
+  origem?: "VENDA" | "MANUAL";
+  origemId?: string;
   descricao?: string;
   numeroDocumento?: string;
   competencia?: string;
@@ -31,6 +33,8 @@ export type ContaReceberPayload = {
   vencimento: string;
   valor: number;
   status?: string;
+  origem?: "VENDA" | "MANUAL";
+  origemId?: string;
   descricao?: string;
   numeroDocumento?: string;
   competencia?: string;

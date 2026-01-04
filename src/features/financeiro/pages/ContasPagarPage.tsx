@@ -134,6 +134,12 @@ const ContasPagarPage = () => {
         render: (row: ContaPagarResumo) => row.descricao ?? "-",
       },
       {
+        key: "origem",
+        header: "Origem",
+        render: (row: ContaPagarResumo) =>
+          row.origem ? `${row.origem}${row.origemId ? ` (${row.origemId})` : ""}` : "-",
+      },
+      {
         key: "vencimento",
         header: "Vencimento",
         render: (row: ContaPagarResumo) => row.vencimento,

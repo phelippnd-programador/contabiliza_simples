@@ -22,6 +22,8 @@ import {
 } from "../../cadastros/services/cadastros.service";
 import { listContas } from "../../financeiro/services/contas.service";
 import { listCategorias } from "../../financeiro/services/categorias.service";
+import { createContaPagar } from "../../financeiro/services/contas-pagar.service";
+import { createMovimento } from "../../estoque/services/estoque.service";
 import { formatBRL } from "../../../shared/utils/formater";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
@@ -64,6 +66,8 @@ const emptyItem = (): CompraItemForm => ({
 
 const calcSubtotal = (itens: CompraItemForm[]) =>
   itens.reduce((acc, item) => acc + item.total, 0);
+
+const getCompetencia = (data: string) => (data ? data.slice(0, 7) : "");
 
 const ComprasPage = () => {
   const [itens, setItens] = useState<CompraResumo[]>([]);
@@ -373,14 +377,61 @@ const ComprasPage = () => {
     };
 
     try {
-      if (editingId) {
-        await updateCompra(editingId, payload);
-      } else {
-        await createCompra(payload);
+      let postError = "";
+      const saved = editingId
+        ? await updateCompra(editingId, payload)
+        : await createCompra(payload);
+      const compraId = editingId || saved.id;
+
+      if (!editingId && formData.financeiro.gerarConta === "SIM") {
+        try {
+          await createContaPagar({
+            fornecedor: formData.fornecedor,
+            vencimento: formData.financeiro.vencimento || formData.data,
+            valor: totalCents,
+            status: "ABERTA",
+            origem: "COMPRA",
+            origemId: compraId,
+            descricao: `Compra ${compraId}`,
+            numeroDocumento: compraId,
+            competencia: getCompetencia(formData.data),
+            formaPagamento: formData.financeiro.formaPagamento || undefined,
+            contaId: formData.financeiro.contaId || undefined,
+            categoriaId: formData.financeiro.categoriaId || undefined,
+          });
+        } catch {
+          postError = "Compra salva, mas nao foi possivel gerar a conta a pagar.";
+        }
       }
+
+      if (!editingId && formData.estoque.gerarMovimento === "SIM") {
+        try {
+          await Promise.all(
+            formData.itens
+              .filter((item) => item.produtoId)
+              .map((item) =>
+                createMovimento(item.produtoId as string, {
+                  tipo: "ENTRADA",
+                  data: formData.data,
+                  quantidade: item.quantidade,
+                  custoUnitario: item.valorUnitario,
+                  origem: "COMPRA",
+                  origemId: compraId,
+                  observacoes: `Compra ${compraId}`,
+                })
+              )
+          );
+        } catch {
+          postError =
+            postError ||
+            "Compra salva, mas nao foi possivel movimentar o estoque.";
+        }
+      }
+
       resetForm();
       setFormOpen(false);
       load();
+      if (postError) setError(postError);
     } catch {
       setFormError("Nao foi possivel salvar a compra.");
     }
