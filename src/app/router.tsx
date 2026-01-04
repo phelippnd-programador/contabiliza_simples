@@ -89,6 +89,9 @@ const IntegracoesBancariasPage = lazy(
 const FolhaPagamentoPage = lazy(
   () => import("../features/folha/pages/FolhaPagamentoPage")
 );
+const FolhaSimuladorPage = lazy(
+  () => import("../features/folha/pages/FolhaSimuladorPage")
+);
 const ColaboradoresPage = lazy(
   () => import("../features/folha/pages/ColaboradoresPage")
 );
@@ -380,6 +383,14 @@ export const router = createBrowserRouter([
         element: withLoading(
           <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
             <FolhaPagamentoPage />
+          </RequireRole>
+        ),
+      },
+      {
+        path: "folha/simulador",
+        element: withLoading(
+          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
+            <FolhaSimuladorPage />
           </RequireRole>
         ),
       },

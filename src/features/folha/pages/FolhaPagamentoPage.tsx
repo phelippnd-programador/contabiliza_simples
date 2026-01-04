@@ -16,6 +16,7 @@ import {
 } from "../services/folha.service";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
+const SIM_STORAGE_KEY = "sim_folha";
 
 const statusOptions = [
   { value: "ABERTA", label: "Aberta" },
@@ -23,8 +24,14 @@ const statusOptions = [
   { value: "CANCELADA", label: "Cancelada" },
 ];
 
+const paginate = <T,>(items: T[], page: number, pageSize: number) => {
+  const start = (page - 1) * pageSize;
+  return { data: items.slice(start, start + pageSize), total: items.length };
+};
+
 const FolhaPagamentoPage = () => {
   const [itens, setItens] = useState<FolhaResumo[]>([]);
+  const [simuladas, setSimuladas] = useState<FolhaResumo[]>([]);
   const [error, setError] = useState("");
   const [formError, setFormError] = useState("");
   const [formOpen, setFormOpen] = useState(false);
@@ -39,6 +46,12 @@ const FolhaPagamentoPage = () => {
   const pageSize = 10;
 
   const load = async () => {
+    if (!API_BASE) {
+      const paged = paginate(simuladas, page, pageSize);
+      setItens(paged.data);
+      setTotal(paged.total);
+      return;
+    }
     try {
       setError("");
       const response = await listFolha({ page, pageSize });
@@ -52,7 +65,24 @@ const FolhaPagamentoPage = () => {
 
   useEffect(() => {
     load();
-  }, [page]);
+  }, [page, simuladas]);
+
+  useEffect(() => {
+    if (API_BASE) return;
+    const raw = window.localStorage.getItem(SIM_STORAGE_KEY);
+    if (!raw) return;
+    try {
+      const parsed = JSON.parse(raw) as FolhaResumo[];
+      setSimuladas(parsed);
+    } catch {
+      window.localStorage.removeItem(SIM_STORAGE_KEY);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (API_BASE) return;
+    window.localStorage.setItem(SIM_STORAGE_KEY, JSON.stringify(simuladas));
+  }, [simuladas]);
 
   const columns = useMemo(
     () => [
@@ -66,6 +96,42 @@ const FolhaPagamentoPage = () => {
         header: "Colaboradores",
         align: "right" as const,
         render: (row: FolhaResumo) => row.colaboradores,
+      },
+      {
+        key: "proventos",
+        header: "Proventos",
+        align: "right" as const,
+        render: (row: FolhaResumo) =>
+          row.totalProventos
+            ? (row.totalProventos / 100).toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+              })
+            : "-",
+      },
+      {
+        key: "descontos",
+        header: "Descontos",
+        align: "right" as const,
+        render: (row: FolhaResumo) =>
+          row.totalDescontos
+            ? (row.totalDescontos / 100).toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+              })
+            : "-",
+      },
+      {
+        key: "liquido",
+        header: "Liquido",
+        align: "right" as const,
+        render: (row: FolhaResumo) =>
+          row.totalLiquido
+            ? (row.totalLiquido / 100).toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+              })
+            : "-",
       },
       {
         key: "status",
@@ -99,7 +165,7 @@ const FolhaPagamentoPage = () => {
               className="w-auto px-4"
               onClick={async () => {
                 if (!API_BASE) {
-                  setError("API nao configurada.");
+                  setSimuladas((prev) => prev.filter((item) => item.id !== row.id));
                   return;
                 }
                 const confirmed = window.confirm("Excluir esta folha?");
@@ -138,7 +204,18 @@ const FolhaPagamentoPage = () => {
       return;
     }
     if (!API_BASE) {
-      setFormError("API nao configurada.");
+      const id = editingId ?? `sim-${Date.now()}`;
+      const next: FolhaResumo = {
+        id,
+        referencia: formData.referencia,
+        colaboradores: formData.colaboradores,
+        status: formData.status,
+      };
+      setSimuladas((prev) =>
+        editingId ? prev.map((item) => (item.id === id ? next : item)) : [next, ...prev]
+      );
+      resetForm();
+      setFormOpen(false);
       return;
     }
     try {
@@ -265,4 +342,3 @@ const FolhaPagamentoPage = () => {
 };
 
 export default FolhaPagamentoPage;
-
