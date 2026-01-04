@@ -71,6 +71,12 @@ const ProdutosServicosPage = lazy(
   () => import("../features/cadastros/pages/ProdutosServicosPage")
 );
 const EstoquePage = lazy(() => import("../features/estoque/pages/EstoquePage"));
+const EstoqueMovimentosPage = lazy(
+  () => import("../features/estoque/pages/EstoqueMovimentosPage")
+);
+const EstoqueImportacaoPage = lazy(
+  () => import("../features/estoque/pages/EstoqueImportacaoPage")
+);
 const ApuracaoImpostosPage = lazy(
   () => import("../features/fiscal/pages/ApuracaoImpostosPage")
 );
@@ -116,7 +122,7 @@ export const router = createBrowserRouter([
       {
         path: "empresa",
         element: withLoading(
-          <RequireRole allowedRoles={["EMPRESA"]}>
+          <RequireRole allowedRoles={["CONTADOR","EMPRESA"]}>
             <EmpresasPage />
           </RequireRole>
         ),
@@ -342,6 +348,22 @@ export const router = createBrowserRouter([
         element: withLoading(
           <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
             <EstoquePage />
+          </RequireRole>
+        ),
+      },
+      {
+        path: "estoque/movimentos",
+        element: withLoading(
+          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
+            <EstoqueMovimentosPage />
+          </RequireRole>
+        ),
+      },
+      {
+        path: "estoque/importacao",
+        element: withLoading(
+          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
+            <EstoqueImportacaoPage />
           </RequireRole>
         ),
       },

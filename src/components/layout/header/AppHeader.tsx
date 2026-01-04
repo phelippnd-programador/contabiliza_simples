@@ -131,7 +131,26 @@ const AppHeader = () => {
       ],
     },
     { id: "relatorios", label: "Relatorios", to: "/relatorios", icon: <IconChart /> },
-    { id: "estoque", label: "Estoque", to: "/estoque", icon: <IconList /> },
+    {
+      id: "estoque",
+      label: "Estoque",
+      icon: <IconList />,
+      children: [
+        { id: "estoque_lista", label: "Itens", to: "/estoque", icon: <IconList /> },
+        {
+          id: "estoque_movimentos",
+          label: "Movimentos",
+          to: "/estoque/movimentos",
+          icon: <IconList />,
+        },
+        {
+          id: "estoque_importacao",
+          label: "Importacao CSV",
+          to: "/estoque/importacao",
+          icon: <IconList />,
+        },
+      ],
+    },
     {
       id: "tributacao",
       label: "Tributacao",
@@ -155,7 +174,7 @@ const AppHeader = () => {
       label: "Folha",
       icon: <IconList />,
       children: [
-        { id: "folha_execucao", label: "Execucao", to: "/folha", icon: <IconList /> },
+        { id: "folha_execucao", label: "Execucao", to: "/folha", icon: <IconList />,  end: true },
         { id: "folha_colaboradores", label: "Colaboradores", to: "/folha/colaboradores", icon: <IconList /> },
       ],
     },

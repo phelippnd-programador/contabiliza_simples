@@ -8,69 +8,17 @@ import {
   createEstoqueItem,
   updateEstoqueItem,
   deleteEstoqueItem,
-  listMovimentos,
-  createMovimento,
   type EstoqueResumo,
-  type EstoqueMovimentoResumo,
-  type EstoqueMovimentoTipo,
 } from "../services/estoque.service";
 import AppButton from "../../../components/ui/button/AppButton";
 import AppTextInput from "../../../components/ui/input/AppTextInput";
-import AppDateInput from "../../../components/ui/input/AppDateInput";
-import AppSelectInput from "../../../components/ui/input/AppSelectInput";
 import { formatBRL } from "../../../shared/utils/formater";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 
-type CsvMovimentoRow = {
-  itemId: string;
-  itemLabel?: string;
-  tipo: EstoqueMovimentoTipo;
-  data: string;
-  quantidade: number;
-  custoUnitarioCents?: number;
-  lote?: string;
-  serie?: string;
-  origem?: "MANUAL" | "VENDA" | "COMPRA";
-  origemId?: string;
-  observacoes?: string;
-};
-
-const parseCsvLine = (line: string) => {
-  const result: string[] = [];
-  let current = "";
-  let inQuotes = false;
-  for (let i = 0; i < line.length; i += 1) {
-    const char = line[i];
-    if (char === "\"") {
-      const next = line[i + 1];
-      if (inQuotes && next === "\"") {
-        current += "\"";
-        i += 1;
-      } else {
-        inQuotes = !inQuotes;
-      }
-      continue;
-    }
-    if (char === "," && !inQuotes) {
-      result.push(current);
-      current = "";
-      continue;
-    }
-    current += char;
-  }
-  result.push(current);
-  return result.map((value) => value.trim());
-};
-
-const normalizeHeader = (value: string) =>
-  value.toLowerCase().replace(/\s+/g, "");
-
 const EstoquePage = () => {
   const [itens, setItens] = useState<EstoqueResumo[]>([]);
-  const [movimentos, setMovimentos] = useState<EstoqueMovimentoResumo[]>([]);
   const [error, setError] = useState("");
-  const [movimentoError, setMovimentoError] = useState("");
   const [formError, setFormError] = useState("");
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -80,27 +28,9 @@ const EstoquePage = () => {
     custoMedioCents: 0,
     estoqueMinimo: 0,
   });
-  const [movimentoData, setMovimentoData] = useState({
-    itemId: "",
-    tipo: "ENTRADA" as EstoqueMovimentoTipo,
-    data: "",
-    quantidade: 0,
-    custoUnitarioCents: 0,
-    lote: "",
-    serie: "",
-    origem: "MANUAL",
-    origemId: "",
-    observacoes: "",
-  });
-  const [csvRows, setCsvRows] = useState<CsvMovimentoRow[]>([]);
-  const [csvErrors, setCsvErrors] = useState<string[]>([]);
-  const [csvFileName, setCsvFileName] = useState("");
-  const [csvImporting, setCsvImporting] = useState(false);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const pageSize = 10;
-  const [movimentoPage, setMovimentoPage] = useState(1);
-  const [movimentoTotal, setMovimentoTotal] = useState(0);
 
   const load = async () => {
     try {
@@ -117,31 +47,6 @@ const EstoquePage = () => {
   useEffect(() => {
     load();
   }, [page]);
-
-  useEffect(() => {
-    const itemId = movimentoData.itemId;
-    if (!itemId) {
-      setMovimentos([]);
-      setMovimentoTotal(0);
-      return;
-    }
-    const loadMovimentos = async () => {
-      try {
-        setMovimentoError("");
-        const response = await listMovimentos(itemId, {
-          page: movimentoPage,
-          pageSize: 8,
-        });
-        setMovimentos(response.data);
-        setMovimentoTotal(response.meta.total);
-      } catch {
-        setMovimentos([]);
-        setMovimentoTotal(0);
-        setMovimentoError("Nao foi possivel carregar os movimentos.");
-      }
-    };
-    loadMovimentos();
-  }, [movimentoData.itemId, movimentoPage]);
 
   const columns = useMemo(
     () => [
@@ -283,257 +188,12 @@ const EstoquePage = () => {
     }
   };
 
-  const handleMovimento = async () => {
-    setMovimentoError("");
-    if (!movimentoData.itemId || !movimentoData.data) {
-      setMovimentoError("Informe o item e a data do movimento.");
-      return;
-    }
-    if (movimentoData.quantidade <= 0) {
-      setMovimentoError("Informe a quantidade do movimento.");
-      return;
-    }
-    if (movimentoData.tipo === "ENTRADA" && movimentoData.custoUnitarioCents <= 0) {
-      setMovimentoError("Informe o custo unitario para entrada.");
-      return;
-    }
-    if (!API_BASE) {
-      setMovimentoError("API nao configurada.");
-      return;
-    }
-    try {
-      await createMovimento(movimentoData.itemId, {
-        tipo: movimentoData.tipo,
-        data: movimentoData.data,
-        quantidade: movimentoData.quantidade,
-        custoUnitario:
-          movimentoData.tipo === "ENTRADA"
-            ? movimentoData.custoUnitarioCents
-            : undefined,
-        lote: movimentoData.lote || undefined,
-        serie: movimentoData.serie || undefined,
-        origem: movimentoData.origem as "MANUAL" | "VENDA" | "COMPRA",
-        origemId: movimentoData.origemId || undefined,
-        observacoes: movimentoData.observacoes || undefined,
-      });
-      setMovimentoData((prev) => ({
-        ...prev,
-        quantidade: 0,
-        custoUnitarioCents: 0,
-        lote: "",
-        serie: "",
-        origemId: "",
-        observacoes: "",
-      }));
-      setMovimentoPage(1);
-      load();
-    } catch {
-      setMovimentoError("Nao foi possivel registrar o movimento.");
-    }
-  };
-
-  const parseCsv = (text: string) => {
-    const lines = text
-      .split(/\r?\n/)
-      .map((line) => line.trim())
-      .filter(Boolean);
-    if (!lines.length) return { rows: [], errors: ["CSV vazio."] };
-
-    const header = parseCsvLine(lines[0]).map(normalizeHeader);
-    const getIndex = (name: string) => header.indexOf(name);
-
-    const idxItemId = getIndex("itemid");
-    const idxItem = getIndex("item");
-    const idxTipo = getIndex("tipo");
-    const idxData = getIndex("data");
-    const idxQuantidade = getIndex("quantidade");
-    const idxCusto = getIndex("custounitario");
-    const idxLote = getIndex("lote");
-    const idxSerie = getIndex("serie");
-    const idxOrigem = getIndex("origem");
-    const idxOrigemId = getIndex("origemid");
-    const idxObs = getIndex("observacoes");
-
-    const errors: string[] = [];
-    const rows: CsvMovimentoRow[] = [];
-
-    lines.slice(1).forEach((line, index) => {
-      const cols = parseCsvLine(line);
-      const itemId = idxItemId >= 0 ? cols[idxItemId] : "";
-      const itemLabel = idxItem >= 0 ? cols[idxItem] : "";
-      const tipoRaw = idxTipo >= 0 ? cols[idxTipo] : "AJUSTE";
-      const data = idxData >= 0 ? cols[idxData] : "";
-      const quantidadeRaw = idxQuantidade >= 0 ? cols[idxQuantidade] : "0";
-      const custoRaw = idxCusto >= 0 ? cols[idxCusto] : "";
-
-      const quantidade = Number(quantidadeRaw.replace(",", "."));
-      const custoUnitarioCents = custoRaw
-        ? (() => {
-            const normalized = custoRaw.replace(",", ".");
-            const numeric = Number(normalized);
-            if (Number.isNaN(numeric)) return undefined;
-            if (normalized.includes("."))
-              return Math.round(numeric * 100);
-            return Math.round(numeric);
-          })()
-        : undefined;
-      const tipo = (tipoRaw || "AJUSTE").toUpperCase() as EstoqueMovimentoTipo;
-
-      const resolvedItem = itemId
-        ? itens.find((item) => item.id === itemId)
-        : itemLabel
-          ? itens.find(
-              (item) => item.item.toLowerCase() === itemLabel.toLowerCase()
-            )
-          : undefined;
-
-      if (!resolvedItem) {
-        errors.push(`Linha ${index + 2}: item nao encontrado.`);
-        return;
-      }
-      if (!data) {
-        errors.push(`Linha ${index + 2}: data obrigatoria.`);
-        return;
-      }
-      if (!quantidade || Number.isNaN(quantidade)) {
-        errors.push(`Linha ${index + 2}: quantidade invalida.`);
-        return;
-      }
-
-      rows.push({
-        itemId: resolvedItem.id,
-        itemLabel: resolvedItem.item,
-        tipo,
-        data,
-        quantidade,
-        custoUnitarioCents,
-        lote: idxLote >= 0 ? cols[idxLote] : undefined,
-        serie: idxSerie >= 0 ? cols[idxSerie] : undefined,
-        origem: idxOrigem >= 0 ? (cols[idxOrigem] as CsvMovimentoRow["origem"]) : undefined,
-        origemId: idxOrigemId >= 0 ? cols[idxOrigemId] : undefined,
-        observacoes: idxObs >= 0 ? cols[idxObs] : undefined,
-      });
-    });
-
-    return { rows, errors };
-  };
-
-  const handleCsvFile = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    setCsvFileName(file.name);
-    const reader = new FileReader();
-    reader.onload = () => {
-      const content = typeof reader.result === "string" ? reader.result : "";
-      const parsed = parseCsv(content);
-      setCsvRows(parsed.rows);
-      setCsvErrors(parsed.errors);
-    };
-    reader.readAsText(file);
-    event.target.value = "";
-  };
-
-  const handleCsvImport = async () => {
-    setMovimentoError("");
-    if (!csvRows.length) {
-      setMovimentoError("Nenhum movimento para importar.");
-      return;
-    }
-    if (!API_BASE) {
-      setMovimentoError("API nao configurada.");
-      return;
-    }
-    setCsvImporting(true);
-    const results = await Promise.allSettled(
-      csvRows.map((row) =>
-        createMovimento(row.itemId, {
-          tipo: row.tipo,
-          data: row.data,
-          quantidade: row.quantidade,
-          custoUnitario: row.custoUnitarioCents,
-          lote: row.lote || undefined,
-          serie: row.serie || undefined,
-          origem: row.origem,
-          origemId: row.origemId || undefined,
-          observacoes: row.observacoes || undefined,
-        })
-      )
-    );
-    const failures = results.filter((res) => res.status === "rejected").length;
-    setCsvImporting(false);
-    if (failures) {
-      setMovimentoError(`Falha ao importar ${failures} movimento(s).`);
-    } else {
-      setCsvRows([]);
-      setCsvErrors([]);
-      setCsvFileName("");
-    }
-    load();
-  };
-
-  const selectedItem = itens.find((item) => item.id === movimentoData.itemId);
-  const previewSaldo =
-    selectedItem && movimentoData.quantidade
-      ? movimentoData.tipo === "SAIDA"
-        ? selectedItem.quantidade - movimentoData.quantidade
-        : selectedItem.quantidade + movimentoData.quantidade
-      : undefined;
-  const previewCustoMedio =
-    selectedItem &&
-    movimentoData.tipo === "ENTRADA" &&
-    movimentoData.quantidade > 0 &&
-    movimentoData.custoUnitarioCents > 0
-      ? Math.round(
-          (selectedItem.quantidade * (selectedItem.custoMedio ?? 0) +
-            movimentoData.quantidade * movimentoData.custoUnitarioCents) /
-            (selectedItem.quantidade + movimentoData.quantidade)
-        )
-      : undefined;
-
-  const movimentoColumns = useMemo(
-    () => [
-      { key: "data", header: "Data", render: (row: EstoqueMovimentoResumo) => row.data },
-      { key: "tipo", header: "Tipo", render: (row: EstoqueMovimentoResumo) => row.tipo },
-      {
-        key: "quantidade",
-        header: "Qtd",
-        align: "right" as const,
-        render: (row: EstoqueMovimentoResumo) => row.quantidade,
-      },
-      {
-        key: "custo",
-        header: "Custo unit",
-        align: "right" as const,
-        render: (row: EstoqueMovimentoResumo) =>
-          row.custoUnitario
-            ? (row.custoUnitario / 100).toLocaleString("pt-BR", {
-                style: "currency",
-                currency: "BRL",
-              })
-            : "-",
-      },
-      {
-        key: "lote",
-        header: "Lote/Serie",
-        render: (row: EstoqueMovimentoResumo) =>
-          row.lote || row.serie ? `${row.lote ?? "-"} / ${row.serie ?? "-"}` : "-",
-      },
-      {
-        key: "origem",
-        header: "Origem",
-        render: (row: EstoqueMovimentoResumo) =>
-          row.origem ? `${row.origem}${row.origemId ? ` (${row.origemId})` : ""}` : "-",
-      },
-    ],
-    []
-  );
-
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <div>
           <AppTitle text="Estoque" />
-          <AppSubTitle text="Entradas, saidas e inventario." />
+          <AppSubTitle text="Itens cadastrados e alerta de reposicao." />
         </div>
         <AppButton
           type="button"
@@ -595,7 +255,11 @@ const EstoquePage = () => {
               }
             />
           </div>
-          {itens.some((item) => (item.estoqueMinimo ?? 0) > 0 && item.quantidade <= (item.estoqueMinimo ?? 0)) ? (
+          {itens.some(
+            (item) =>
+              (item.estoqueMinimo ?? 0) > 0 &&
+              item.quantidade <= (item.estoqueMinimo ?? 0)
+          ) ? (
             <p className="text-sm text-amber-700">
               Existem itens abaixo do estoque minimo.
             </p>
@@ -626,198 +290,6 @@ const EstoquePage = () => {
       </Card>
 
       <Card>
-        <AppSubTitle text="Movimentos de estoque" />
-        <div className="mt-4 grid gap-4 md:grid-cols-3">
-          <AppSelectInput
-            title="Item"
-            value={movimentoData.itemId}
-            onChange={(e) =>
-              setMovimentoData((prev) => ({ ...prev, itemId: e.target.value }))
-            }
-            data={itens.map((item) => ({ value: item.id, label: item.item }))}
-            placeholder="Selecione"
-          />
-          <AppSelectInput
-            title="Tipo"
-            value={movimentoData.tipo}
-            onChange={(e) =>
-              setMovimentoData((prev) => ({
-                ...prev,
-                tipo: e.target.value as EstoqueMovimentoTipo,
-              }))
-            }
-            data={[
-              { value: "ENTRADA", label: "Entrada" },
-              { value: "SAIDA", label: "Saida" },
-              { value: "AJUSTE", label: "Ajuste/Inventario" },
-            ]}
-          />
-          <AppDateInput
-            title="Data"
-            value={movimentoData.data}
-            onChange={(e) =>
-              setMovimentoData((prev) => ({ ...prev, data: e.target.value }))
-            }
-          />
-          <AppTextInput
-            title="Quantidade"
-            value={movimentoData.quantidade ? String(movimentoData.quantidade) : ""}
-            sanitizeRegex={/[0-9]/g}
-            onValueChange={(raw) =>
-              setMovimentoData((prev) => ({
-                ...prev,
-                quantidade: Number(raw || "0"),
-              }))
-            }
-          />
-          <AppTextInput
-            title="Custo unitario"
-            value={
-              movimentoData.custoUnitarioCents
-                ? String(movimentoData.custoUnitarioCents)
-                : ""
-            }
-            sanitizeRegex={/[0-9]/g}
-            formatter={formatBRL}
-            onValueChange={(raw) =>
-              setMovimentoData((prev) => ({
-                ...prev,
-                custoUnitarioCents: Number(raw || "0"),
-              }))
-            }
-          />
-          <AppTextInput
-            title="Lote"
-            value={movimentoData.lote}
-            onChange={(e) =>
-              setMovimentoData((prev) => ({ ...prev, lote: e.target.value }))
-            }
-          />
-          <AppTextInput
-            title="Serie"
-            value={movimentoData.serie}
-            onChange={(e) =>
-              setMovimentoData((prev) => ({ ...prev, serie: e.target.value }))
-            }
-          />
-          <AppSelectInput
-            title="Origem"
-            value={movimentoData.origem}
-            onChange={(e) =>
-              setMovimentoData((prev) => ({ ...prev, origem: e.target.value }))
-            }
-            data={[
-              { value: "MANUAL", label: "Manual" },
-              { value: "VENDA", label: "Venda" },
-              { value: "COMPRA", label: "Compra" },
-            ]}
-          />
-          <AppTextInput
-            title="Referencia"
-            value={movimentoData.origemId}
-            onChange={(e) =>
-              setMovimentoData((prev) => ({ ...prev, origemId: e.target.value }))
-            }
-          />
-          <AppTextInput
-            title="Observacoes"
-            value={movimentoData.observacoes}
-            onChange={(e) =>
-              setMovimentoData((prev) => ({
-                ...prev,
-                observacoes: e.target.value,
-              }))
-            }
-          />
-        </div>
-        <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-300">
-          {typeof previewSaldo === "number" ? (
-            <span>Saldo estimado: {previewSaldo}</span>
-          ) : null}
-          {typeof previewCustoMedio === "number" ? (
-            <span>
-              Custo medio estimado:{" "}
-              {(previewCustoMedio / 100).toLocaleString("pt-BR", {
-                style: "currency",
-                currency: "BRL",
-              })}
-            </span>
-          ) : null}
-        </div>
-        {movimentoError ? (
-          <p className="mt-2 text-sm text-red-600">{movimentoError}</p>
-        ) : null}
-        <div className="mt-3">
-          <AppButton type="button" className="w-auto px-6" onClick={handleMovimento}>
-            Registrar movimento
-          </AppButton>
-        </div>
-
-        <div className="mt-6">
-          <AppSubTitle text="Historico" />
-          {movimentoError ? <p className="text-sm text-red-600">{movimentoError}</p> : null}
-          <AppTable
-            data={movimentos}
-            rowKey={(row) => row.id}
-            emptyState={<AppListNotFound texto="Nenhum movimento registrado." />}
-            pagination={{
-              enabled: true,
-              pageSize: 8,
-              page: movimentoPage,
-              total: movimentoTotal,
-              onPageChange: setMovimentoPage,
-            }}
-            columns={movimentoColumns}
-          />
-        </div>
-      </Card>
-
-      <Card>
-        <AppSubTitle text="Inventario por CSV" />
-        <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-          Colunas aceitas: itemId ou item, tipo (ENTRADA/SAIDA/AJUSTE), data,
-          quantidade, custoUnitario (em centavos), lote, serie, origem,
-          origemId, observacoes.
-        </p>
-        <div className="mt-4 flex flex-wrap items-center gap-4">
-          <input
-            type="file"
-            accept=".csv,text/csv"
-            onChange={handleCsvFile}
-            className="block text-sm text-gray-600 file:mr-4 file:rounded-md file:border-0 file:bg-slate-100 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-slate-700 hover:file:bg-slate-200"
-          />
-          {csvFileName ? (
-            <span className="text-sm text-gray-500">Arquivo: {csvFileName}</span>
-          ) : null}
-        </div>
-        {csvErrors.length ? (
-          <div className="mt-3 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-            <p className="font-semibold">Erros no CSV:</p>
-            <ul className="list-disc pl-5">
-              {csvErrors.map((err) => (
-                <li key={err}>{err}</li>
-              ))}
-            </ul>
-          </div>
-        ) : null}
-        {csvRows.length ? (
-          <div className="mt-3 text-sm text-gray-600 dark:text-gray-300">
-            {csvRows.length} movimento(s) prontos para importar.
-          </div>
-        ) : null}
-        <div className="mt-3">
-          <AppButton
-            type="button"
-            className="w-auto px-6"
-            onClick={handleCsvImport}
-            disabled={csvImporting || !csvRows.length || csvErrors.length > 0}
-          >
-            {csvImporting ? "Importando..." : "Importar CSV"}
-          </AppButton>
-        </div>
-      </Card>
-
-      <Card>
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
         <AppTable
           data={itens}
@@ -838,5 +310,3 @@ const EstoquePage = () => {
 };
 
 export default EstoquePage;
-
-
