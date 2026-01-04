@@ -224,6 +224,7 @@ const AppDateInput = forwardRef<HTMLInputElement, AppDateInputProps>(
               error
                 ? "border-red-300 focus:border-red-500 focus:ring-2 focus:ring-red-200"
                 : "border-gray-200 hover:border-blue-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-200",
+              "bg-white text-gray-900 dark:bg-slate-900 dark:text-gray-100 dark:border-slate-700 dark:focus:ring-blue-900/40",
               "outline-none transition",
               "appearance-none",
               className ?? "",
@@ -237,7 +238,7 @@ const AppDateInput = forwardRef<HTMLInputElement, AppDateInputProps>(
               if (!props.disabled) setOpen(true);
             }}
           />
-          <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+          <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">
             <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
               <path d="M7 2a1 1 0 0 1 1 1v1h8V3a1 1 0 1 1 2 0v1h1a2 2 0 0 1 2 2v3H2V6a2 2 0 0 1 2-2h1V3a1 1 0 0 1 1-1Zm15 9v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-9h20ZM6 14h4v4H6v-4Zm6 0h6v2h-6v-2Z" />
             </svg>
@@ -246,13 +247,13 @@ const AppDateInput = forwardRef<HTMLInputElement, AppDateInputProps>(
 
         {open && !props.disabled ? (
           <div
-            className="z-[60] rounded-md border border-gray-200 bg-white p-3 shadow-xl"
+          className="z-[60] rounded-md border border-gray-200 bg-white p-3 shadow-xl dark:border-slate-700 dark:bg-slate-900"
             style={popoverStyle}
           >
             <div className="flex items-center justify-between">
               <button
                 type="button"
-                className="rounded-full p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+                className="rounded-full p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-slate-800 dark:hover:text-gray-200"
                 onClick={isMonthPicker ? goPrevYear : goPrev}
                 aria-label="Anterior"
               >
@@ -260,12 +261,12 @@ const AppDateInput = forwardRef<HTMLInputElement, AppDateInputProps>(
                   <path d="M12.78 15.22a.75.75 0 0 1-1.06 0l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 1 1 1.06 1.06L9.06 10l3.72 3.72a.75.75 0 0 1 0 1.06Z" />
                 </svg>
               </button>
-              <span className="text-sm font-medium text-gray-700">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
                 {monthLabel}
               </span>
               <button
                 type="button"
-                className="rounded-full p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+                className="rounded-full p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-slate-800 dark:hover:text-gray-200"
                 onClick={isMonthPicker ? goNextYear : goNext}
                 aria-label="Proximo"
               >
@@ -281,7 +282,7 @@ const AppDateInput = forwardRef<HTMLInputElement, AppDateInputProps>(
                   <button
                     key={label}
                     type="button"
-                    className="rounded-md border border-gray-200 px-2 py-2 text-xs text-gray-700 hover:border-blue-400 hover:bg-blue-50"
+                    className="rounded-md border border-gray-200 px-2 py-2 text-xs text-gray-700 hover:border-blue-400 hover:bg-blue-50 dark:border-slate-700 dark:text-gray-200 dark:hover:bg-slate-800"
                     onClick={() => selectMonth(index)}
                   >
                     {label}
@@ -290,7 +291,7 @@ const AppDateInput = forwardRef<HTMLInputElement, AppDateInputProps>(
               </div>
             ) : (
               <>
-                <div className="mt-3 grid grid-cols-7 gap-1 text-[11px] text-gray-500">
+                <div className="mt-3 grid grid-cols-7 gap-1 text-[11px] text-gray-500 dark:text-gray-400">
                   {weekLabels.map((label) => (
                     <span key={label} className="text-center">
                       {label}
@@ -307,8 +308,8 @@ const AppDateInput = forwardRef<HTMLInputElement, AppDateInputProps>(
                       className={[
                         "h-8 rounded-md text-xs",
                         item.inMonth
-                          ? "text-gray-700 hover:bg-blue-50 hover:text-blue-700"
-                          : "text-gray-300",
+                          ? "text-gray-700 hover:bg-blue-50 hover:text-blue-700 dark:text-gray-200 dark:hover:bg-slate-800"
+                          : "text-gray-300 dark:text-gray-600",
                       ].join(" ")}
                     >
                       {item.day || ""}
@@ -317,7 +318,7 @@ const AppDateInput = forwardRef<HTMLInputElement, AppDateInputProps>(
                 </div>
               </>
             )}
-            <div className="mt-3 flex items-center justify-between border-t border-gray-100 pt-2 text-xs text-gray-500">
+            <div className="mt-3 flex items-center justify-between border-t border-gray-100 pt-2 text-xs text-gray-500 dark:border-slate-800 dark:text-gray-400">
               <span>{new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</span>
               <div className="flex items-center gap-3">
                 <button
@@ -338,7 +339,7 @@ const AppDateInput = forwardRef<HTMLInputElement, AppDateInputProps>(
                 </button>
                 <button
                   type="button"
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-200"
                   onClick={() => {
                     emitChange("");
                     setOpen(false);
@@ -354,7 +355,7 @@ const AppDateInput = forwardRef<HTMLInputElement, AppDateInputProps>(
         {error ? (
           <span className="text-xs text-red-600">{error}</span>
         ) : (
-          helperText && <span className="text-xs text-gray-500">{helperText}</span>
+          helperText && <span className="text-xs text-gray-500 dark:text-gray-400">{helperText}</span>
         )}
       </div>
     );

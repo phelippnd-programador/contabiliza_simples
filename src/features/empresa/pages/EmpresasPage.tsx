@@ -12,12 +12,16 @@ const EmpresasPage = () => {
   const navigate = useNavigate();
   const [empresas, setEmpresas] = useState<EmpresaResumo[]>([]);
   const [error, setError] = useState("");
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const pageSize = 10;
 
   const load = async () => {
     try {
       setError("");
-      const data = await listEmpresas();
-      setEmpresas(data);
+      const response = await listEmpresas({ page, pageSize });
+      setEmpresas(response.data);
+      setTotal(response.meta.total);
     } catch {
       setEmpresas([]);
       setError("Nao foi possivel carregar as empresas.");
@@ -26,7 +30,7 @@ const EmpresasPage = () => {
 
   useEffect(() => {
     load();
-  }, []);
+  }, [page]);
 
   const columns = useMemo(
     () => [
@@ -85,7 +89,13 @@ const EmpresasPage = () => {
           data={empresas}
           rowKey={(row) => row.id}
           emptyState={<AppListNotFound texto="Nenhuma empresa cadastrada." />}
-          pagination={{ enabled: true, pageSize: 10 }}
+          pagination={{
+            enabled: true,
+            pageSize,
+            page,
+            total,
+            onPageChange: setPage,
+          }}
           columns={columns}
         />
       </Card>

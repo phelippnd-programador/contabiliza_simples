@@ -4,6 +4,8 @@ import { buscarEnderecoPorCep } from "../../../../shared/services/viaCep";
 import AppTextInput from "../../../../components/ui/input/AppTextInput";
 import type { EnderecoContatoData, EmpresaCadastro } from "../../types";
 import AppButton from "../../../../components/ui/button/AppButton";
+import Card from "../../../../components/ui/card/Card";
+import AppTitle, { AppSubTitle } from "../../../../components/ui/text/AppTitle";
 
 interface Props {
   empresa?: EmpresaCadastro;
@@ -88,8 +90,13 @@ export function EnderecoContatoTab({ empresa }: Props) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="rounded-lg border border-gray-200 bg-white p-4">
-        <h2 className="mb-4 text-base font-semibold">Contato</h2>
+      <div className="mb-4">
+        <AppTitle text='Endereco e Contato da empresa' />
+        <AppSubTitle text="Informação de contato e endereco da empresa." />
+
+      </div>
+      <Card>
+        <AppSubTitle text="Contato" />
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <AppTextInput
@@ -110,10 +117,11 @@ export function EnderecoContatoTab({ empresa }: Props) {
             error={errors.telefone}
           />
         </div>
-      </div>
+      </Card>
 
-      <div className="rounded-lg border border-gray-200 bg-white p-4">
-        <h2 className="mb-4 text-base font-semibold">Endereco</h2>
+      <Card>
+        <AppSubTitle text="Endereço" />
+      
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           <AppTextInput
@@ -187,12 +195,12 @@ export function EnderecoContatoTab({ empresa }: Props) {
             autoComplete="off"
           />
         </div>
-      </div>
+      </Card>
 
       <div className="footer flex gap-4">
         <AppButton onClick={handleSave}>Salvar</AppButton>
         <AppButton>Cancelar</AppButton>
       </div>
-    </div>
+    </div >
   );
 }

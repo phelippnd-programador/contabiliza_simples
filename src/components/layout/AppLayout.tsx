@@ -1,16 +1,22 @@
-import React from 'react'
-import { Outlet } from 'react-router-dom'
-import AppHeader from './header/AppHeader'
+import React, { useEffect } from 'react';
+import { Outlet } from 'react-router-dom';
+import AppHeader from './header/AppHeader';
 
 const AppLayout = () => {
-    return (
-        <div className="h-screen flex flex-col px-0">
-            <AppHeader />
-            <main className="flex-1 px-10 py-5 overflow-auto">
-                <Outlet />
-            </main>
-        </div>
-    )
-}
+  useEffect(() => {
+    const stored = window.localStorage.getItem("theme");
+    const isDark = stored === "dark";
+    document.documentElement.classList.toggle("dark", isDark);
+  }, []);
 
-export default AppLayout
+  return (
+    <div className="min-h-screen flex bg-slate-100 text-gray-900 dark:bg-slate-900 dark:text-gray-100">
+      <AppHeader />
+      <main className="flex-1 overflow-auto px-8 py-6">
+        <Outlet />
+      </main>
+    </div>
+  );
+};
+
+export default AppLayout;
