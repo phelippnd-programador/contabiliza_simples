@@ -406,8 +406,9 @@ const ContasReceberPage = () => {
                 setFormData((prev) => ({ ...prev, vencimento: e.target.value }))
               }
             />
-            <AppTextInput
+            <AppDateInput
               title="Competencia"
+              type="month"
               value={formData.competencia}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, competencia: e.target.value }))
