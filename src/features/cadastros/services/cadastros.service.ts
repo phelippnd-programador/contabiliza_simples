@@ -22,6 +22,13 @@ export type ProdutoServicoResumo = {
   descricao: string;
   tipo?: string;
   status?: string;
+  codigo?: string;
+  unidade?: string;
+  valorUnitario?: number;
+  ncm?: string;
+  cfop?: string;
+  cnae?: string;
+  codigoServico?: string;
 };
 
 export type ClientePayload = {
@@ -40,6 +47,13 @@ export type ProdutoServicoPayload = {
   descricao: string;
   tipo?: string;
   status?: string;
+  codigo?: string;
+  unidade?: string;
+  valorUnitario?: number;
+  ncm?: string;
+  cfop?: string;
+  cnae?: string;
+  codigoServico?: string;
 };
 
 export type ListCadastrosParams = {

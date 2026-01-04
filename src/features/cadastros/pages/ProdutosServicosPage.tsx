@@ -6,6 +6,10 @@ import AppListNotFound from "../../../components/ui/AppListNotFound";
 import AppButton from "../../../components/ui/button/AppButton";
 import AppTextInput from "../../../components/ui/input/AppTextInput";
 import AppSelectInput from "../../../components/ui/input/AppSelectInput";
+import { CnaePicker } from "../../../components/ui/picked/CnaePicker";
+import { NcmPicker } from "../../../components/ui/picked/NcmPicker";
+import type { CnaeItem } from "../../../shared/services/ibgeCnae";
+import type { NcmItem } from "../../../shared/services/ncm";
 import {
   listProdutosServicos,
   createProdutoServico,
@@ -13,6 +17,7 @@ import {
   deleteProdutoServico,
   type ProdutoServicoResumo,
 } from "../services/cadastros.service";
+import { formatBRL } from "../../../shared/utils/formater";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 
@@ -36,7 +41,16 @@ const ProdutosServicosPage = () => {
     descricao: "",
     tipo: "PRODUTO",
     status: "ATIVO",
+    codigo: "",
+    unidade: "",
+    valorUnitarioCents: 0,
+    ncm: "",
+    cfop: "",
+    cnae: "",
+    codigoServico: "",
   });
+  const [cnaeSelection, setCnaeSelection] = useState<CnaeItem | null>(null);
+  const [ncmSelection, setNcmSelection] = useState<NcmItem | null>(null);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const pageSize = 10;
@@ -70,6 +84,23 @@ const ProdutosServicosPage = () => {
         render: (row: ProdutoServicoResumo) => row.tipo ?? "-",
       },
       {
+        key: "unidade",
+        header: "Unidade",
+        render: (row: ProdutoServicoResumo) => row.unidade ?? "-",
+      },
+      {
+        key: "valor",
+        header: "Valor",
+        align: "right" as const,
+        render: (row: ProdutoServicoResumo) =>
+          typeof row.valorUnitario === "number"
+            ? (row.valorUnitario / 100).toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+              })
+            : "-",
+      },
+      {
         key: "status",
         header: "Status",
         render: (row: ProdutoServicoResumo) => row.status ?? "-",
@@ -89,7 +120,20 @@ const ProdutosServicosPage = () => {
                   descricao: row.descricao,
                   tipo: row.tipo ?? "PRODUTO",
                   status: row.status ?? "ATIVO",
+                  codigo: row.codigo ?? "",
+                  unidade: row.unidade ?? "",
+                  valorUnitarioCents: row.valorUnitario ?? 0,
+                  ncm: row.ncm ?? "",
+                  cfop: row.cfop ?? "",
+                  cnae: row.cnae ?? "",
+                  codigoServico: row.codigoServico ?? "",
                 });
+                setCnaeSelection(
+                  row.cnae ? { codigo: row.cnae, descricao: "" } : null
+                );
+                setNcmSelection(
+                  row.ncm ? { codigo: row.ncm, descricao: "" } : null
+                );
                 setFormError("");
                 setFormOpen(true);
               }}
@@ -130,12 +174,29 @@ const ProdutosServicosPage = () => {
       descricao: "",
       tipo: "PRODUTO",
       status: "ATIVO",
+      codigo: "",
+      unidade: "",
+      valorUnitarioCents: 0,
+      ncm: "",
+      cfop: "",
+      cnae: "",
+      codigoServico: "",
     });
+    setCnaeSelection(null);
+    setNcmSelection(null);
   };
 
   const handleSubmit = async () => {
     setFormError("");
-    if (!formData.descricao) {
+    if (!formData.descricao || !formData.unidade || formData.valorUnitarioCents <= 0) {
+      setFormError("Preencha os campos obrigatorios.");
+      return;
+    }
+    if (formData.tipo === "PRODUTO" && (!formData.ncm || !formData.cfop)) {
+      setFormError("Informe NCM e CFOP para produto.");
+      return;
+    }
+    if (formData.tipo === "SERVICO" && !formData.cnae) {
       setFormError("Preencha os campos obrigatorios.");
       return;
     }
@@ -144,18 +205,22 @@ const ProdutosServicosPage = () => {
       return;
     }
     try {
+      const payload = {
+        descricao: formData.descricao,
+        tipo: formData.tipo,
+        status: formData.status,
+        codigo: formData.codigo || undefined,
+        unidade: formData.unidade,
+        valorUnitario: formData.valorUnitarioCents,
+        ncm: formData.ncm || undefined,
+        cfop: formData.cfop || undefined,
+        cnae: formData.cnae || undefined,
+        codigoServico: formData.codigoServico || undefined,
+      };
       if (editingId) {
-        await updateProdutoServico(editingId, {
-          descricao: formData.descricao,
-          tipo: formData.tipo,
-          status: formData.status,
-        });
+        await updateProdutoServico(editingId, payload);
       } else {
-        await createProdutoServico({
-          descricao: formData.descricao,
-          tipo: formData.tipo,
-          status: formData.status,
-        });
+        await createProdutoServico(payload);
       }
       resetForm();
       setFormOpen(false);
@@ -196,14 +261,94 @@ const ProdutosServicosPage = () => {
                 setFormData((prev) => ({ ...prev, descricao: e.target.value }))
               }
             />
+            <AppTextInput
+              title="Codigo interno"
+              value={formData.codigo}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, codigo: e.target.value }))
+              }
+            />
             <AppSelectInput
               title="Tipo"
               value={formData.tipo}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, tipo: e.target.value }))
-              }
+              onChange={(e) => {
+                setFormData((prev) => ({
+                  ...prev,
+                  tipo: e.target.value,
+                  ncm: "",
+                  cnae: "",
+                  cfop: "",
+                }));
+                setCnaeSelection(null);
+                setNcmSelection(null);
+              }}
               data={tipoOptions}
             />
+            <AppTextInput
+              required
+              title="Unidade"
+              value={formData.unidade}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, unidade: e.target.value }))
+              }
+            />
+            <AppTextInput
+              required
+              title="Valor unitario"
+              value={formData.valorUnitarioCents ? String(formData.valorUnitarioCents) : ""}
+              sanitizeRegex={/[0-9]/g}
+              formatter={formatBRL}
+              onValueChange={(raw) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  valorUnitarioCents: Number(raw || "0"),
+                }))
+              }
+            />
+            {formData.tipo === "PRODUTO" ? (
+              <>
+                <NcmPicker
+                  required
+                  label="NCM"
+                  value={ncmSelection}
+                  onChange={(selection) => setNcmSelection(selection)}
+                  onChangeCodigo={(codigo) =>
+                    setFormData((prev) => ({ ...prev, ncm: codigo ?? "" }))
+                  }
+                  helperText="Selecione o NCM do produto."
+                />
+                <AppTextInput
+                  required
+                  title="CFOP"
+                  value={formData.cfop}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, cfop: e.target.value }))
+                  }
+                />
+              </>
+            ) : (
+              <>
+                <CnaePicker
+                  label="CNAE"
+                  value={cnaeSelection}
+                  onChange={(selection) => setCnaeSelection(selection)}
+                  onChangeCodigo={(codigo) =>
+                    setFormData((prev) => ({ ...prev, cnae: codigo ?? "" }))
+                  }
+                  helperText="Selecione o CNAE do servico."
+                />
+                <AppTextInput
+                  title="Codigo do servico"
+                  value={formData.codigoServico}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      codigoServico: e.target.value,
+                    }))
+                  }
+                />
+              </>
+            )}
             <AppSelectInput
               title="Status"
               value={formData.status}

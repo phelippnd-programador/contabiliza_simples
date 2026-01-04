@@ -28,6 +28,9 @@ const NotasListPage = () => {
   const navigate = useNavigate();
   const [notas, setNotas] = useState<NotaResumo[]>([]);
   const [error, setError] = useState("");
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const pageSize = 10;
   const [filters, setFilters] = useState({
     competencia: "",
     status: "" as NotaStatus | "",
@@ -36,11 +39,14 @@ const NotasListPage = () => {
   const load = async () => {
     try {
       setError("");
-      const data = await listNotas({
+      const response = await listNotas({
+        page,
+        pageSize,
         competencia: filters.competencia || undefined,
         status: filters.status || undefined,
       });
-      setNotas(data);
+      setNotas(response.data);
+      setTotal(response.meta.total);
     } catch {
       setError("Nao foi possivel carregar as notas.");
       setNotas([]);
@@ -49,7 +55,7 @@ const NotasListPage = () => {
 
   useEffect(() => {
     load();
-  }, []);
+  }, [page, filters]);
 
   const columns = useMemo(
     () => [
@@ -122,7 +128,11 @@ const NotasListPage = () => {
           />
 
           <div className="flex items-end">
-            <AppButton type="button" className="w-auto" onClick={load}>
+            <AppButton
+              type="button"
+              className="w-auto"
+              onClick={() => setPage(1)}
+            >
               Filtrar
             </AppButton>
           </div>
@@ -135,7 +145,13 @@ const NotasListPage = () => {
             data={notas}
             rowKey={(row) => row.id}
             emptyState={<AppListNotFound texto="Nenhuma nota encontrada." />}
-            pagination={{ enabled: true, pageSize: 10 }}
+            pagination={{
+              enabled: true,
+              pageSize,
+              page,
+              total,
+              onPageChange: setPage,
+            }}
             columns={columns}
           />
         </div>

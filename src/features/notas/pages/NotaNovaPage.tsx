@@ -14,6 +14,7 @@ import type { NcmItem } from "../../../shared/services/ncm";
 import { listCategorias } from "../../financeiro/services/categorias.service";
 import { listContas } from "../../financeiro/services/contas.service";
 import { listEmpresas } from "../../empresa/services/empresas.service";
+import { listProdutosServicos } from "../../cadastros/services/cadastros.service";
 import { formatBRL, formatCpfCnpj } from "../../../shared/utils/formater";
 import { notaDraftSchema } from "../validation/notaDraft.schema";
 import { createDraft, emitir } from "../services/notas.service";
@@ -23,6 +24,7 @@ import type {
   NotaEmissaoResponse,
   NotaTipo,
 } from "../types";
+import type { ProdutoServicoResumo } from "../../cadastros/services/cadastros.service";
 
 type ItemForm = NotaDraftRequest["itens"][number];
 
@@ -55,6 +57,7 @@ const NotaNovaPage = () => {
   const [contas, setContas] = useState<Array<{ value: string; label: string }>>([]);
   const [categorias, setCategorias] = useState<Array<{ value: string; label: string }>>([]);
   const [empresas, setEmpresas] = useState<Array<{ value: string; label: string }>>([]);
+  const [catalogo, setCatalogo] = useState<ProdutoServicoResumo[]>([]);
   const [form, setForm] = useState<NotaDraftRequest>({
     empresaId: searchParams.get("empresaId") ?? "",
     tipo: "SERVICO",
@@ -95,12 +98,18 @@ const NotaNovaPage = () => {
   const [submitError, setSubmitError] = useState("");
   const [cnaeSelections, setCnaeSelections] = useState<Record<number, CnaeItem | null>>({});
   const [ncmSelections, setNcmSelections] = useState<Record<number, NcmItem | null>>({});
+  const [catalogSelections, setCatalogSelections] = useState<Record<number, string>>({});
 
   useEffect(() => {
     let isMounted = true;
     const load = async () => {
-      const [contasResult, categoriasResult, empresasResult] =
-        await Promise.allSettled([listContas(), listCategorias(), listEmpresas()]);
+      const [contasResult, categoriasResult, empresasResult, catalogoResult] =
+        await Promise.allSettled([
+          listContas(),
+          listCategorias(),
+          listEmpresas({ page: 1, pageSize: 200 }),
+          listProdutosServicos({ page: 1, pageSize: 200 }),
+        ]);
       if (!isMounted) return;
       if (contasResult.status === "fulfilled") {
         setContas(
@@ -126,7 +135,7 @@ const NotaNovaPage = () => {
 
       if (empresasResult.status === "fulfilled") {
         setEmpresas(
-          empresasResult.value.map((empresa) => ({
+          empresasResult.value.data.map((empresa) => ({
             value: empresa.id,
             label:
               empresa.nomeFantasia?.trim() ||
@@ -136,6 +145,12 @@ const NotaNovaPage = () => {
         );
       } else {
         setEmpresas([]);
+      }
+
+      if (catalogoResult.status === "fulfilled") {
+        setCatalogo(catalogoResult.value.data);
+      } else {
+        setCatalogo([]);
       }
     };
     load();
@@ -160,6 +175,36 @@ const NotaNovaPage = () => {
     }));
   };
 
+  const catalogoOptions = useMemo(
+    () =>
+      catalogo
+        .filter((item) => !item.tipo || item.tipo === form.tipo)
+        .map((item) => ({
+          value: item.id,
+          label: `${item.descricao}${item.codigo ? ` (${item.codigo})` : ""}`,
+        })),
+    [catalogo, form.tipo]
+  );
+
+  const applyCatalogoItem = (index: number, productId: string) => {
+    const item = catalogo.find((p) => p.id === productId);
+    if (!item) return;
+    setItem(index, {
+      descricao: item.descricao,
+      valorUnitario: item.valorUnitario ?? 0,
+      ncm: item.ncm ?? "",
+      cfop: item.cfop ?? "",
+      cnae: item.cnae ?? "",
+      codigoServico: item.codigoServico ?? "",
+    });
+    if (item.ncm) {
+      setNcmSelections((prev) => ({ ...prev, [index]: { codigo: item.ncm!, descricao: "" } }));
+    }
+    if (item.cnae) {
+      setCnaeSelections((prev) => ({ ...prev, [index]: { codigo: item.cnae!, descricao: "" } }));
+    }
+  };
+
   const addItem = () => {
     setForm((prev) => ({ ...prev, itens: [...prev.itens, emptyItem()] }));
   };
@@ -180,6 +225,15 @@ const NotaNovaPage = () => {
     });
     setNcmSelections((prev) => {
       const next: Record<number, NcmItem | null> = {};
+      Object.entries(prev).forEach(([key, value]) => {
+        const idx = Number(key);
+        if (Number.isNaN(idx) || idx === index) return;
+        next[idx > index ? idx - 1 : idx] = value;
+      });
+      return next;
+    });
+    setCatalogSelections((prev) => {
+      const next: Record<number, string> = {};
       Object.entries(prev).forEach(([key, value]) => {
         const idx = Number(key);
         if (Number.isNaN(idx) || idx === index) return;
@@ -508,6 +562,20 @@ const NotaNovaPage = () => {
               </div>
 
               <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
+                <AppSelectInput
+                  title="Catalogo"
+                  value={catalogSelections[index] ?? ""}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setCatalogSelections((prev) => ({ ...prev, [index]: value }));
+                    if (value) {
+                      applyCatalogoItem(index, value);
+                    }
+                  }}
+                  data={catalogoOptions}
+                  placeholder="Selecione"
+                />
+
                 <AppTextInput
                   required
                   title="Descricao"

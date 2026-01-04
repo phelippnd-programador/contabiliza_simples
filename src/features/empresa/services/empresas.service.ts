@@ -25,21 +25,25 @@ const toResumo = (empresa: EmpresaCadastro): EmpresaResumo => ({
 
 export async function listEmpresas(
   params: ListEmpresasParams = {}
-): Promise<EmpresaResumo[]> {
+): Promise<ApiListResponse<EmpresaResumo>> {
+  const page = params.page ?? 1;
+  const pageSize = params.pageSize ?? 10;
   if (!API_BASE) {
-    return listEmpresasStorage().map(toResumo);
+    const all = listEmpresasStorage().map(toResumo);
+    const start = (page - 1) * pageSize;
+    const data = all.slice(start, start + pageSize);
+    return { data, meta: { page, pageSize, total: all.length } };
   }
   const query = new URLSearchParams();
-  if (params.page) query.set("page", String(params.page));
-  if (params.pageSize) query.set("pageSize", String(params.pageSize));
+  query.set("page", String(page));
+  query.set("pageSize", String(pageSize));
   if (params.q) query.set("q", params.q);
   const suffix = query.toString() ? `?${query.toString()}` : "";
   const res = await apiFetch(`/empresas${suffix}`);
   if (!res.ok) {
     throw new Error("LIST_EMPRESAS_FAILED");
   }
-  const data = (await res.json()) as ApiListResponse<EmpresaResumo>;
-  return data.data ?? [];
+  return (await res.json()) as ApiListResponse<EmpresaResumo>;
 }
 
 export async function getEmpresa(
