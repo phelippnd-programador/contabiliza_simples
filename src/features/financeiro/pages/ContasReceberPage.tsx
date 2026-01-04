@@ -22,6 +22,8 @@ import { formatBRL, formatLocalDate } from "../../../shared/utils/formater";
 import { EditIcon, TrashIcon } from "../../../components/ui/icon/AppIcons";
 import AppPopup from "../../../components/ui/popup/AppPopup";
 import useConfirmPopup from "../../../shared/hooks/useConfirmPopup";
+import { usePlan } from "../../../shared/context/PlanContext";
+import { getPlanConfig } from "../../../app/plan/planConfig";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 
@@ -47,6 +49,9 @@ const ContasReceberPage = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [clientes, setClientes] = useState<ClienteResumo[]>([]);
   const { popupProps, openConfirm } = useConfirmPopup();
+  const { plan } = usePlan();
+  const { labels } = getPlanConfig(plan);
+  const contaLabels = labels.financeiro.contasReceber;
   const [contas, setContas] = useState<Array<{ value: string; label: string }>>(
     []
   );
@@ -155,7 +160,7 @@ const ContasReceberPage = () => {
     () => [
       {
         key: "cliente",
-        header: "Cliente",
+        header: contaLabels.table.pessoa,
         render: (row: ContaReceberResumo) =>
           clienteMap.get(row.clienteId ?? "") ||
           row.clienteNome ||
@@ -164,23 +169,29 @@ const ContasReceberPage = () => {
       },
       {
         key: "descricao",
-        header: "Titulo",
+        header: contaLabels.table.titulo,
         render: (row: ContaReceberResumo) => row.descricao ?? "-",
       },
       {
         key: "origem",
-        header: "Origem",
+        header: contaLabels.table.origem,
         render: (row: ContaReceberResumo) =>
           row.origem ? `${row.origem}${row.origemId ? ` (${row.origemId})` : ""}` : "-",
       },
       {
+        key: "dataOrigem",
+        header: contaLabels.table.dataOrigem,
+        render: (row: ContaReceberResumo) =>
+          row.competencia ? formatLocalDate(row.competencia) : "-",
+      },
+      {
         key: "vencimento",
-        header: "Vencimento",
+        header: contaLabels.table.vencimento,
         render: (row: ContaReceberResumo) => formatLocalDate(row.vencimento),
       },
       {
         key: "parcela",
-        header: "Parcela",
+        header: contaLabels.table.parcela,
         render: (row: ContaReceberResumo) =>
           row.parcela && row.totalParcelas
             ? `${row.parcela}/${row.totalParcelas}`
@@ -188,7 +199,7 @@ const ContasReceberPage = () => {
       },
       {
         key: "valor",
-        header: "Valor",
+        header: contaLabels.table.valor,
         align: "right" as const,
         render: (row: ContaReceberResumo) =>
           (row.valor / 100).toLocaleString("pt-BR", {
@@ -198,12 +209,12 @@ const ContasReceberPage = () => {
       },
       {
         key: "status",
-        header: "Status",
+        header: contaLabels.table.status,
         render: (row: ContaReceberResumo) => row.status ?? "-",
       },
       {
         key: "acoes",
-        header: "Acoes",
+        header: contaLabels.table.acoes,
         align: "right" as const,
         render: (row: ContaReceberResumo) => (
           <div className="flex justify-end gap-2">
@@ -268,7 +279,7 @@ const ContasReceberPage = () => {
         ),
       },
     ],
-    [clienteMap]
+    [clienteMap, contaLabels]
   );
 
   const resetForm = () => {
@@ -361,8 +372,8 @@ const ContasReceberPage = () => {
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <div>
-          <AppTitle text="Contas a receber" />
-          <AppSubTitle text="Controle cobrancas e recebimentos." />
+          <AppTitle text={contaLabels.title} />
+          <AppSubTitle text={contaLabels.subtitle} />
         </div>
         <AppButton
           type="button"
@@ -373,7 +384,7 @@ const ContasReceberPage = () => {
             setFormOpen((prev) => !prev);
           }}
         >
-          {formOpen ? "Fechar" : "Nova conta"}
+          {formOpen ? contaLabels.closeButton : contaLabels.newButton}
         </AppButton>
       </div>
 
@@ -382,24 +393,28 @@ const ContasReceberPage = () => {
           <div className="grid gap-4 md:grid-cols-3">
             <AppSelectInput
               required
-              title="Cliente"
+              title={contaLabels.fields.pessoa}
               value={formData.clienteId}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, clienteId: e.target.value }))
               }
               data={clienteOptions}
-              placeholder={clienteOptions.length ? "Selecione" : "Cadastre um cliente"}
+              placeholder={
+                clienteOptions.length
+                  ? "Selecione"
+                  : `Cadastre ${contaLabels.fields.pessoa.toLowerCase()}`
+              }
             />
             <AppTextInput
               required
-              title="Titulo"
+              title={contaLabels.fields.descricao}
               value={formData.descricao}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, descricao: e.target.value }))
               }
             />
             <AppTextInput
-              title="Documento"
+              title={contaLabels.fields.documento}
               value={formData.numeroDocumento}
               onChange={(e) =>
                 setFormData((prev) => ({
@@ -410,14 +425,14 @@ const ContasReceberPage = () => {
             />
             <AppDateInput
               required
-              title="Vencimento"
+              title={contaLabels.fields.vencimento}
               value={formData.vencimento}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, vencimento: e.target.value }))
               }
             />
             <AppDateInput
-              title="Competencia"
+              title={contaLabels.fields.competencia}
               type="month"
               value={formData.competencia}
               onChange={(e) =>
@@ -425,7 +440,7 @@ const ContasReceberPage = () => {
               }
             />
             <AppTextInput
-              title="Parcela"
+              title={contaLabels.fields.parcela}
               value={formData.parcela ? String(formData.parcela) : ""}
               sanitizeRegex={/[0-9]/g}
               onValueChange={(raw) =>
@@ -433,7 +448,7 @@ const ContasReceberPage = () => {
               }
             />
             <AppTextInput
-              title="Total parcelas"
+              title={contaLabels.fields.totalParcelas}
               value={formData.totalParcelas ? String(formData.totalParcelas) : ""}
               sanitizeRegex={/[0-9]/g}
               onValueChange={(raw) =>
@@ -445,7 +460,7 @@ const ContasReceberPage = () => {
             />
             <AppTextInput
               required
-              title="Valor do titulo"
+              title={contaLabels.fields.valorTitulo}
               value={
                 formData.valorOriginalCents ? String(formData.valorOriginalCents) : ""
               }
@@ -459,7 +474,7 @@ const ContasReceberPage = () => {
               }
             />
             <AppTextInput
-              title="Desconto"
+              title={contaLabels.fields.desconto}
               value={formData.descontoCents ? String(formData.descontoCents) : ""}
               sanitizeRegex={/[0-9]/g}
               formatter={formatBRL}
@@ -471,7 +486,7 @@ const ContasReceberPage = () => {
               }
             />
             <AppTextInput
-              title="Juros"
+              title={contaLabels.fields.juros}
               value={formData.jurosCents ? String(formData.jurosCents) : ""}
               sanitizeRegex={/[0-9]/g}
               formatter={formatBRL}
@@ -483,7 +498,7 @@ const ContasReceberPage = () => {
               }
             />
             <AppTextInput
-              title="Multa"
+              title={contaLabels.fields.multa}
               value={formData.multaCents ? String(formData.multaCents) : ""}
               sanitizeRegex={/[0-9]/g}
               formatter={formatBRL}
@@ -495,13 +510,13 @@ const ContasReceberPage = () => {
               }
             />
             <AppTextInput
-              title="Valor liquido"
+              title={contaLabels.fields.valorLiquido}
               value={valorLiquidoCents ? String(valorLiquidoCents) : ""}
               formatter={formatBRL}
               disabled
             />
             <AppSelectInput
-              title="Status"
+              title={contaLabels.fields.status}
               value={formData.status}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, status: e.target.value }))
@@ -512,14 +527,14 @@ const ContasReceberPage = () => {
 
           <div className="mt-6 grid gap-4 md:grid-cols-3">
             <AppDateInput
-              title="Recebimento"
+              title={contaLabels.fields.recebimento}
               value={formData.dataRecebimento}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, dataRecebimento: e.target.value }))
               }
             />
             <AppTextInput
-              title="Valor recebido"
+              title={contaLabels.fields.valorRecebido}
               value={
                 formData.valorRecebidoCents ? String(formData.valorRecebidoCents) : ""
               }
@@ -533,7 +548,7 @@ const ContasReceberPage = () => {
               }
             />
             <AppSelectInput
-              title="Forma de pagamento"
+              title={contaLabels.fields.formaPagamento}
               value={formData.formaPagamento}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, formaPagamento: e.target.value }))
@@ -542,7 +557,7 @@ const ContasReceberPage = () => {
               placeholder="Selecione"
             />
             <AppSelectInput
-              title="Conta"
+              title={contaLabels.fields.conta}
               value={formData.contaId}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, contaId: e.target.value }))
@@ -551,7 +566,7 @@ const ContasReceberPage = () => {
               placeholder="Selecione"
             />
             <AppSelectInput
-              title="Categoria"
+              title={contaLabels.fields.categoria}
               value={formData.categoriaId}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, categoriaId: e.target.value }))
@@ -560,7 +575,7 @@ const ContasReceberPage = () => {
               placeholder="Selecione"
             />
             <AppTextInput
-              title="Observacoes"
+              title={contaLabels.fields.observacoes}
               value={formData.observacoes}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, observacoes: e.target.value }))
@@ -588,7 +603,7 @@ const ContasReceberPage = () => {
 
       <Card tone="amber">
         <p className="text-sm text-gray-700 dark:text-gray-200">
-          API de contas a receber preparada para o backend.
+          {contaLabels.apiHint}
         </p>
       </Card>
 
@@ -597,7 +612,7 @@ const ContasReceberPage = () => {
         <AppTable
           data={itens}
           rowKey={(row) => row.id}
-          emptyState={<AppListNotFound texto="Nenhuma conta a receber." />}
+          emptyState={<AppListNotFound texto={contaLabels.empty} />}
           pagination={{
             enabled: true,
             pageSize,

@@ -12,6 +12,7 @@ import {
   listContasPagar,
   createContaPagar,
   updateContaPagar,
+  patchContaPagar,
   deleteContaPagar,
   type ContaPagarResumo,
 } from "../services/contas-pagar.service";
@@ -22,8 +23,18 @@ import { formatBRL, formatLocalDate } from "../../../shared/utils/formater";
 import { EditIcon, TrashIcon } from "../../../components/ui/icon/AppIcons";
 import AppPopup from "../../../components/ui/popup/AppPopup";
 import useConfirmPopup from "../../../shared/hooks/useConfirmPopup";
+import { usePlan } from "../../../shared/context/PlanContext";
+import { getPlanConfig } from "../../../app/plan/planConfig";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
+
+const addMonths = (date: Date, months: number) => {
+  const next = new Date(date);
+  next.setMonth(next.getMonth() + months);
+  return next;
+};
+
+const formatDateInput = (date: Date) => date.toISOString().slice(0, 10);
 
 const statusOptions = [
   { value: "ABERTA", label: "Aberta" },
@@ -47,6 +58,9 @@ const ContasPagarPage = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [fornecedores, setFornecedores] = useState<FornecedorResumo[]>([]);
   const { popupProps, openConfirm } = useConfirmPopup();
+  const { plan } = usePlan();
+  const { labels } = getPlanConfig(plan);
+  const contaLabels = labels.financeiro.contasPagar;
   const [contas, setContas] = useState<Array<{ value: string; label: string }>>(
     []
   );
@@ -60,6 +74,7 @@ const ContasPagarPage = () => {
     competencia: "",
     parcela: 1,
     totalParcelas: 1,
+    parcelaPaga: 0,
     vencimento: "",
     valorOriginalCents: 0,
     descontoCents: 0,
@@ -155,7 +170,7 @@ const ContasPagarPage = () => {
     () => [
       {
         key: "fornecedor",
-        header: "Fornecedor",
+        header: contaLabels.table.pessoa,
         render: (row: ContaPagarResumo) =>
           fornecedorMap.get(row.fornecedorId ?? "") ||
           row.fornecedorNome ||
@@ -164,31 +179,76 @@ const ContasPagarPage = () => {
       },
       {
         key: "descricao",
-        header: "Titulo",
+        header: contaLabels.table.titulo,
         render: (row: ContaPagarResumo) => row.descricao ?? "-",
       },
       {
         key: "origem",
-        header: "Origem",
+        header: contaLabels.table.origem,
         render: (row: ContaPagarResumo) =>
           row.origem ? `${row.origem}${row.origemId ? ` (${row.origemId})` : ""}` : "-",
       },
       {
+        key: "dataOrigem",
+        header: contaLabels.table.dataOrigem,
+        render: (row: ContaPagarResumo) =>
+          row.competencia ? formatLocalDate(row.competencia) : "-",
+      },
+      {
         key: "vencimento",
-        header: "Vencimento",
-        render: (row: ContaPagarResumo) => formatLocalDate(row.vencimento),
+        header: contaLabels.table.vencimento,
+        render: (row: ContaPagarResumo) => {
+          const dataVencimento = row.vencimento
+            ? new Date(`${row.vencimento}T00:00:00`)
+            : null;
+          const hoje = new Date();
+          hoje.setHours(0, 0, 0, 0);
+          const totalParcelas = row.totalParcelas ?? 1;
+          const parcelaPaga = row.parcelaPaga ?? 0;
+          const parcelaAberta = Math.min(parcelaPaga + 1, totalParcelas);
+          const vencimentoParcela =
+            totalParcelas > 1 && dataVencimento
+              ? addMonths(dataVencimento, parcelaAberta - 1)
+              : dataVencimento;
+          const atrasada =
+            vencimentoParcela &&
+            vencimentoParcela.getTime() < hoje.getTime() &&
+            row.status !== "PAGA" &&
+            row.status !== "CANCELADA";
+          const vencimentoExibido = vencimentoParcela
+            ? formatLocalDate(formatDateInput(vencimentoParcela))
+            : formatLocalDate(row.vencimento);
+          return (
+            <div className="flex items-center gap-2">
+              <span>{vencimentoExibido}</span>
+              {atrasada ? (
+                <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700 dark:bg-red-500/10 dark:text-red-300">
+                  Atrasada
+                </span>
+              ) : null}
+            </div>
+          );
+        },
       },
       {
         key: "parcela",
-        header: "Parcela",
+        header: contaLabels.table.parcela,
         render: (row: ContaPagarResumo) =>
           row.parcela && row.totalParcelas
             ? `${row.parcela}/${row.totalParcelas}`
             : "-",
       },
       {
+        key: "parcelasPagas",
+        header: contaLabels.table.parcelasPagas,
+        render: (row: ContaPagarResumo) =>
+          row.totalParcelas
+            ? `${row.parcelaPaga ?? 0}/${row.totalParcelas}`
+            : "-",
+      },
+      {
         key: "valor",
-        header: "Valor",
+        header: contaLabels.table.valor,
         align: "right" as const,
         render: (row: ContaPagarResumo) =>
           (row.valor / 100).toLocaleString("pt-BR", {
@@ -198,15 +258,62 @@ const ContasPagarPage = () => {
       },
       {
         key: "status",
-        header: "Status",
+        header: contaLabels.table.status,
         render: (row: ContaPagarResumo) => row.status ?? "-",
       },
       {
         key: "acoes",
-        header: "Acoes",
+        header: contaLabels.table.acoes,
         align: "right" as const,
         render: (row: ContaPagarResumo) => (
           <div className="flex justify-end gap-2">
+            <AppIconButton
+              icon={
+                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
+                  <path d="M9.5 16.5 5 12l1.4-1.4 3.1 3.1L17.6 5.6 19 7z" />
+                </svg>
+              }
+              label={`Pagar parcela ${row.id}`}
+              disabled={
+                row.status === "PAGA" ||
+                (row.totalParcelas
+                  ? (row.parcelaPaga ?? 0) >= row.totalParcelas
+                  : false)
+              }
+              onClick={() => {
+                const totalParcelas = row.totalParcelas ?? 1;
+                const parcelaPagaAtual = row.parcelaPaga ?? 0;
+                const proximaParcela = parcelaPagaAtual + 1;
+                if (proximaParcela > totalParcelas) return;
+                openConfirm(
+                  {
+                    title: "Pagar parcela",
+                    description: `Deseja pagar a parcela ${proximaParcela}/${totalParcelas}?`,
+                    confirmLabel: "Pagar parcela",
+                  },
+                  async () => {
+                    if (!API_BASE) {
+                      setError("API nao configurada.");
+                      return;
+                    }
+                    try {
+                      setError("");
+                      const status =
+                        proximaParcela === totalParcelas ? "PAGA" : "ABERTA";
+                      await patchContaPagar(row.id, {
+                        parcelaPaga: proximaParcela,
+                        status,
+                        dataPagamento: new Date().toISOString().slice(0, 10),
+                        valorPago: row.valor,
+                      });
+                      load();
+                    } catch {
+                      setError("Nao foi possivel pagar a parcela.");
+                    }
+                  }
+                );
+              }}
+            />
             <AppIconButton
               icon={<EditIcon className="h-4 w-4" />}
               label={`Editar conta ${row.id}`}
@@ -219,6 +326,7 @@ const ContasPagarPage = () => {
                   competencia: row.competencia ?? "",
                   parcela: row.parcela ?? 1,
                   totalParcelas: row.totalParcelas ?? 1,
+                  parcelaPaga: row.parcelaPaga ?? row.parcela ?? 0,
                   vencimento: row.vencimento,
                   valorOriginalCents: row.valorOriginal ?? row.valor,
                   descontoCents: row.desconto ?? 0,
@@ -268,7 +376,7 @@ const ContasPagarPage = () => {
         ),
       },
     ],
-    [fornecedorMap]
+    [contaLabels, fornecedorMap]
   );
 
   const resetForm = () => {
@@ -280,6 +388,7 @@ const ContasPagarPage = () => {
       competencia: "",
       parcela: 1,
       totalParcelas: 1,
+      parcelaPaga: 0,
       vencimento: "",
       valorOriginalCents: 0,
       descontoCents: 0,
@@ -316,6 +425,10 @@ const ContasPagarPage = () => {
         setFormError("Informe data e valor pago.");
         return;
       }
+      if (formData.totalParcelas > 1 && !formData.parcelaPaga) {
+        setFormError("Informe a parcela paga.");
+        return;
+      }
     }
     if (!API_BASE) {
       setFormError("API nao configurada.");
@@ -333,6 +446,7 @@ const ContasPagarPage = () => {
         competencia: formData.competencia || undefined,
         parcela: formData.parcela || undefined,
         totalParcelas: formData.totalParcelas || undefined,
+        parcelaPaga: formData.parcelaPaga || undefined,
         valorOriginal: formData.valorOriginalCents || undefined,
         desconto: formData.descontoCents || undefined,
         juros: formData.jurosCents || undefined,
@@ -361,8 +475,8 @@ const ContasPagarPage = () => {
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <div>
-          <AppTitle text="Contas a pagar" />
-          <AppSubTitle text="Controle titulos, vencimentos e baixas." />
+          <AppTitle text={contaLabels.title} />
+          <AppSubTitle text={contaLabels.subtitle} />
         </div>
         <AppButton
           type="button"
@@ -373,7 +487,7 @@ const ContasPagarPage = () => {
             setFormOpen((prev) => !prev);
           }}
         >
-          {formOpen ? "Fechar" : "Nova conta"}
+          {formOpen ? contaLabels.closeButton : contaLabels.newButton}
         </AppButton>
       </div>
 
@@ -382,24 +496,28 @@ const ContasPagarPage = () => {
           <div className="grid gap-4 md:grid-cols-3">
             <AppSelectInput
               required
-              title="Fornecedor"
+              title={contaLabels.fields.pessoa}
               value={formData.fornecedorId}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, fornecedorId: e.target.value }))
               }
               data={fornecedorOptions}
-              placeholder={fornecedorOptions.length ? "Selecione" : "Cadastre um fornecedor"}
+              placeholder={
+                fornecedorOptions.length
+                  ? "Selecione"
+                  : `Cadastre ${contaLabels.fields.pessoa.toLowerCase()}`
+              }
             />
             <AppTextInput
               required
-              title="Titulo"
+              title={contaLabels.fields.descricao}
               value={formData.descricao}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, descricao: e.target.value }))
               }
             />
             <AppTextInput
-              title="Documento"
+              title={contaLabels.fields.documento}
               value={formData.numeroDocumento}
               onChange={(e) =>
                 setFormData((prev) => ({
@@ -410,14 +528,14 @@ const ContasPagarPage = () => {
             />
             <AppDateInput
               required
-              title="Vencimento"
+              title={contaLabels.fields.vencimento}
               value={formData.vencimento}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, vencimento: e.target.value }))
               }
             />
             <AppDateInput
-              title="Competencia"
+              title={contaLabels.fields.competencia}
               type="month"
               value={formData.competencia}
               onChange={(e) =>
@@ -425,7 +543,7 @@ const ContasPagarPage = () => {
               }
             />
             <AppTextInput
-              title="Parcela"
+              title={contaLabels.fields.parcela}
               value={formData.parcela ? String(formData.parcela) : ""}
               sanitizeRegex={/[0-9]/g}
               onValueChange={(raw) =>
@@ -433,7 +551,7 @@ const ContasPagarPage = () => {
               }
             />
             <AppTextInput
-              title="Total parcelas"
+              title={contaLabels.fields.totalParcelas}
               value={formData.totalParcelas ? String(formData.totalParcelas) : ""}
               sanitizeRegex={/[0-9]/g}
               onValueChange={(raw) =>
@@ -445,7 +563,7 @@ const ContasPagarPage = () => {
             />
             <AppTextInput
               required
-              title="Valor do titulo"
+              title={contaLabels.fields.valorTitulo}
               value={
                 formData.valorOriginalCents ? String(formData.valorOriginalCents) : ""
               }
@@ -459,7 +577,7 @@ const ContasPagarPage = () => {
               }
             />
             <AppTextInput
-              title="Desconto"
+              title={contaLabels.fields.desconto}
               value={formData.descontoCents ? String(formData.descontoCents) : ""}
               sanitizeRegex={/[0-9]/g}
               formatter={formatBRL}
@@ -471,7 +589,7 @@ const ContasPagarPage = () => {
               }
             />
             <AppTextInput
-              title="Juros"
+              title={contaLabels.fields.juros}
               value={formData.jurosCents ? String(formData.jurosCents) : ""}
               sanitizeRegex={/[0-9]/g}
               formatter={formatBRL}
@@ -483,7 +601,7 @@ const ContasPagarPage = () => {
               }
             />
             <AppTextInput
-              title="Multa"
+              title={contaLabels.fields.multa}
               value={formData.multaCents ? String(formData.multaCents) : ""}
               sanitizeRegex={/[0-9]/g}
               formatter={formatBRL}
@@ -495,13 +613,13 @@ const ContasPagarPage = () => {
               }
             />
             <AppTextInput
-              title="Valor liquido"
+              title={contaLabels.fields.valorLiquido}
               value={valorLiquidoCents ? String(valorLiquidoCents) : ""}
               formatter={formatBRL}
               disabled
             />
             <AppSelectInput
-              title="Status"
+              title={contaLabels.fields.status}
               value={formData.status}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, status: e.target.value }))
@@ -512,14 +630,31 @@ const ContasPagarPage = () => {
 
           <div className="mt-6 grid gap-4 md:grid-cols-3">
             <AppDateInput
-              title="Pagamento"
+              title={contaLabels.fields.pagamento}
               value={formData.dataPagamento}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, dataPagamento: e.target.value }))
               }
             />
+            {formData.totalParcelas > 1 ? (
+              <AppSelectInput
+                title={contaLabels.fields.parcelaPaga}
+                value={formData.parcelaPaga ? String(formData.parcelaPaga) : ""}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    parcelaPaga: Number(e.target.value || "0"),
+                  }))
+                }
+                data={Array.from({ length: formData.totalParcelas }, (_, index) => {
+                  const value = index + 1;
+                  return { value, label: `${value}/${formData.totalParcelas}` };
+                })}
+                placeholder="Selecione"
+              />
+            ) : null}
             <AppTextInput
-              title="Valor pago"
+              title={contaLabels.fields.valorPago}
               value={formData.valorPagoCents ? String(formData.valorPagoCents) : ""}
               sanitizeRegex={/[0-9]/g}
               formatter={formatBRL}
@@ -531,7 +666,7 @@ const ContasPagarPage = () => {
               }
             />
             <AppSelectInput
-              title="Forma de pagamento"
+              title={contaLabels.fields.formaPagamento}
               value={formData.formaPagamento}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, formaPagamento: e.target.value }))
@@ -540,7 +675,7 @@ const ContasPagarPage = () => {
               placeholder="Selecione"
             />
             <AppSelectInput
-              title="Conta"
+              title={contaLabels.fields.conta}
               value={formData.contaId}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, contaId: e.target.value }))
@@ -549,7 +684,7 @@ const ContasPagarPage = () => {
               placeholder="Selecione"
             />
             <AppSelectInput
-              title="Categoria"
+              title={contaLabels.fields.categoria}
               value={formData.categoriaId}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, categoriaId: e.target.value }))
@@ -558,7 +693,7 @@ const ContasPagarPage = () => {
               placeholder="Selecione"
             />
             <AppTextInput
-              title="Observacoes"
+              title={contaLabels.fields.observacoes}
               value={formData.observacoes}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, observacoes: e.target.value }))
@@ -586,7 +721,7 @@ const ContasPagarPage = () => {
 
       <Card tone="amber">
         <p className="text-sm text-gray-700 dark:text-gray-200">
-          API de contas a pagar preparada para o backend.
+          {contaLabels.apiHint}
         </p>
       </Card>
 
@@ -595,7 +730,7 @@ const ContasPagarPage = () => {
         <AppTable
           data={itens}
           rowKey={(row) => row.id}
-          emptyState={<AppListNotFound texto="Nenhuma conta a pagar." />}
+          emptyState={<AppListNotFound texto={contaLabels.empty} />}
           pagination={{
             enabled: true,
             pageSize,

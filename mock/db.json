@@ -159,23 +159,32 @@
       "id": "cat_3",
       "nome": "Folha de pagamento",
       "tipo": "SAIDA"
+    },
+    {
+      "nome": "Cartão Mirian",
+      "tipo": "SAIDA",
+      "id": "QOfPKMl"
     }
   ],
   "contasPagar": [
     {
-      "id": "cp_1",
       "fornecedorId": "for_1",
       "fornecedorNome": "Fornecedor Demo",
-      "vencimento": "2025-02-10",
+      "vencimento": "2025-03-15",
       "valor": 350000,
       "status": "ABERTA",
-      "origem": "COMPRA",
-      "origemId": "cmp_1",
       "descricao": "Compra cmp_1",
       "numeroDocumento": "CMP-0001",
       "competencia": "2025-02",
+      "parcela": 1,
+      "totalParcelas": 20,
+      "parcelaPaga": 11,
+      "valorOriginal": 350000,
+      "valorPago": 350000,
+      "dataPagamento": "2026-01-04",
       "contaId": "cta_2",
-      "categoriaId": "cat_2"
+      "categoriaId": "cat_2",
+      "id": "cp_1"
     },
     {
       "id": "cp_2",
