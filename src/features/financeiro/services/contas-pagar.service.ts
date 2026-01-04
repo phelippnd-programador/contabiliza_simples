@@ -18,6 +18,7 @@ export type ContaPagarResumo = {
   competencia?: string;
   parcela?: number;
   totalParcelas?: number;
+  parcelaPaga?: number;
   valorOriginal?: number;
   desconto?: number;
   juros?: number;
@@ -43,6 +44,7 @@ export type ContaPagarPayload = {
   competencia?: string;
   parcela?: number;
   totalParcelas?: number;
+  parcelaPaga?: number;
   valorOriginal?: number;
   desconto?: number;
   juros?: number;
@@ -129,6 +131,24 @@ export async function updateContaPagar(
   });
   if (!res.ok) {
     throw new Error("UPDATE_CONTA_PAGAR_FAILED");
+  }
+  return (await res.json()) as ContaPagarResumo;
+}
+
+export async function patchContaPagar(
+  id: string,
+  payload: Partial<ContaPagarPayload>
+): Promise<ContaPagarResumo> {
+  if (!API_BASE) {
+    throw new Error("API_NOT_CONFIGURED");
+  }
+  const res = await apiFetch(`/financeiro/contas-pagar/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    throw new Error("PATCH_CONTA_PAGAR_FAILED");
   }
   return (await res.json()) as ContaPagarResumo;
 }

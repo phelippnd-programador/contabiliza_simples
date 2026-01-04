@@ -1,8 +1,11 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import type { AppMenuItem } from "../menu/types";
 import AppMenu from "../menu/AppMenu";
 import { useAuth } from "../../../shared/context/AuthContext";
+import { usePlan } from "../../../shared/context/PlanContext";
+import { getPlanConfig, isModuleEnabled, planOptions } from "../../../app/plan/planConfig";
+import type { AppPlan } from "../../../app/plan/types";
 
 const IconDashboard = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
@@ -65,128 +68,341 @@ const IconSettings = () => (
   </svg>
 );
 
+const filterMenuByPlan = (items: AppMenuItem[], plan: AppPlan): AppMenuItem[] =>
+  items
+    .map((item) => {
+      if (item.moduleKey && !isModuleEnabled(plan, item.moduleKey)) {
+        return null;
+      }
+      if (item.children?.length) {
+        const children = filterMenuByPlan(item.children, plan);
+        if (!children.length && !item.to) {
+          return null;
+        }
+        return { ...item, children };
+      }
+      return item;
+    })
+    .filter(Boolean) as AppMenuItem[];
+
 const AppHeader = () => {
   const { logout } = useAuth();
+  const { plan, setPlan } = usePlan();
+  const planConfig = getPlanConfig(plan);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [isDark, setIsDark] = useState(
     () => window.localStorage.getItem("theme") === "dark"
   );
   const settingsRef = useRef<HTMLDivElement | null>(null);
 
-  const menu: AppMenuItem[] = [
-    { id: "dash", label: "Dashboard", to: "/", end: true, icon: <IconDashboard /> },
-    {
-      id: "empresas",
-      label: "Empresas",
-      to: "/empresa",
-      icon: <IconBuilding />,
-      children: [
-        { id: "minhas_empresas", label: "Minhas Empresas", to: "/empresa", end: true, icon: <IconList /> },
-        // { id: "cadastro_empresa", label: "Cadastro Empresa", to: "/empresa/nova", icon: <IconBuilding /> },
-      ],
-    },
-    {
-      id: "financeiro",
-      label: "Financeiro",
-      icon: <IconWallet />,
-      children: [
-        { id: "contas", label: "Contas", to: "/financeiro/contas", icon: <IconWallet /> },
-        { id: "contas_pagar", label: "Contas a pagar", to: "/financeiro/contas-pagar", icon: <IconCash /> },
-        { id: "contas_receber", label: "Contas a receber", to: "/financeiro/contas-receber", icon: <IconCash /> },
-        { id: "categorias", label: "Categorias", to: "/financeiro/categorias", icon: <IconList /> },
-        { id: "movimentos", label: "Movimentos", to: "/financeiro/movimentos", icon: <IconCash /> },
-        { id: "caixa_financeiro", label: "Caixa", to: "/financeiro/caixa", icon: <IconChart /> },
-        { id: "projecao_financeira", label: "Projecao", to: "/financeiro/projecao", icon: <IconChart /> },
-        { id: "prolabore", label: "Pro-labore", to: "/financeiro/prolabore", icon: <IconCash /> },
-      ],
-    },
-    {
-      id: "cadastros",
-      label: "Cadastros",
-      icon: <IconList />,
-      children: [
-        { id: "clientes", label: "Clientes", to: "/cadastros/clientes", icon: <IconList /> },
-        { id: "fornecedores", label: "Fornecedores", to: "/cadastros/fornecedores", icon: <IconList /> },
-        { id: "produtos_servicos", label: "Produtos/Servicos", to: "/cadastros/produtos-servicos", icon: <IconList /> },
-      ],
-    },
-    {
-      id: "comercial",
-      label: "Comercial",
-      icon: <IconChart />,
-      children: [
-        { id: "vendas", label: "Vendas", to: "/comercial/vendas", icon: <IconChart /> },
-        { id: "compras", label: "Compras", to: "/comercial/compras", icon: <IconChart /> },
-        { id: "vendas_analytics", label: "Analise de vendas", to: "/comercial/vendas/analytics", icon: <IconChart /> },
-      ],
-    },
-    {
-      id: "fiscal",
-      label: "Fiscal",
-      icon: <IconShield />,
-      children: [
-        { id: "fechamento", label: "Fechamento", to: "/fiscal/fechamento", icon: <IconList /> },
-        { id: "apuracao", label: "Apuracao", to: "/fiscal/apuracao", icon: <IconList /> },
-        { id: "obrigacoes", label: "Obrigacoes", to: "/fiscal/obrigacoes", icon: <IconList /> },
-        { id: "notas", label: "Notas", to: "/fiscal/notas", icon: <IconList /> },
-      ],
-    },
-    { id: "relatorios", label: "Relatorios", to: "/relatorios", icon: <IconChart /> },
-    {
-      id: "estoque",
-      label: "Estoque",
-      icon: <IconList />,
-      children: [
-        { id: "estoque_lista", label: "Itens", to: "/estoque", icon: <IconList /> },
-        {
-          id: "estoque_movimentos",
-          label: "Movimentos",
-          to: "/estoque/movimentos",
-          icon: <IconList />,
-        },
-        {
-          id: "estoque_importacao",
-          label: "Importacao CSV",
-          to: "/estoque/importacao",
-          icon: <IconList />,
-        },
-      ],
-    },
-    {
-      id: "tributacao",
-      label: "Tributacao",
-      icon: <IconShield />,
-      children: [
-        { id: "receitas", label: "Receitas", to: "/receitas", icon: <IconList /> },
-        { id: "caixa", label: "Caixa", to: "/caixa", icon: <IconCash /> },
-        { id: "conciliacao", label: "Conciliacao", to: "/conciliacao", icon: <IconList /> },
-      ],
-    },
-    {
-      id: "integracoes",
-      label: "Integracoes",
-      icon: <IconList />,
-      children: [
-        { id: "bancos", label: "Bancos", to: "/integracoes/bancos", icon: <IconList /> },
-      ],
-    },
-    {
-      id: "folha",
-      label: "Folha",
-      icon: <IconList />,
-      children: [
-        { id: "folha_execucao", label: "Folha de pagamento", to: "/folha", icon: <IconList />,  end: true },
-        { id: "folha_simulador", label: "Simulador", to: "/folha/simulador", icon: <IconList /> },
-        { id: "folha_colaboradores", label: "Colaboradores", to: "/folha/colaboradores", icon: <IconList /> },
-      ],
-    },
-    {
-      id: "logout",
-      label: "Sair",
-      onClick: () => logout(),
-      icon: <IconSettings />,
-    },
-  ];
+  const menu: AppMenuItem[] = useMemo(
+    () => [
+      {
+        id: "dash",
+        label: "Dashboard",
+        to: "/",
+        end: true,
+        icon: <IconDashboard />,
+        moduleKey: "dashboard",
+      },
+      {
+        id: "empresas",
+        label: "Empresas",
+        to: "/empresa",
+        icon: <IconBuilding />,
+        moduleKey: "empresas",
+        children: [
+          {
+            id: "minhas_empresas",
+            label: "Minhas Empresas",
+            to: "/empresa",
+            end: true,
+            icon: <IconList />,
+            moduleKey: "empresas",
+          },
+          // { id: "cadastro_empresa", label: "Cadastro Empresa", to: "/empresa/nova", icon: <IconBuilding /> },
+        ],
+      },
+      {
+        id: "financeiro",
+        label: "Financeiro",
+        icon: <IconWallet />,
+        moduleKey: "financeiro",
+        children: [
+          {
+            id: "contas",
+            label: "Contas",
+            to: "/financeiro/contas",
+            icon: <IconWallet />,
+            moduleKey: "financeiro",
+          },
+          {
+            id: "contas_pagar",
+            label: "Contas a pagar",
+            to: "/financeiro/contas-pagar",
+            icon: <IconCash />,
+            moduleKey: "financeiro",
+          },
+          {
+            id: "contas_receber",
+            label: "Contas a receber",
+            to: "/financeiro/contas-receber",
+            icon: <IconCash />,
+            moduleKey: "financeiro",
+          },
+          {
+            id: "categorias",
+            label: "Categorias",
+            to: "/financeiro/categorias",
+            icon: <IconList />,
+            moduleKey: "financeiro",
+          },
+          {
+            id: "movimentos",
+            label: "Movimentos",
+            to: "/financeiro/movimentos",
+            icon: <IconCash />,
+            moduleKey: "financeiro",
+          },
+          {
+            id: "caixa_financeiro",
+            label: "Caixa",
+            to: "/financeiro/caixa",
+            icon: <IconChart />,
+            moduleKey: "financeiro",
+          },
+          {
+            id: "projecao_financeira",
+            label: "Projecao",
+            to: "/financeiro/projecao",
+            icon: <IconChart />,
+            moduleKey: "projecao",
+          },
+          {
+            id: "prolabore",
+            label: "Pro-labore",
+            to: "/financeiro/prolabore",
+            icon: <IconCash />,
+            moduleKey: "prolabore",
+          },
+        ],
+      },
+      {
+        id: "cadastros",
+        label: "Cadastros",
+        icon: <IconList />,
+        moduleKey: "cadastros",
+        children: [
+          {
+            id: "clientes",
+            label: "Clientes",
+            to: "/cadastros/clientes",
+            icon: <IconList />,
+            moduleKey: "cadastros",
+          },
+          {
+            id: "fornecedores",
+            label: "Fornecedores",
+            to: "/cadastros/fornecedores",
+            icon: <IconList />,
+            moduleKey: "cadastros",
+          },
+          {
+            id: "produtos_servicos",
+            label: "Produtos/Servicos",
+            to: "/cadastros/produtos-servicos",
+            icon: <IconList />,
+            moduleKey: "cadastros",
+          },
+        ],
+      },
+      {
+        id: "comercial",
+        label: "Comercial",
+        icon: <IconChart />,
+        moduleKey: "comercial",
+        children: [
+          {
+            id: "vendas",
+            label: "Vendas",
+            to: "/comercial/vendas",
+            icon: <IconChart />,
+            moduleKey: "comercial",
+          },
+          {
+            id: "compras",
+            label: "Compras",
+            to: "/comercial/compras",
+            icon: <IconChart />,
+            moduleKey: "comercial",
+          },
+          {
+            id: "vendas_analytics",
+            label: "Analise de vendas",
+            to: "/comercial/vendas/analytics",
+            icon: <IconChart />,
+            moduleKey: "comercial",
+          },
+        ],
+      },
+      {
+        id: "fiscal",
+        label: "Fiscal",
+        icon: <IconShield />,
+        moduleKey: "fiscal",
+        children: [
+          {
+            id: "fechamento",
+            label: "Fechamento",
+            to: "/fiscal/fechamento",
+            icon: <IconList />,
+            moduleKey: "fiscal",
+          },
+          {
+            id: "apuracao",
+            label: "Apuracao",
+            to: "/fiscal/apuracao",
+            icon: <IconList />,
+            moduleKey: "fiscal",
+          },
+          {
+            id: "obrigacoes",
+            label: "Obrigacoes",
+            to: "/fiscal/obrigacoes",
+            icon: <IconList />,
+            moduleKey: "fiscal",
+          },
+          {
+            id: "notas",
+            label: "Notas",
+            to: "/fiscal/notas",
+            icon: <IconList />,
+            moduleKey: "fiscal",
+          },
+        ],
+      },
+      {
+        id: "relatorios",
+        label: "Relatorios",
+        to: "/relatorios",
+        icon: <IconChart />,
+        moduleKey: "relatorios",
+      },
+      {
+        id: "estoque",
+        label: "Estoque",
+        icon: <IconList />,
+        moduleKey: "estoque",
+        children: [
+          {
+            id: "estoque_lista",
+            label: "Itens",
+            to: "/estoque",
+            icon: <IconList />,
+            moduleKey: "estoque",
+          },
+          {
+            id: "estoque_movimentos",
+            label: "Movimentos",
+            to: "/estoque/movimentos",
+            icon: <IconList />,
+            moduleKey: "estoque",
+          },
+          {
+            id: "estoque_importacao",
+            label: "Importacao CSV",
+            to: "/estoque/importacao",
+            icon: <IconList />,
+            moduleKey: "estoque",
+          },
+        ],
+      },
+      {
+        id: "tributacao",
+        label: "Tributacao",
+        icon: <IconShield />,
+        moduleKey: "tributacao",
+        children: [
+          {
+            id: "receitas",
+            label: "Receitas",
+            to: "/receitas",
+            icon: <IconList />,
+            moduleKey: "tributacao",
+          },
+          {
+            id: "caixa",
+            label: "Caixa",
+            to: "/caixa",
+            icon: <IconCash />,
+            moduleKey: "tributacao",
+          },
+          {
+            id: "conciliacao",
+            label: "Conciliacao",
+            to: "/conciliacao",
+            icon: <IconList />,
+            moduleKey: "tributacao",
+          },
+        ],
+      },
+      {
+        id: "integracoes",
+        label: "Integracoes",
+        icon: <IconList />,
+        moduleKey: "integracoes",
+        children: [
+          {
+            id: "bancos",
+            label: "Bancos",
+            to: "/integracoes/bancos",
+            icon: <IconList />,
+            moduleKey: "integracoes",
+          },
+        ],
+      },
+      {
+        id: "folha",
+        label: planConfig.labels.menu.folha,
+        icon: <IconList />,
+        moduleKey: "folha",
+        children: [
+          {
+            id: "folha_execucao",
+            label: planConfig.labels.menu.folhaExecucao,
+            to: "/folha",
+            icon: <IconList />,
+            end: true,
+            moduleKey: "folha",
+          },
+          {
+            id: "folha_simulador",
+            label: planConfig.labels.menu.folhaSimulador,
+            to: "/folha/simulador",
+            icon: <IconList />,
+            moduleKey: "folha",
+          },
+          {
+            id: "folha_colaboradores",
+            label: planConfig.labels.menu.folhaColaboradores,
+            to: "/folha/colaboradores",
+            icon: <IconList />,
+            moduleKey: "folha",
+          },
+        ],
+      },
+      {
+        id: "logout",
+        label: "Sair",
+        onClick: () => logout(),
+        icon: <IconSettings />,
+      },
+    ],
+    [logout, planConfig]
+  );
+
+  const filteredMenu = useMemo(() => filterMenuByPlan(menu, plan), [menu, plan]);
+
 
   useEffect(() => {
     if (!settingsOpen) return;
@@ -221,7 +437,7 @@ const AppHeader = () => {
 
   return (
     <>
-      <AppMenu title="Contabiliza Simples" subtitle="" menu={menu} />
+      <AppMenu title="Contabiliza Simples" subtitle="" menu={filteredMenu} />
       <div className="fixed right-6 top-4 z-50" ref={settingsRef}>
         <button
           type="button"
@@ -266,6 +482,22 @@ const AppHeader = () => {
                 />
               </span>
             </button>
+            <div className="px-4 py-2">
+              <div className="text-xs uppercase tracking-wide text-gray-400">
+                Plano
+              </div>
+              <select
+                value={plan}
+                onChange={(event) => setPlan(event.target.value as AppPlan)}
+                className="mt-2 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 outline-none transition focus:border-blue-500 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100"
+              >
+                {planOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
             <Link
               to="/empresa"
               className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-slate-700"

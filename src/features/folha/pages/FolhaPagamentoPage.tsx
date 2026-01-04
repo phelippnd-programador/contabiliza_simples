@@ -24,6 +24,8 @@ import { EditIcon, TrashIcon } from "../../../components/ui/icon/AppIcons";
 import { formatBRL, formatLocalDate, formatPercentBR } from "../../../shared/utils/formater";
 import AppPopup from "../../../components/ui/popup/AppPopup";
 import useConfirmPopup from "../../../shared/hooks/useConfirmPopup";
+import { usePlan } from "../../../shared/context/PlanContext";
+import { getPlanConfig } from "../../../app/plan/planConfig";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 const SIM_STORAGE_KEY = "sim_folha";
@@ -81,6 +83,8 @@ const FolhaPagamentoPage = () => {
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const pageSize = 10;
+  const { plan } = usePlan();
+  const { labels, payroll } = getPlanConfig(plan);
 
   const load = async () => {
     if (!API_BASE) {
@@ -229,19 +233,19 @@ const FolhaPagamentoPage = () => {
     () => [
       {
         key: "referencia",
-        header: "Referencia",
+        header: labels.fields.referencia,
         render: (row: FolhaResumo) => formatLocalDate(row.referencia),
       },
       {
         key: "colaboradores",
-        header: "Colaborador",
+        header: labels.fields.colaborador,
         align: "right" as const,
         render: (row: FolhaResumo) =>
           row.colaborador?.nome ?? (row.colaboradores ? row.colaboradores : "-"),
       },
       {
         key: "proventos",
-        header: "Proventos",
+        header: labels.totals.proventos,
         align: "right" as const,
         render: (row: FolhaResumo) =>
           row.totalProventos
@@ -253,7 +257,7 @@ const FolhaPagamentoPage = () => {
       },
       {
         key: "descontos",
-        header: "Descontos",
+        header: labels.totals.descontos,
         align: "right" as const,
         render: (row: FolhaResumo) =>
           row.totalDescontos
@@ -265,7 +269,7 @@ const FolhaPagamentoPage = () => {
       },
       {
         key: "liquido",
-        header: "Liquido",
+        header: labels.totals.liquido,
         align: "right" as const,
         render: (row: FolhaResumo) =>
           row.totalLiquido
@@ -277,7 +281,7 @@ const FolhaPagamentoPage = () => {
       },
       {
         key: "status",
-        header: "Status",
+        header: labels.fields.status,
         render: (row: FolhaResumo) => {
           const draftValue = statusDrafts[row.id];
           const value = draftValue ?? row.status ?? "ABERTA";
@@ -383,7 +387,7 @@ const FolhaPagamentoPage = () => {
         ),
       },
     ],
-    [statusDrafts]
+    [labels, statusDrafts]
   );
 
   const handleSubmit = async () => {
@@ -513,8 +517,8 @@ const FolhaPagamentoPage = () => {
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <div>
-          <AppTitle text="Folha de pagamento" />
-          <AppSubTitle text="Rotinas e fechamento da folha." />
+          <AppTitle text={labels.payroll.title} />
+          <AppSubTitle text={labels.payroll.subtitle} />
         </div>
         <AppButton
           type="button"
@@ -525,7 +529,7 @@ const FolhaPagamentoPage = () => {
             setFormOpen((prev) => !prev);
           }}
         >
-          {formOpen ? "Fechar" : "Nova folha"}
+          {formOpen ? labels.payroll.closeButton : labels.payroll.newButton}
         </AppButton>
       </div>
 
@@ -534,7 +538,7 @@ const FolhaPagamentoPage = () => {
           <div className="grid gap-4 md:grid-cols-3">
             <AppDateInput
               required
-              title="Referencia"
+              title={labels.fields.referencia}
               type="month"
               value={formData.referencia}
               onChange={(e) =>
@@ -546,7 +550,7 @@ const FolhaPagamentoPage = () => {
             />
             <AppSelectInput
               required
-              title="Colaborador"
+              title={labels.fields.colaborador}
               value={formData.colaboradorId}
               onChange={(e) => {
                 const colaboradorId = e.target.value;
@@ -574,7 +578,7 @@ const FolhaPagamentoPage = () => {
             />
             <AppTextInput
               required
-              title="Salario base"
+              title={labels.fields.salarioBase}
               value={formData.salarioBaseCents ? String(formData.salarioBaseCents) : ""}
               sanitizeRegex={/[0-9]/g}
               formatter={formatBRL}
@@ -586,7 +590,7 @@ const FolhaPagamentoPage = () => {
               }
             />
             <AppTextInput
-              title="Horas extras"
+              title={labels.fields.horasExtras}
               value={formData.horasExtrasCents ? String(formData.horasExtrasCents) : ""}
               sanitizeRegex={/[0-9]/g}
               formatter={formatBRL}
@@ -598,7 +602,7 @@ const FolhaPagamentoPage = () => {
               }
             />
             <AppTextInput
-              title="Outros proventos"
+              title={labels.fields.outrosProventos}
               value={
                 formData.outrosProventosCents ? String(formData.outrosProventosCents) : ""
               }
@@ -612,7 +616,7 @@ const FolhaPagamentoPage = () => {
               }
             />
             <AppTextInput
-              title="Descontos"
+              title={labels.fields.descontos}
               value={formData.descontosCents ? String(formData.descontosCents) : ""}
               sanitizeRegex={/[0-9]/g}
               formatter={formatBRL}
@@ -624,7 +628,7 @@ const FolhaPagamentoPage = () => {
               }
             />
             <AppTextInput
-              title="Dependentes"
+              title={labels.fields.dependentes}
               value={formData.dependentes ? String(formData.dependentes) : ""}
               sanitizeRegex={/[0-9]/g}
               onValueChange={(raw) =>
@@ -634,71 +638,79 @@ const FolhaPagamentoPage = () => {
                 }))
               }
             />
-            <AppTextInput
-              title="INSS (%)"
-              value={formData.inssPercentBps ? String(formData.inssPercentBps) : ""}
-              sanitizeRegex={/[0-9]/g}
-              formatter={formatPercentBR}
-              onValueChange={(raw) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  inssPercentBps: Number(raw || "0"),
-                }))
-              }
-            />
-            <AppTextInput
-              title="IRRF (%)"
-              value={formData.irrfPercentBps ? String(formData.irrfPercentBps) : ""}
-              sanitizeRegex={/[0-9]/g}
-              formatter={formatPercentBR}
-              onValueChange={(raw) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  irrfPercentBps: Number(raw || "0"),
-                }))
-              }
-            />
-            <AppTextInput
-              title="FGTS (%)"
-              value={formData.fgtsPercentBps ? String(formData.fgtsPercentBps) : ""}
-              sanitizeRegex={/[0-9]/g}
-              formatter={formatPercentBR}
-              onValueChange={(raw) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  fgtsPercentBps: Number(raw || "0"),
-                }))
-              }
-            />
+            {payroll.showLegalFields ? (
+              <>
+                <AppTextInput
+                  title={labels.totals.inss}
+                  value={formData.inssPercentBps ? String(formData.inssPercentBps) : ""}
+                  sanitizeRegex={/[0-9]/g}
+                  formatter={formatPercentBR}
+                  onValueChange={(raw) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      inssPercentBps: Number(raw || "0"),
+                    }))
+                  }
+                />
+                <AppTextInput
+                  title={labels.totals.irrf}
+                  value={formData.irrfPercentBps ? String(formData.irrfPercentBps) : ""}
+                  sanitizeRegex={/[0-9]/g}
+                  formatter={formatPercentBR}
+                  onValueChange={(raw) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      irrfPercentBps: Number(raw || "0"),
+                    }))
+                  }
+                />
+                <AppTextInput
+                  title={labels.totals.fgts}
+                  value={formData.fgtsPercentBps ? String(formData.fgtsPercentBps) : ""}
+                  sanitizeRegex={/[0-9]/g}
+                  formatter={formatPercentBR}
+                  onValueChange={(raw) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      fgtsPercentBps: Number(raw || "0"),
+                    }))
+                  }
+                />
+              </>
+            ) : null}
+            {payroll.showRescisao ? (
+              <>
+                <AppSelectInput
+                  title={labels.fields.rescisao}
+                  value={formData.rescisaoTipo}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      rescisaoTipo: e.target.value,
+                    }))
+                  }
+                  data={rescisaoOptions}
+                />
+                <AppTextInput
+                  title={labels.fields.verbasRescisorias}
+                  value={
+                    formData.verbasRescisoriasCents
+                      ? String(formData.verbasRescisoriasCents)
+                      : ""
+                  }
+                  sanitizeRegex={/[0-9]/g}
+                  formatter={formatBRL}
+                  onValueChange={(raw) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      verbasRescisoriasCents: Number(raw || "0"),
+                    }))
+                  }
+                />
+              </>
+            ) : null}
             <AppSelectInput
-              title="Rescisao"
-              value={formData.rescisaoTipo}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  rescisaoTipo: e.target.value,
-                }))
-              }
-              data={rescisaoOptions}
-            />
-            <AppTextInput
-              title="Verbas rescisorias"
-              value={
-                formData.verbasRescisoriasCents
-                  ? String(formData.verbasRescisoriasCents)
-                  : ""
-              }
-              sanitizeRegex={/[0-9]/g}
-              formatter={formatBRL}
-              onValueChange={(raw) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  verbasRescisoriasCents: Number(raw || "0"),
-                }))
-              }
-            />
-            <AppSelectInput
-              title="Status"
+              title={labels.fields.status}
               value={formData.status}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, status: e.target.value }))
@@ -708,33 +720,37 @@ const FolhaPagamentoPage = () => {
           </div>
           <div className="mt-4 grid gap-4 md:grid-cols-3">
             <div className="rounded-lg border border-gray-200 p-3 text-sm text-gray-700 dark:border-slate-700 dark:text-gray-200">
-              <p className="text-xs uppercase text-gray-400">Total proventos</p>
+              <p className="text-xs uppercase text-gray-400">{labels.totals.proventos}</p>
               <p className="text-base font-semibold">{formatMoney(calculo.totalProventos)}</p>
             </div>
             <div className="rounded-lg border border-gray-200 p-3 text-sm text-gray-700 dark:border-slate-700 dark:text-gray-200">
-              <p className="text-xs uppercase text-gray-400">Total descontos</p>
+              <p className="text-xs uppercase text-gray-400">{labels.totals.descontos}</p>
               <p className="text-base font-semibold">{formatMoney(calculo.totalDescontos)}</p>
             </div>
             <div className="rounded-lg border border-gray-200 p-3 text-sm text-gray-700 dark:border-slate-700 dark:text-gray-200">
-              <p className="text-xs uppercase text-gray-400">Liquido</p>
+              <p className="text-xs uppercase text-gray-400">{labels.totals.liquido}</p>
               <p className="text-base font-semibold">{formatMoney(calculo.totalLiquido)}</p>
             </div>
-            <div className="rounded-lg border border-gray-200 p-3 text-sm text-gray-700 dark:border-slate-700 dark:text-gray-200">
-              <p className="text-xs uppercase text-gray-400">INSS</p>
-              <p className="text-base font-semibold">{formatMoney(calculo.inss)}</p>
-            </div>
-            <div className="rounded-lg border border-gray-200 p-3 text-sm text-gray-700 dark:border-slate-700 dark:text-gray-200">
-              <p className="text-xs uppercase text-gray-400">FGTS</p>
-              <p className="text-base font-semibold">{formatMoney(calculo.fgts)}</p>
-            </div>
-            <div className="rounded-lg border border-gray-200 p-3 text-sm text-gray-700 dark:border-slate-700 dark:text-gray-200">
-              <p className="text-xs uppercase text-gray-400">IRRF</p>
-              <p className="text-base font-semibold">{formatMoney(calculo.irrf)}</p>
-            </div>
-            <div className="rounded-lg border border-gray-200 p-3 text-sm text-gray-700 dark:border-slate-700 dark:text-gray-200">
-              <p className="text-xs uppercase text-gray-400">Multa FGTS</p>
-              <p className="text-base font-semibold">{formatMoney(calculo.multaFgts)}</p>
-            </div>
+            {payroll.showLegalFields ? (
+              <>
+                <div className="rounded-lg border border-gray-200 p-3 text-sm text-gray-700 dark:border-slate-700 dark:text-gray-200">
+                  <p className="text-xs uppercase text-gray-400">{labels.totals.inss}</p>
+                  <p className="text-base font-semibold">{formatMoney(calculo.inss)}</p>
+                </div>
+                <div className="rounded-lg border border-gray-200 p-3 text-sm text-gray-700 dark:border-slate-700 dark:text-gray-200">
+                  <p className="text-xs uppercase text-gray-400">{labels.totals.fgts}</p>
+                  <p className="text-base font-semibold">{formatMoney(calculo.fgts)}</p>
+                </div>
+                <div className="rounded-lg border border-gray-200 p-3 text-sm text-gray-700 dark:border-slate-700 dark:text-gray-200">
+                  <p className="text-xs uppercase text-gray-400">{labels.totals.irrf}</p>
+                  <p className="text-base font-semibold">{formatMoney(calculo.irrf)}</p>
+                </div>
+                <div className="rounded-lg border border-gray-200 p-3 text-sm text-gray-700 dark:border-slate-700 dark:text-gray-200">
+                  <p className="text-xs uppercase text-gray-400">{labels.totals.multaFgts}</p>
+                  <p className="text-base font-semibold">{formatMoney(calculo.multaFgts)}</p>
+                </div>
+              </>
+            ) : null}
           </div>
           {formError ? <p className="text-sm text-red-600">{formError}</p> : null}
           <div className="flex gap-3">
@@ -757,7 +773,7 @@ const FolhaPagamentoPage = () => {
 
       <Card tone="amber">
         <p className="text-sm text-gray-700 dark:text-gray-200">
-          API de folha preparada para integracao.
+          {labels.payroll.apiHint}
         </p>
       </Card>
 
@@ -766,7 +782,7 @@ const FolhaPagamentoPage = () => {
         <AppTable
           data={itens}
           rowKey={(row) => row.id}
-          emptyState={<AppListNotFound texto="Nenhuma folha encontrada." />}
+          emptyState={<AppListNotFound texto={labels.payroll.empty} />}
           pagination={{
             enabled: true,
             pageSize,

@@ -1,3 +1,5 @@
+import type { PlanModule } from "../../../app/plan/types";
+
 export type AppMenuItem = {
   id: string;
   label: string;
@@ -7,4 +9,5 @@ export type AppMenuItem = {
   disabled?: boolean;
   onClick?: () => void;
   children?: AppMenuItem[];    // <-- submenu
+  moduleKey?: PlanModule;
 };

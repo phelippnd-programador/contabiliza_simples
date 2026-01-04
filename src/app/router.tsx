@@ -5,8 +5,10 @@ import NotFoundPage from "../shared/pages/errors/NotFoundPage";
 import ForbiddenPage from "../shared/pages/errors/ForbiddenPage";
 import ServerErrorPage from "../shared/pages/errors/ServerErrorPage";
 import { RequireRole } from "../components/layout/auth/RequireRole";
+import PlanRouteGuard from "../components/layout/auth/PlanRouteGuard";
 import { PageLoading } from "../shared/pages/PageLoading";
 import ConfiguracaoEmpresaPage from "../features/empresa/pages/ConfiguracaoEmpresaPage";
+import type { PlanModule } from "./plan/types";
 
 const CadastroEmpresaPage = lazy(() => import("../features/empresa/pages/CadastroEmpresaPage"));
 const LoginPage = lazy(() => import("../features/auth/pages/LoginPage"));
@@ -103,6 +105,17 @@ const withLoading = (node: React.ReactNode) => (
   <Suspense fallback={<PageLoading />}>{node}</Suspense>
 );
 
+const withPlanGuard = (
+  roles: Array<"CONTADOR" | "EMPRESA">,
+  module: PlanModule,
+  node: React.ReactNode
+) =>
+  withLoading(
+    <RequireRole allowedRoles={roles}>
+      <PlanRouteGuard module={module}>{node}</PlanRouteGuard>
+    </RequireRole>
+  );
+
 export const router = createBrowserRouter([
   { path: "/403", element: <ForbiddenPage /> },
   { path: "/login", element: withLoading(<LoginPage />) },
@@ -119,307 +132,155 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: withLoading(
-          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
-            <DashboardPage />
-          </RequireRole>
-        ),
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "dashboard", <DashboardPage />),
       },
       {
         path: "empresa",
-        element: withLoading(
-          <RequireRole allowedRoles={["CONTADOR","EMPRESA"]}>
-            <EmpresasPage />
-          </RequireRole>
-        ),
+        element: withPlanGuard(["CONTADOR","EMPRESA"], "empresas", <EmpresasPage />),
       },
       {
         path: "empresa/nova",
-        element: withLoading(
-          <RequireRole allowedRoles={["EMPRESA"]}>
-            <CadastroEmpresaPage />
-          </RequireRole>
-        ),
+        element: withPlanGuard(["EMPRESA"], "empresas", <CadastroEmpresaPage />),
       },
       {
         path: "empresa/:id",
-        element: withLoading(
-          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
-            <ConfiguracaoEmpresaPage />
-          </RequireRole>
-        ),
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "empresas", <ConfiguracaoEmpresaPage />),
       },
       {
         path: "receitas",
-        element: withLoading(
-          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
-            <ReceitasTributacaoPage />
-          </RequireRole>
-        ),
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "tributacao", <ReceitasTributacaoPage />),
       },
       {
         path: "caixa",
-        element: withLoading(
-          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
-            <CaixaTributacaoPage />
-          </RequireRole>
-        ),
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "tributacao", <CaixaTributacaoPage />),
       },
       {
         path: "conciliacao",
-        element: withLoading(
-          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
-            <ConciliacaoTributacaoPage />
-          </RequireRole>
-        ),
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "tributacao", <ConciliacaoTributacaoPage />),
       },
       {
         path: "financeiro/contas",
-        element: withLoading(
-          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
-            <ContasBancariasPage />
-          </RequireRole>
-        ),
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "financeiro", <ContasBancariasPage />),
       },
       {
         path: "financeiro/contas/nova",
-        element: withLoading(
-          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
-            <ContaBancariaPage />
-          </RequireRole>
-        ),
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "financeiro", <ContaBancariaPage />),
       },
       {
         path: "financeiro/contas/:id",
-        element: withLoading(
-          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
-            <ContaBancariaPage />
-          </RequireRole>
-        ),
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "financeiro", <ContaBancariaPage />),
       },
       {
         path: "financeiro/contas-pagar",
-        element: withLoading(
-          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
-            <ContasPagarPage />
-          </RequireRole>
-        ),
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "financeiro", <ContasPagarPage />),
       },
       {
         path: "financeiro/contas-receber",
-        element: withLoading(
-          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
-            <ContasReceberPage />
-          </RequireRole>
-        ),
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "financeiro", <ContasReceberPage />),
       },
       {
         path: "financeiro/categorias",
-        element: withLoading(
-          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
-            <CategoriasFinanceirasPage />
-          </RequireRole>
-        ),
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "financeiro", <CategoriasFinanceirasPage />),
       },
       {
         path: "financeiro/movimentos",
-        element: withLoading(
-          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
-            <MovimentosCaixaPage />
-          </RequireRole>
-        ),
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "financeiro", <MovimentosCaixaPage />),
       },
       {
         path: "financeiro/caixa",
-        element: withLoading(
-          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
-            <CaixaPage />
-          </RequireRole>
-        ),
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "financeiro", <CaixaPage />),
       },
       {
         path: "financeiro/projecao",
-        element: withLoading(
-          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
-            <ProjecaoPage />
-          </RequireRole>
-        ),
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "projecao", <ProjecaoPage />),
       },
       {
         path: "financeiro/prolabore",
-        element: withLoading(
-          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
-            <ProlaborePage />
-          </RequireRole>
-        ),
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "prolabore", <ProlaborePage />),
       },
       {
         path: "fiscal/fechamento",
-        element: withLoading(
-          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
-            <FechamentoFiscalPage />
-          </RequireRole>
-        ),
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "fiscal", <FechamentoFiscalPage />),
       },
       {
         path: "fiscal/apuracao",
-        element: withLoading(
-          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
-            <ApuracaoImpostosPage />
-          </RequireRole>
-        ),
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "fiscal", <ApuracaoImpostosPage />),
       },
       {
         path: "fiscal/obrigacoes",
-        element: withLoading(
-          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
-            <ObrigacoesPage />
-          </RequireRole>
-        ),
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "fiscal", <ObrigacoesPage />),
       },
       {
         path: "fiscal/notas",
-        element: withLoading(
-          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
-            <NotasListPage />
-          </RequireRole>
-        ),
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "fiscal", <NotasListPage />),
       },
       {
         path: "fiscal/notas/nova",
-        element: withLoading(
-          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
-            <NotaNovaPage />
-          </RequireRole>
-        ),
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "fiscal", <NotaNovaPage />),
       },
       {
         path: "fiscal/notas/:id",
-        element: withLoading(
-          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
-            <NotaDetalhePage />
-          </RequireRole>
-        ),
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "fiscal", <NotaDetalhePage />),
       },
       {
         path: "relatorios",
-        element: withLoading(
-          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
-            <RelatoriosPage />
-          </RequireRole>
-        ),
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "relatorios", <RelatoriosPage />),
       },
       {
         path: "comercial/vendas",
-        element: withLoading(
-          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
-            <VendasPage />
-          </RequireRole>
-        ),
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "comercial", <VendasPage />),
       },
       {
         path: "comercial/compras",
-        element: withLoading(
-          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
-            <ComprasPage />
-          </RequireRole>
-        ),
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "comercial", <ComprasPage />),
       },
       {
         path: "comercial/vendas/analytics",
-        element: withLoading(
-          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
-            <VendasAnalyticsPage />
-          </RequireRole>
-        ),
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "comercial", <VendasAnalyticsPage />),
       },
       {
         path: "cadastros/clientes",
-        element: withLoading(
-          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
-            <ClientesPage />
-          </RequireRole>
-        ),
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "cadastros", <ClientesPage />),
       },
       {
         path: "cadastros/fornecedores",
-        element: withLoading(
-          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
-            <FornecedoresPage />
-          </RequireRole>
-        ),
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "cadastros", <FornecedoresPage />),
       },
       {
         path: "cadastros/produtos-servicos",
-        element: withLoading(
-          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
-            <ProdutosServicosPage />
-          </RequireRole>
-        ),
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "cadastros", <ProdutosServicosPage />),
       },
       {
         path: "estoque",
-        element: withLoading(
-          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
-            <EstoquePage />
-          </RequireRole>
-        ),
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "estoque", <EstoquePage />),
       },
       {
         path: "estoque/movimentos",
-        element: withLoading(
-          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
-            <EstoqueMovimentosPage />
-          </RequireRole>
-        ),
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "estoque", <EstoqueMovimentosPage />),
       },
       {
         path: "estoque/importacao",
-        element: withLoading(
-          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
-            <EstoqueImportacaoPage />
-          </RequireRole>
-        ),
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "estoque", <EstoqueImportacaoPage />),
       },
       {
         path: "integracoes/bancos",
-        element: withLoading(
-          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
-            <IntegracoesBancariasPage />
-          </RequireRole>
-        ),
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "integracoes", <IntegracoesBancariasPage />),
       },
       {
         path: "folha",
-        element: withLoading(
-          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
-            <FolhaPagamentoPage />
-          </RequireRole>
-        ),
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "folha", <FolhaPagamentoPage />),
       },
       {
         path: "folha/simulador",
-        element: withLoading(
-          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
-            <FolhaSimuladorPage />
-          </RequireRole>
-        ),
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "folha", <FolhaSimuladorPage />),
       },
       {
         path: "folha/colaboradores",
-        element: withLoading(
-          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
-            <ColaboradoresPage />
-          </RequireRole>
-        ),
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "folha", <ColaboradoresPage />),
       },
       {
         path: "configuracoes/usuario",
-        element: withLoading(
-          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
-            <UsuarioConfigPage />
-          </RequireRole>
-        ),
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "dashboard", <UsuarioConfigPage />),
       },
 
       // 404 dentro do layout (eu recomendo deixar ligado)

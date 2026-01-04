@@ -15,6 +15,8 @@ import {
   listColaboradores,
   type ColaboradorResumo,
 } from "../services/colaboradores.service";
+import { usePlan } from "../../../shared/context/PlanContext";
+import { getPlanConfig } from "../../../app/plan/planConfig";
 
 const SIM_STORAGE_KEY = "sim_folha";
 const DEPENDENTE_DEDUCAO_CENTS = 18959;
@@ -54,6 +56,8 @@ const FolhaSimuladorPage = () => {
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const pageSize = 10;
+  const { plan } = usePlan();
+  const { labels, payroll } = getPlanConfig(plan);
 
   const [simData, setSimData] = useState({
     referencia: "",
@@ -146,40 +150,40 @@ const FolhaSimuladorPage = () => {
     () => [
       {
         key: "referencia",
-        header: "Referencia",
+        header: labels.fields.referencia,
         render: (row: FolhaResumo) => formatLocalDate(row.referencia),
       },
       {
         key: "colaboradores",
-        header: "Colaborador",
+        header: labels.fields.colaborador,
         align: "right" as const,
         render: (row: FolhaResumo) =>
           row.colaborador?.nome ?? (row.colaboradores ? row.colaboradores : "-"),
       },
       {
         key: "proventos",
-        header: "Proventos",
+        header: labels.totals.proventos,
         align: "right" as const,
         render: (row: FolhaResumo) =>
           row.totalProventos ? formatMoney(row.totalProventos) : "-",
       },
       {
         key: "descontos",
-        header: "Descontos",
+        header: labels.totals.descontos,
         align: "right" as const,
         render: (row: FolhaResumo) =>
           row.totalDescontos ? formatMoney(row.totalDescontos) : "-",
       },
       {
         key: "liquido",
-        header: "Liquido",
+        header: labels.totals.liquido,
         align: "right" as const,
         render: (row: FolhaResumo) =>
           row.totalLiquido ? formatMoney(row.totalLiquido) : "-",
       },
       {
         key: "status",
-        header: "Status",
+        header: labels.fields.status,
         render: (row: FolhaResumo) => row.status ?? "SIMULADA",
       },
       {
@@ -200,7 +204,7 @@ const FolhaSimuladorPage = () => {
         ),
       },
     ],
-    []
+    [labels]
   );
 
   const eventosColumns = useMemo(
@@ -217,12 +221,12 @@ const FolhaSimuladorPage = () => {
       },
       {
         key: "referencia",
-        header: "Referencia",
+        header: labels.fields.referencia,
         render: (row: EsocialEvento) => formatLocalDate(row.referencia),
       },
       {
         key: "status",
-        header: "Status",
+        header: labels.fields.status,
         render: (row: EsocialEvento) => row.status,
       },
     ],
@@ -307,17 +311,17 @@ const FolhaSimuladorPage = () => {
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <div>
-          <AppTitle text="Simulador de folha" />
-          <AppSubTitle text="Calculo de encargos e eventos eSocial." />
+          <AppTitle text={labels.simulator.title} />
+          <AppSubTitle text={labels.simulator.subtitle} />
         </div>
       </div>
 
       <Card>
-        <AppSubTitle text="Simulador" />
+        <AppSubTitle text={labels.simulator.cardTitle} />
         <div className="mt-4 grid gap-4 md:grid-cols-3">
           <AppDateInput
             required
-            title="Referencia"
+            title={labels.fields.referencia}
             type="month"
             value={simData.referencia}
             onChange={(e) =>
@@ -326,7 +330,7 @@ const FolhaSimuladorPage = () => {
           />
           <AppSelectInput
             required
-            title="Colaborador"
+            title={labels.fields.colaborador}
             value={simData.colaboradorId}
             onChange={(e) => {
               const colaboradorId = e.target.value;
@@ -354,7 +358,7 @@ const FolhaSimuladorPage = () => {
           />
           <AppTextInput
             required
-            title="Salario base"
+            title={labels.fields.salarioBase}
             value={simData.salarioBaseCents ? String(simData.salarioBaseCents) : ""}
             sanitizeRegex={/[0-9]/g}
             formatter={formatBRL}
@@ -366,7 +370,7 @@ const FolhaSimuladorPage = () => {
             }
           />
           <AppTextInput
-            title="Horas extras"
+            title={labels.fields.horasExtras}
             value={simData.horasExtrasCents ? String(simData.horasExtrasCents) : ""}
             sanitizeRegex={/[0-9]/g}
             formatter={formatBRL}
@@ -378,7 +382,7 @@ const FolhaSimuladorPage = () => {
             }
           />
           <AppTextInput
-            title="Outros proventos"
+            title={labels.fields.outrosProventos}
             value={
               simData.outrosProventosCents ? String(simData.outrosProventosCents) : ""
             }
@@ -392,7 +396,7 @@ const FolhaSimuladorPage = () => {
             }
           />
           <AppTextInput
-            title="Descontos"
+            title={labels.fields.descontos}
             value={simData.descontosCents ? String(simData.descontosCents) : ""}
             sanitizeRegex={/[0-9]/g}
             formatter={formatBRL}
@@ -404,7 +408,7 @@ const FolhaSimuladorPage = () => {
             }
           />
           <AppTextInput
-            title="Dependentes"
+            title={labels.fields.dependentes}
             value={simData.dependentes ? String(simData.dependentes) : ""}
             sanitizeRegex={/[0-9]/g}
             onValueChange={(raw) =>
@@ -414,71 +418,79 @@ const FolhaSimuladorPage = () => {
               }))
             }
           />
-          <AppTextInput
-            title="INSS (%)"
-            value={simData.inssPercentBps ? String(simData.inssPercentBps) : ""}
-            sanitizeRegex={/[0-9]/g}
-            formatter={formatPercentBR}
-            onValueChange={(raw) =>
-              setSimData((prev) => ({
-                ...prev,
-                inssPercentBps: Number(raw || "0"),
-              }))
-            }
-          />
-          <AppTextInput
-            title="IRRF (%)"
-            value={simData.irrfPercentBps ? String(simData.irrfPercentBps) : ""}
-            sanitizeRegex={/[0-9]/g}
-            formatter={formatPercentBR}
-            onValueChange={(raw) =>
-              setSimData((prev) => ({
-                ...prev,
-                irrfPercentBps: Number(raw || "0"),
-              }))
-            }
-          />
-          <AppTextInput
-            title="FGTS (%)"
-            value={simData.fgtsPercentBps ? String(simData.fgtsPercentBps) : ""}
-            sanitizeRegex={/[0-9]/g}
-            formatter={formatPercentBR}
-            onValueChange={(raw) =>
-              setSimData((prev) => ({
-                ...prev,
-                fgtsPercentBps: Number(raw || "0"),
-              }))
-            }
-          />
-          <AppSelectInput
-            title="Rescisao"
-            value={simData.rescisaoTipo}
-            onChange={(e) =>
-              setSimData((prev) => ({ ...prev, rescisaoTipo: e.target.value }))
-            }
-            data={rescisaoOptions}
-          />
-          <AppTextInput
-            title="Verbas rescisorias"
-            value={
-              simData.verbasRescisoriasCents
-                ? String(simData.verbasRescisoriasCents)
-                : ""
-            }
-            sanitizeRegex={/[0-9]/g}
-            formatter={formatBRL}
-            onValueChange={(raw) =>
-              setSimData((prev) => ({
-                ...prev,
-                verbasRescisoriasCents: Number(raw || "0"),
-              }))
-            }
-          />
+          {payroll.showLegalFields ? (
+            <>
+              <AppTextInput
+                title={labels.totals.inss}
+                value={simData.inssPercentBps ? String(simData.inssPercentBps) : ""}
+                sanitizeRegex={/[0-9]/g}
+                formatter={formatPercentBR}
+                onValueChange={(raw) =>
+                  setSimData((prev) => ({
+                    ...prev,
+                    inssPercentBps: Number(raw || "0"),
+                  }))
+                }
+              />
+              <AppTextInput
+                title={labels.totals.irrf}
+                value={simData.irrfPercentBps ? String(simData.irrfPercentBps) : ""}
+                sanitizeRegex={/[0-9]/g}
+                formatter={formatPercentBR}
+                onValueChange={(raw) =>
+                  setSimData((prev) => ({
+                    ...prev,
+                    irrfPercentBps: Number(raw || "0"),
+                  }))
+                }
+              />
+              <AppTextInput
+                title={labels.totals.fgts}
+                value={simData.fgtsPercentBps ? String(simData.fgtsPercentBps) : ""}
+                sanitizeRegex={/[0-9]/g}
+                formatter={formatPercentBR}
+                onValueChange={(raw) =>
+                  setSimData((prev) => ({
+                    ...prev,
+                    fgtsPercentBps: Number(raw || "0"),
+                  }))
+                }
+              />
+            </>
+          ) : null}
+          {payroll.showRescisao ? (
+            <>
+              <AppSelectInput
+                title={labels.fields.rescisao}
+                value={simData.rescisaoTipo}
+                onChange={(e) =>
+                  setSimData((prev) => ({ ...prev, rescisaoTipo: e.target.value }))
+                }
+                data={rescisaoOptions}
+              />
+              <AppTextInput
+                title={labels.fields.verbasRescisorias}
+                value={
+                  simData.verbasRescisoriasCents
+                    ? String(simData.verbasRescisoriasCents)
+                    : ""
+                }
+                sanitizeRegex={/[0-9]/g}
+                formatter={formatBRL}
+                onValueChange={(raw) =>
+                  setSimData((prev) => ({
+                    ...prev,
+                    verbasRescisoriasCents: Number(raw || "0"),
+                  }))
+                }
+              />
+            </>
+          ) : null}
         </div>
         {simError ? <p className="mt-2 text-sm text-red-600">{simError}</p> : null}
         <div className="mt-3 flex flex-wrap gap-3">
           <AppButton type="button" className="w-auto px-6" onClick={handleSimularFolha}>
-            Gerar folha simulada
+            {labels.simulator.generateButton}
           </AppButton>
         </div>
       </Card>
@@ -487,66 +499,72 @@ const FolhaSimuladorPage = () => {
         <AppSubTitle text="Resumo calculado" />
         <div className="mt-4 grid gap-4 md:grid-cols-3">
           <div className="rounded-lg border border-gray-200 p-3 text-sm text-gray-700 dark:border-slate-700 dark:text-gray-200">
-            <p className="text-xs uppercase text-gray-400">Total proventos</p>
+            <p className="text-xs uppercase text-gray-400">{labels.totals.proventos}</p>
             <p className="text-base font-semibold">{formatMoney(calculo.totalProventos)}</p>
           </div>
           <div className="rounded-lg border border-gray-200 p-3 text-sm text-gray-700 dark:border-slate-700 dark:text-gray-200">
-            <p className="text-xs uppercase text-gray-400">Total descontos</p>
+            <p className="text-xs uppercase text-gray-400">{labels.totals.descontos}</p>
             <p className="text-base font-semibold">{formatMoney(calculo.totalDescontos)}</p>
           </div>
           <div className="rounded-lg border border-gray-200 p-3 text-sm text-gray-700 dark:border-slate-700 dark:text-gray-200">
-            <p className="text-xs uppercase text-gray-400">Liquido</p>
+            <p className="text-xs uppercase text-gray-400">{labels.totals.liquido}</p>
             <p className="text-base font-semibold">{formatMoney(calculo.totalLiquido)}</p>
           </div>
-          <div className="rounded-lg border border-gray-200 p-3 text-sm text-gray-700 dark:border-slate-700 dark:text-gray-200">
-            <p className="text-xs uppercase text-gray-400">INSS</p>
-            <p className="text-base font-semibold">{formatMoney(calculo.inss)}</p>
-          </div>
-          <div className="rounded-lg border border-gray-200 p-3 text-sm text-gray-700 dark:border-slate-700 dark:text-gray-200">
-            <p className="text-xs uppercase text-gray-400">FGTS</p>
-            <p className="text-base font-semibold">{formatMoney(calculo.fgts)}</p>
-          </div>
-          <div className="rounded-lg border border-gray-200 p-3 text-sm text-gray-700 dark:border-slate-700 dark:text-gray-200">
-            <p className="text-xs uppercase text-gray-400">IRRF</p>
-            <p className="text-base font-semibold">{formatMoney(calculo.irrf)}</p>
-          </div>
-          <div className="rounded-lg border border-gray-200 p-3 text-sm text-gray-700 dark:border-slate-700 dark:text-gray-200">
-            <p className="text-xs uppercase text-gray-400">Multa FGTS</p>
-            <p className="text-base font-semibold">{formatMoney(calculo.multaFgts)}</p>
-          </div>
+          {payroll.showLegalFields ? (
+            <>
+              <div className="rounded-lg border border-gray-200 p-3 text-sm text-gray-700 dark:border-slate-700 dark:text-gray-200">
+                <p className="text-xs uppercase text-gray-400">{labels.totals.inss}</p>
+                <p className="text-base font-semibold">{formatMoney(calculo.inss)}</p>
+              </div>
+              <div className="rounded-lg border border-gray-200 p-3 text-sm text-gray-700 dark:border-slate-700 dark:text-gray-200">
+                <p className="text-xs uppercase text-gray-400">{labels.totals.fgts}</p>
+                <p className="text-base font-semibold">{formatMoney(calculo.fgts)}</p>
+              </div>
+              <div className="rounded-lg border border-gray-200 p-3 text-sm text-gray-700 dark:border-slate-700 dark:text-gray-200">
+                <p className="text-xs uppercase text-gray-400">{labels.totals.irrf}</p>
+                <p className="text-base font-semibold">{formatMoney(calculo.irrf)}</p>
+              </div>
+              <div className="rounded-lg border border-gray-200 p-3 text-sm text-gray-700 dark:border-slate-700 dark:text-gray-200">
+                <p className="text-xs uppercase text-gray-400">{labels.totals.multaFgts}</p>
+                <p className="text-base font-semibold">{formatMoney(calculo.multaFgts)}</p>
+              </div>
+            </>
+          ) : null}
         </div>
       </Card>
 
-      <Card>
-        <AppSubTitle text="Eventos eSocial" />
-        {eventError ? <p className="mt-2 text-sm text-red-600">{eventError}</p> : null}
-        <div className="mt-3 flex flex-wrap gap-3">
-          <AppButton type="button" className="w-auto px-6" onClick={handleGerarEventos}>
-            Gerar eventos eSocial
-          </AppButton>
-          <AppButton
-            type="button"
-            className="w-auto px-6"
-            onClick={handleEnviarEventos}
-            disabled={!eventos.length}
-          >
-            Enviar eventos
-          </AppButton>
-        </div>
-        <div className="mt-4">
-          <AppTable
-            data={eventos}
-            rowKey={(row) => row.id}
-            emptyState={<AppListNotFound texto="Nenhum evento gerado." />}
-            pagination={{ enabled: false }}
-            columns={eventosColumns}
-          />
-        </div>
-      </Card>
+      {payroll.showEsocial ? (
+        <Card>
+          <AppSubTitle text={labels.events.title} />
+          {eventError ? <p className="mt-2 text-sm text-red-600">{eventError}</p> : null}
+          <div className="mt-3 flex flex-wrap gap-3">
+            <AppButton type="button" className="w-auto px-6" onClick={handleGerarEventos}>
+              {labels.events.generate}
+            </AppButton>
+            <AppButton
+              type="button"
+              className="w-auto px-6"
+              onClick={handleEnviarEventos}
+              disabled={!eventos.length}
+            >
+              {labels.events.send}
+            </AppButton>
+          </div>
+          <div className="mt-4">
+            <AppTable
+              data={eventos}
+              rowKey={(row) => row.id}
+              emptyState={<AppListNotFound texto={labels.events.empty} />}
+              pagination={{ enabled: false }}
+              columns={eventosColumns}
+            />
+          </div>
+        </Card>
+      ) : null}
 
       <Card tone="amber">
         <p className="text-sm text-gray-700 dark:text-gray-200">
-          Simulador ativo: calcule folha e eventos eSocial localmente.
+          {labels.simulator.hint}
         </p>
       </Card>
 
@@ -554,7 +572,7 @@ const FolhaSimuladorPage = () => {
         <AppTable
           data={itens}
           rowKey={(row) => row.id}
-          emptyState={<AppListNotFound texto="Nenhuma folha simulada." />}
+          emptyState={<AppListNotFound texto={labels.simulator.empty} />}
           pagination={{
             enabled: true,
             pageSize,

@@ -21,6 +21,8 @@ type ProjecaoItem = {
   nome: string;
   vencimento: string;
   valor: number;
+  parcela?: number;
+  totalParcelas?: number;
   status?: string;
   origem?: string;
 };
@@ -34,7 +36,22 @@ const addDays = (date: Date, days: number) => {
 };
 
 const formatCurrency = (value: number) =>
-  value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  (value / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+const parseDate = (value?: string) => {
+  if (!value) return null;
+  const date = new Date(`${value}T00:00:00`);
+  return Number.isNaN(date.getTime()) ? null : date;
+};
+
+const addMonths = (date: Date, months: number) => {
+  const next = new Date(date);
+  next.setMonth(next.getMonth() + months);
+  return next;
+};
+
+const formatDateInput = (date: Date) =>
+  date.toISOString().slice(0, 10);
 
 const ProjecaoPage = () => {
   const [movimentos, setMovimentos] = useState<MovimentoCaixa[]>([]);
@@ -82,12 +99,19 @@ const ProjecaoPage = () => {
     load();
   }, [filters.inicio, filters.fim]);
 
-  const saldoAtual = useMemo(() => {
+  const startDate = useMemo(() => parseDate(filters.inicio), [filters.inicio]);
+  const endDate = useMemo(() => parseDate(filters.fim), [filters.fim]);
+
+  const saldoBase = useMemo(() => {
     return movimentos.reduce((acc, movimento) => {
+      const dataMovimento = parseDate(movimento.data);
+      if (startDate && dataMovimento && dataMovimento > startDate) {
+        return acc;
+      }
       const sinal = movimento.tipo === TipoMovimentoCaixa.ENTRADA ? 1 : -1;
       return acc + movimento.valor * sinal;
     }, 0);
-  }, [movimentos]);
+  }, [movimentos, startDate]);
 
   const contasReceberAbertas = useMemo(
     () =>
@@ -105,46 +129,98 @@ const ProjecaoPage = () => {
     [contasPagar]
   );
 
-  const totalReceber = useMemo(
-    () => contasReceberAbertas.reduce((acc, item) => acc + item.valor, 0),
-    [contasReceberAbertas]
-  );
+  const projecoes = useMemo<ProjecaoItem[]>(() => {
+    const expandParcelas = (
+      item: ContaReceberResumo | ContaPagarResumo,
+      tipo: "RECEBER" | "PAGAR",
+      nome: string
+    ) => {
+      const baseDate = parseDate(item.vencimento);
+      if (!baseDate) return [];
+      const rawTotal = item.totalParcelas && item.totalParcelas > 0 ? item.totalParcelas : 1;
+      const rawParcela = item.parcela && item.parcela > 0 ? item.parcela : 1;
+      const totalParcelas = rawTotal < rawParcela ? rawParcela : rawTotal;
+      const parcelaInicial = rawTotal < rawParcela ? 1 : rawParcela;
+      const parcelasRestantes = totalParcelas - parcelaInicial + 1;
+      const totalValor =
+        item.valorOriginal && item.valorOriginal > item.valor
+          ? item.valorOriginal
+          : item.valor * totalParcelas;
+      const valorBase =
+        totalParcelas > 1 ? Math.floor(totalValor / totalParcelas) : item.valor;
+      const valorResto =
+        totalParcelas > 1 ? totalValor - valorBase * totalParcelas : 0;
+      const parcelaValor =
+        item.valorOriginal && item.valorOriginal > item.valor ? valorBase : item.valor;
+      const items: ProjecaoItem[] = [];
+      for (let i = 0; i < parcelasRestantes; i += 1) {
+        const vencimento = addMonths(baseDate, i);
+        const vencimentoStr = formatDateInput(vencimento);
+        if (startDate && vencimento < startDate) continue;
+        if (endDate && vencimento > endDate) continue;
+        items.push({
+          id: `${item.id}-${parcelaInicial + i}`,
+          tipo,
+          nome,
+          vencimento: vencimentoStr,
+          valor:
+            parcelaInicial + i === totalParcelas
+              ? parcelaValor + valorResto
+              : parcelaValor,
+          parcela: parcelaInicial + i,
+          totalParcelas,
+          status: item.status,
+          origem: item.origem,
+        });
+      }
+      return items;
+    };
 
-  const totalPagar = useMemo(
-    () => contasPagarAbertas.reduce((acc, item) => acc + item.valor, 0),
-    [contasPagarAbertas]
-  );
-
-  const saldoProjetado = saldoAtual + totalReceber - totalPagar;
-
-  const projeções = useMemo<ProjecaoItem[]>(() => {
-    const receber = contasReceberAbertas.map((item) => ({
-      id: item.id,
-      tipo: "RECEBER" as const,
-      nome: item.clienteNome || item.cliente || "Cliente",
-      vencimento: item.vencimento,
-      valor: item.valor,
-      status: item.status,
-      origem: item.origem,
-    }));
-    const pagar = contasPagarAbertas.map((item) => ({
-      id: item.id,
-      tipo: "PAGAR" as const,
-      nome: item.fornecedorNome || item.fornecedor || "Fornecedor",
-      vencimento: item.vencimento,
-      valor: item.valor,
-      status: item.status,
-      origem: item.origem,
-    }));
+    const receber = contasReceberAbertas.flatMap((item) =>
+      expandParcelas(
+        item,
+        "RECEBER",
+        item.clienteNome || item.cliente || "Cliente"
+      )
+    );
+    const pagar = contasPagarAbertas.flatMap((item) =>
+      expandParcelas(
+        item,
+        "PAGAR",
+        item.fornecedorNome || item.fornecedor || "Fornecedor"
+      )
+    );
     return [...receber, ...pagar].sort((a, b) =>
       a.vencimento < b.vencimento ? -1 : 1
     );
-  }, [contasPagarAbertas, contasReceberAbertas]);
+  }, [contasPagarAbertas, contasReceberAbertas, endDate, startDate]);
+
+  const totalReceber = useMemo(
+    () =>
+      projecoes
+        .filter((item) => item.tipo === "RECEBER")
+        .reduce((acc, item) => acc + item.valor, 0),
+    [projecoes]
+  );
+
+  const totalPagar = useMemo(
+    () =>
+      projecoes
+        .filter((item) => item.tipo === "PAGAR")
+        .reduce((acc, item) => acc + item.valor, 0),
+    [projecoes]
+  );
+
+  const saldoProjetado = saldoBase + totalReceber - totalPagar;
 
   const chartData = useMemo<PeriodCashPoint[]>(() => {
     if (!filters.inicio || !filters.fim) return [];
     const map = new Map<string, { entradas: number; saidas: number }>();
-    projeções.forEach((item) => {
+    const baseLabel = startDate ? filters.inicio : new Date().toISOString().slice(0, 10);
+
+    map.set(baseLabel, { entradas: saldoBase, saidas: 0 });
+
+    projecoes.forEach((item) => {
       if (!item.vencimento) return;
       const current = map.get(item.vencimento) ?? { entradas: 0, saidas: 0 };
       if (item.tipo === "RECEBER") {
@@ -158,10 +234,10 @@ const ProjecaoPage = () => {
       .sort(([a], [b]) => (a > b ? 1 : -1))
       .map(([label, values]) => ({
         label: formatLocalDate(label, { day: "2-digit", month: "2-digit" }),
-        entradas: values.entradas,
-        saidas: values.saidas,
+        entradas: values.entradas / 100,
+        saidas: values.saidas / 100,
       }));
-  }, [filters.inicio, filters.fim, projeções]);
+  }, [filters.fim, filters.inicio, projecoes, saldoBase, startDate]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -200,9 +276,9 @@ const ProjecaoPage = () => {
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
         <DashboardStatCard
-          title="Saldo atual"
-          value={formatCurrency(saldoAtual)}
-          helper="Somatorio dos movimentos"
+          title="Saldo base"
+          value={formatCurrency(saldoBase)}
+          helper="Saldo ate o inicio do periodo"
           tone="blue"
         />
         <DashboardStatCard
@@ -220,7 +296,7 @@ const ProjecaoPage = () => {
         <DashboardStatCard
           title="Saldo projetado"
           value={formatCurrency(saldoProjetado)}
-          helper="Saldo atual + receber - pagar"
+          helper="Saldo base + receber - pagar no periodo"
           tone={saldoProjetado < 0 ? "red" : "purple"}
         />
       </div>
@@ -233,7 +309,7 @@ const ProjecaoPage = () => {
         <AppSubTitle text="Detalhamento por vencimento" />
         <div className="mt-4">
           <AppTable
-            data={projeções}
+            data={projecoes}
             rowKey={(row) => `${row.tipo}-${row.id}`}
             emptyState={<AppListNotFound texto="Sem contas no periodo." />}
             pagination={{ enabled: true, pageSize: 8 }}
@@ -242,6 +318,14 @@ const ProjecaoPage = () => {
                 key: "vencimento",
                 header: "Vencimento",
                 render: (row) => formatLocalDate(row.vencimento),
+              },
+              {
+                key: "parcela",
+                header: "Parcela",
+                render: (row) =>
+                  row.parcela && row.totalParcelas
+                    ? `${row.parcela}/${row.totalParcelas}`
+                    : "-",
               },
               {
                 key: "tipo",
