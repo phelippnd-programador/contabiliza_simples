@@ -33,8 +33,12 @@ export const notaDraftSchema = z
           complemento: z.string().optional(),
           bairro: z.string().optional(),
           cidade: z.string().optional(),
-          uf: z.string().optional(),
-          codigoMunicipioIbge: z.string().optional(),
+          uf: z.string().length(2, "UF deve ter 2 letras").optional(),
+          codigoMunicipioIbge: z
+            .string()
+            .length(7, "Codigo IBGE deve ter 7 digitos")
+            .refine((val) => /^\d+$/.test(val), "Codigo IBGE deve conter apenas numeros")
+            .optional(),
           pais: z.string().optional(),
         })
         .optional(),

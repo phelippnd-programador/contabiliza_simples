@@ -6,7 +6,7 @@ import AppListNotFound from "../../../components/ui/AppListNotFound";
 import AppButton from "../../../components/ui/button/AppButton";
 import AppTextInput from "../../../components/ui/input/AppTextInput";
 import AppSelectInput from "../../../components/ui/input/AppSelectInput";
-import AppEndereco from "../../../components/ui/input/AppEndereco";
+import AppEndereco, { type EnderecoValue } from "../../../components/ui/input/AppEndereco";
 import { formatCpfCnpj } from "../../../shared/utils/formater";
 import {
   listClientes,
@@ -40,6 +40,9 @@ const ClientesPage = () => {
   const [formError, setFormError] = useState("");
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [addressErrors, setAddressErrors] = useState<
+    Partial<Record<keyof EnderecoValue, string>>
+  >({});
   const [formData, setFormData] = useState({
     nome: "",
     nomeFantasia: "",
@@ -67,6 +70,7 @@ const ClientesPage = () => {
   const [total, setTotal] = useState(0);
   const pageSize = 10;
   const isPessoaJuridica = formData.tipoPessoa === "PJ";
+  const onlyDigits = (value: string) => value.replace(/\D+/g, "");
 
   const load = async () => {
     try {
@@ -171,6 +175,7 @@ const ClientesPage = () => {
 
   const resetForm = () => {
     setEditingId(null);
+    setAddressErrors({});
     setFormData({
       nome: "",
       nomeFantasia: "",
@@ -198,8 +203,51 @@ const ClientesPage = () => {
 
   const handleSubmit = async () => {
     setFormError("");
+    setAddressErrors({});
     if (!formData.nome) {
       setFormError("Preencha os campos obrigatorios.");
+      return;
+    }
+    const documentoDigits = onlyDigits(formData.documento);
+    if (!documentoDigits) {
+      setFormError("Documento e obrigatorio para cadastro fiscal.");
+      return;
+    }
+    if (isPessoaJuridica && documentoDigits.length !== 14) {
+      setFormError("CNPJ deve ter 14 digitos.");
+      return;
+    }
+    if (!isPessoaJuridica && documentoDigits.length !== 11) {
+      setFormError("CPF deve ter 11 digitos.");
+      return;
+    }
+    const uf = (formData.endereco.uf || "").trim();
+    const ieDigits = onlyDigits(formData.inscricaoEstadual);
+    const imDigits = onlyDigits(formData.inscricaoMunicipal);
+    const nextAddressErrors: Partial<Record<keyof EnderecoValue, string>> = {};
+    if ((ieDigits || imDigits) && uf.length !== 2) {
+      nextAddressErrors.uf = "Informe UF para validar IE/IM.";
+      setAddressErrors(nextAddressErrors);
+      setFormError("UF obrigatoria para validar IE/IM.");
+      return;
+    }
+    if (isPessoaJuridica) {
+      if (formData.indicadorIE === "CONTRIBUINTE" && !ieDigits) {
+        setFormError("Inscricao estadual obrigatoria para contribuinte.");
+        return;
+      }
+      if (formData.indicadorIE !== "CONTRIBUINTE" && ieDigits) {
+        setFormError("IE deve ficar vazia quando isento/nao contribuinte.");
+        return;
+      }
+    } else if (ieDigits || imDigits) {
+      setFormError("IE/IM nao se aplica a pessoa fisica.");
+      return;
+    }
+    if (uf.length === 2 && formData.endereco.cidade && !formData.endereco.codigoMunicipioIbge) {
+      nextAddressErrors.codigoMunicipioIbge = "Codigo IBGE obrigatorio.";
+      setAddressErrors(nextAddressErrors);
+      setFormError("Codigo IBGE obrigatorio para endereco fiscal.");
       return;
     }
     if (!API_BASE) {
@@ -209,7 +257,7 @@ const ClientesPage = () => {
     const payload = {
       nome: formData.nome,
       nomeFantasia: isPessoaJuridica ? formData.nomeFantasia || undefined : undefined,
-      documento: formData.documento || undefined,
+      documento: documentoDigits,
       tipoPessoa: formData.tipoPessoa as "PF" | "PJ",
       email: formData.email || undefined,
       telefone: formData.telefone || undefined,
@@ -229,7 +277,7 @@ const ClientesPage = () => {
         complemento: formData.endereco.complemento || undefined,
         bairro: formData.endereco.bairro || undefined,
         cidade: formData.endereco.cidade || undefined,
-        uf: formData.endereco.uf || undefined,
+        uf: uf || undefined,
         codigoMunicipioIbge: formData.endereco.codigoMunicipioIbge || undefined,
         pais: formData.endereco.pais || undefined,
       },
@@ -378,12 +426,13 @@ const ClientesPage = () => {
               />
             ) : null}
             <div className="md:col-span-3">
-              <AppEndereco
-                value={formData.endereco}
-                onChange={(next) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    endereco: { ...prev.endereco, ...next },
+            <AppEndereco
+              value={formData.endereco}
+              errors={addressErrors}
+              onChange={(next) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  endereco: { ...prev.endereco, ...next },
                   }))
                 }
               />

@@ -6,7 +6,8 @@ import AppListNotFound from "../../../components/ui/AppListNotFound";
 import AppButton from "../../../components/ui/button/AppButton";
 import AppTextInput from "../../../components/ui/input/AppTextInput";
 import AppSelectInput from "../../../components/ui/input/AppSelectInput";
-import AppEndereco from "../../../components/ui/input/AppEndereco";
+import AppEndereco, { type EnderecoValue } from "../../../components/ui/input/AppEndereco";
+import { formatCpfCnpj } from "../../../shared/utils/formater";
 import {
   listFornecedores,
   createFornecedor,
@@ -39,6 +40,9 @@ const FornecedoresPage = () => {
   const [formError, setFormError] = useState("");
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [addressErrors, setAddressErrors] = useState<
+    Partial<Record<keyof EnderecoValue, string>>
+  >({});
   const [formData, setFormData] = useState({
     nome: "",
     nomeFantasia: "",
@@ -65,6 +69,8 @@ const FornecedoresPage = () => {
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const pageSize = 10;
+  const isPessoaJuridica = formData.tipoPessoa === "PJ";
+  const onlyDigits = (value: string) => value.replace(/\D+/g, "");
 
   const load = async () => {
     try {
@@ -169,6 +175,7 @@ const FornecedoresPage = () => {
 
   const resetForm = () => {
     setEditingId(null);
+    setAddressErrors({});
     setFormData({
       nome: "",
       nomeFantasia: "",
@@ -196,8 +203,51 @@ const FornecedoresPage = () => {
 
   const handleSubmit = async () => {
     setFormError("");
+    setAddressErrors({});
     if (!formData.nome) {
       setFormError("Preencha os campos obrigatorios.");
+      return;
+    }
+    const documentoDigits = onlyDigits(formData.documento);
+    if (!documentoDigits) {
+      setFormError("Documento e obrigatorio para cadastro fiscal.");
+      return;
+    }
+    if (isPessoaJuridica && documentoDigits.length !== 14) {
+      setFormError("CNPJ deve ter 14 digitos.");
+      return;
+    }
+    if (!isPessoaJuridica && documentoDigits.length !== 11) {
+      setFormError("CPF deve ter 11 digitos.");
+      return;
+    }
+    const uf = (formData.endereco.uf || "").trim();
+    const ieDigits = onlyDigits(formData.inscricaoEstadual);
+    const imDigits = onlyDigits(formData.inscricaoMunicipal);
+    const nextAddressErrors: Partial<Record<keyof EnderecoValue, string>> = {};
+    if ((ieDigits || imDigits) && uf.length !== 2) {
+      nextAddressErrors.uf = "Informe UF para validar IE/IM.";
+      setAddressErrors(nextAddressErrors);
+      setFormError("UF obrigatoria para validar IE/IM.");
+      return;
+    }
+    if (isPessoaJuridica) {
+      if (formData.indicadorIE === "CONTRIBUINTE" && !ieDigits) {
+        setFormError("Inscricao estadual obrigatoria para contribuinte.");
+        return;
+      }
+      if (formData.indicadorIE !== "CONTRIBUINTE" && ieDigits) {
+        setFormError("IE deve ficar vazia quando isento/nao contribuinte.");
+        return;
+      }
+    } else if (ieDigits || imDigits) {
+      setFormError("IE/IM nao se aplica a pessoa fisica.");
+      return;
+    }
+    if (uf.length === 2 && formData.endereco.cidade && !formData.endereco.codigoMunicipioIbge) {
+      nextAddressErrors.codigoMunicipioIbge = "Codigo IBGE obrigatorio.";
+      setAddressErrors(nextAddressErrors);
+      setFormError("Codigo IBGE obrigatorio para endereco fiscal.");
       return;
     }
     if (!API_BASE) {
@@ -208,17 +258,20 @@ const FornecedoresPage = () => {
       if (editingId) {
         await updateFornecedor(editingId, {
           nome: formData.nome,
-          nomeFantasia: formData.nomeFantasia || undefined,
-          documento: formData.documento || undefined,
+          nomeFantasia: isPessoaJuridica ? formData.nomeFantasia || undefined : undefined,
+          documento: documentoDigits,
           tipoPessoa: formData.tipoPessoa as "PF" | "PJ",
           email: formData.email || undefined,
           telefone: formData.telefone || undefined,
-          inscricaoEstadual: formData.inscricaoEstadual || undefined,
-          inscricaoMunicipal: formData.inscricaoMunicipal || undefined,
-          indicadorIE: formData.indicadorIE as
-            | "CONTRIBUINTE"
-            | "ISENTO"
-            | "NAO_CONTRIBUINTE",
+          inscricaoEstadual: isPessoaJuridica
+            ? formData.inscricaoEstadual || undefined
+            : undefined,
+          inscricaoMunicipal: isPessoaJuridica
+            ? formData.inscricaoMunicipal || undefined
+            : undefined,
+          indicadorIE: (isPessoaJuridica
+            ? formData.indicadorIE
+            : "NAO_CONTRIBUINTE") as "CONTRIBUINTE" | "ISENTO" | "NAO_CONTRIBUINTE",
           endereco: {
             cep: formData.endereco.cep || undefined,
             logradouro: formData.endereco.logradouro || undefined,
@@ -226,7 +279,7 @@ const FornecedoresPage = () => {
             complemento: formData.endereco.complemento || undefined,
             bairro: formData.endereco.bairro || undefined,
             cidade: formData.endereco.cidade || undefined,
-            uf: formData.endereco.uf || undefined,
+            uf: uf || undefined,
             codigoMunicipioIbge: formData.endereco.codigoMunicipioIbge || undefined,
             pais: formData.endereco.pais || undefined,
           },
@@ -235,17 +288,20 @@ const FornecedoresPage = () => {
       } else {
         await createFornecedor({
           nome: formData.nome,
-          nomeFantasia: formData.nomeFantasia || undefined,
-          documento: formData.documento || undefined,
+          nomeFantasia: isPessoaJuridica ? formData.nomeFantasia || undefined : undefined,
+          documento: documentoDigits,
           tipoPessoa: formData.tipoPessoa as "PF" | "PJ",
           email: formData.email || undefined,
           telefone: formData.telefone || undefined,
-          inscricaoEstadual: formData.inscricaoEstadual || undefined,
-          inscricaoMunicipal: formData.inscricaoMunicipal || undefined,
-          indicadorIE: formData.indicadorIE as
-            | "CONTRIBUINTE"
-            | "ISENTO"
-            | "NAO_CONTRIBUINTE",
+          inscricaoEstadual: isPessoaJuridica
+            ? formData.inscricaoEstadual || undefined
+            : undefined,
+          inscricaoMunicipal: isPessoaJuridica
+            ? formData.inscricaoMunicipal || undefined
+            : undefined,
+          indicadorIE: (isPessoaJuridica
+            ? formData.indicadorIE
+            : "NAO_CONTRIBUINTE") as "CONTRIBUINTE" | "ISENTO" | "NAO_CONTRIBUINTE",
           endereco: {
             cep: formData.endereco.cep || undefined,
             logradouro: formData.endereco.logradouro || undefined,
@@ -253,7 +309,7 @@ const FornecedoresPage = () => {
             complemento: formData.endereco.complemento || undefined,
             bairro: formData.endereco.bairro || undefined,
             cidade: formData.endereco.cidade || undefined,
-            uf: formData.endereco.uf || undefined,
+            uf: uf || undefined,
             codigoMunicipioIbge: formData.endereco.codigoMunicipioIbge || undefined,
             pais: formData.endereco.pais || undefined,
           },
@@ -299,28 +355,49 @@ const FornecedoresPage = () => {
                 setFormData((prev) => ({ ...prev, nome: e.target.value }))
               }
             />
+            {isPessoaJuridica ? (
+              <AppTextInput
+                title="Nome fantasia"
+                value={formData.nomeFantasia}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    nomeFantasia: e.target.value,
+                  }))
+                }
+              />
+            ) : null}
             <AppTextInput
-              title="Nome fantasia"
-              value={formData.nomeFantasia}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  nomeFantasia: e.target.value,
-                }))
-              }
-            />
-            <AppTextInput
-              title="Documento"
+              title={isPessoaJuridica ? "CNPJ" : "CPF"}
               value={formData.documento}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, documento: e.target.value }))
+              sanitizeRegex={/[0-9]/g}
+              maxRawLength={14}
+              formatter={formatCpfCnpj}
+              onValueChange={(raw) =>
+                setFormData((prev) => ({ ...prev, documento: raw }))
               }
             />
             <AppSelectInput
               title="Tipo pessoa"
               value={formData.tipoPessoa}
               onChange={(e) =>
-                setFormData((prev) => ({ ...prev, tipoPessoa: e.target.value }))
+                setFormData((prev) => {
+                  const nextTipo = e.target.value;
+                  if (nextTipo === "PF") {
+                    return {
+                      ...prev,
+                      tipoPessoa: nextTipo,
+                      nomeFantasia: "",
+                      inscricaoEstadual: "",
+                      inscricaoMunicipal: "",
+                      indicadorIE: "NAO_CONTRIBUINTE",
+                    };
+                  }
+                  return {
+                    ...prev,
+                    tipoPessoa: nextTipo,
+                  };
+                })
               }
               data={tipoPessoaOptions}
             />
@@ -338,40 +415,47 @@ const FornecedoresPage = () => {
                 setFormData((prev) => ({ ...prev, telefone: e.target.value }))
               }
             />
-            <AppTextInput
-              title="Inscricao estadual"
-              value={formData.inscricaoEstadual}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  inscricaoEstadual: e.target.value,
-                }))
-              }
-            />
-            <AppTextInput
-              title="Inscricao municipal"
-              value={formData.inscricaoMunicipal}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  inscricaoMunicipal: e.target.value,
-                }))
-              }
-            />
-            <AppSelectInput
-              title="Indicador IE"
-              value={formData.indicadorIE}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  indicadorIE: e.target.value,
-                }))
-              }
-              data={indicadorIeOptions}
-            />
+            {isPessoaJuridica ? (
+              <AppTextInput
+                title="Inscricao estadual"
+                value={formData.inscricaoEstadual}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    inscricaoEstadual: e.target.value,
+                  }))
+                }
+              />
+            ) : null}
+            {isPessoaJuridica ? (
+              <AppTextInput
+                title="Inscricao municipal"
+                value={formData.inscricaoMunicipal}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    inscricaoMunicipal: e.target.value,
+                  }))
+                }
+              />
+            ) : null}
+            {isPessoaJuridica ? (
+              <AppSelectInput
+                title="Indicador IE"
+                value={formData.indicadorIE}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    indicadorIE: e.target.value,
+                  }))
+                }
+                data={indicadorIeOptions}
+              />
+            ) : null}
             <div className="md:col-span-3">
               <AppEndereco
                 value={formData.endereco}
+                errors={addressErrors}
                 onChange={(next) =>
                   setFormData((prev) => ({
                     ...prev,
