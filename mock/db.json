@@ -1,0 +1,174 @@
+{
+  "clientes": [
+    {
+      "id": "cli_1",
+      "nome": "Cliente Demo",
+      "nomeFantasia": "Cliente Demo LTDA",
+      "documento": "12345678000199",
+      "tipoPessoa": "PJ",
+      "email": "cliente@demo.com",
+      "telefone": "11999990000",
+      "inscricaoEstadual": "123456789",
+      "inscricaoMunicipal": "998877",
+      "indicadorIE": "CONTRIBUINTE",
+      "endereco": {
+        "cep": "01001000",
+        "logradouro": "Praca da Se",
+        "numero": "100",
+        "complemento": "Sala 1",
+        "bairro": "Se",
+        "cidade": "Sao Paulo",
+        "uf": "SP",
+        "codigoMunicipioIbge": "3550308",
+        "pais": "Brasil"
+      },
+      "status": "ATIVO"
+    },
+    {
+      "nome": "Phelipp Nascimento Damasceno",
+      "documento": "11111111111",
+      "tipoPessoa": "PF",
+      "email": "phelippnd@gmail.com",
+      "indicadorIE": "NAO_CONTRIBUINTE",
+      "endereco": {
+        "cep": "23030310",
+        "logradouro": "Estrada do Marmeleiro",
+        "numero": "576",
+        "bairro": "Guaratiba",
+        "cidade": "Rio de Janeiro",
+        "uf": "RJ",
+        "codigoMunicipioIbge": "3304557",
+        "pais": "Brasil"
+      },
+      "status": "ATIVO",
+      "id": "fRXgESZ"
+    },
+    {
+      "nome": "Phelipp Nascimento Damasceno",
+      "documento": "11111111111",
+      "tipoPessoa": "PF",
+      "email": "phelippnd@gmail.com",
+      "telefone": "21987599613",
+      "indicadorIE": "NAO_CONTRIBUINTE",
+      "endereco": {
+        "cep": "23030310",
+        "logradouro": "Estrada do Marmeleiro",
+        "numero": "576",
+        "bairro": "Guaratiba",
+        "cidade": "Rio de Janeiro",
+        "uf": "RJ",
+        "codigoMunicipioIbge": "3304557",
+        "pais": "Brasil"
+      },
+      "status": "ATIVO",
+      "id": "4CBxPs2"
+    }
+  ],
+  "fornecedores": [
+    {
+      "id": "for_1",
+      "nome": "Fornecedor Demo",
+      "documento": "98765432000155",
+      "tipoPessoa": "PJ",
+      "email": "fornecedor@demo.com",
+      "telefone": "11988880000",
+      "indicadorIE": "ISENTO",
+      "endereco": {
+        "cep": "20040002",
+        "logradouro": "Rua da Quitanda",
+        "numero": "50",
+        "bairro": "Centro",
+        "cidade": "Rio de Janeiro",
+        "uf": "RJ",
+        "codigoMunicipioIbge": "3304557",
+        "pais": "Brasil"
+      },
+      "status": "ATIVO"
+    }
+  ],
+  "produtosServicos": [
+    {
+      "id": "prd_1",
+      "descricao": "Servico de consultoria",
+      "tipo": "SERVICO",
+      "status": "ATIVO",
+      "codigo": "SERV001",
+      "unidade": "UN",
+      "valorUnitario": 15000,
+      "cnae": "6202300",
+      "codigoServico": "1001"
+    },
+    {
+      "id": "prd_2",
+      "descricao": "Produto demo",
+      "tipo": "PRODUTO",
+      "status": "ATIVO",
+      "codigo": "PROD001",
+      "unidade": "UN",
+      "valorUnitario": 3500,
+      "ncm": "01012100",
+      "cfop": "5101"
+    }
+  ],
+  "contas": [
+    {
+      "id": "cta_1",
+      "nome": "Conta principal",
+      "banco": "Banco Demo",
+      "agencia": "0001",
+      "conta": "12345-6",
+      "tipo": "CORRENTE",
+      "categoria": "ENTRADA",
+      "saldoInicial": 100000
+    }
+  ],
+  "categorias": [
+    {
+      "id": "cat_1",
+      "nome": "Receita de servicos",
+      "tipo": "ENTRADA"
+    }
+  ],
+  "empresas": [
+    {
+      "id": "emp_1",
+      "razaoSocial": "Empresa Demo LTDA",
+      "nomeFantasia": "Empresa Demo",
+      "cnpj": "11222333000199"
+    }
+  ],
+  "notas": [],
+  "estoque": [],
+  "colaboradores": [],
+  "vendasAnalytics": {
+    "totais": {
+      "quantidade": 12,
+      "total": 420000
+    },
+    "maisVendidos": [
+      {
+        "produtoId": "prd_2",
+        "descricao": "Produto demo",
+        "quantidade": 8,
+        "total": 280000
+      }
+    ],
+    "menosVendidos": [
+      {
+        "produtoId": "prd_1",
+        "descricao": "Servico de consultoria",
+        "quantidade": 4,
+        "total": 140000
+      }
+    ],
+    "ultimosSaidos": [
+      {
+        "id": "saida_1",
+        "data": "2025-01-10",
+        "produto": "Produto demo",
+        "quantidade": 2,
+        "total": 70000
+      }
+    ]
+  }
+}

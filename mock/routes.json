@@ -1,0 +1,19 @@
+{
+  "/cadastros/clientes": "/clientes",
+  "/cadastros/clientes/:id": "/clientes/:id",
+  "/cadastros/fornecedores": "/fornecedores",
+  "/cadastros/fornecedores/:id": "/fornecedores/:id",
+  "/cadastros/produtos-servicos": "/produtosServicos",
+  "/cadastros/produtos-servicos/:id": "/produtosServicos/:id",
+  "/financeiro/contas": "/contas",
+  "/financeiro/contas/:id": "/contas/:id",
+  "/financeiro/categorias": "/categorias",
+  "/financeiro/categorias/:id": "/categorias/:id",
+  "/folha/colaboradores": "/colaboradores",
+  "/folha/colaboradores/:id": "/colaboradores/:id",
+  "/comercial/vendas/analytics": "/vendasAnalytics",
+  "/notas": "/notas",
+  "/notas/:id": "/notas/:id",
+  "/empresas": "/empresas",
+  "/empresas/:id": "/empresas/:id"
+}

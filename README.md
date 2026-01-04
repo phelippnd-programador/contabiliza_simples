@@ -11,6 +11,16 @@ Base
 - Competencia: `YYYY-MM`
 - Currency: integer cents (UI divides by 100)
 
+## Mock API (json-server)
+
+Prereqs
+- Install dependency: `npm install`
+- Create `.env.local` with `VITE_API_BASE_URL=http://localhost:3001`
+
+Run
+- `npm run mock`
+- `npm run dev`
+
 Perfil
 - `GET /usuarios/perfil`
 - `PUT /usuarios/perfil`

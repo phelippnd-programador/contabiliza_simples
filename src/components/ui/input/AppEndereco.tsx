@@ -63,6 +63,8 @@ const AppEndereco = ({
         bairro: data.bairro || value.bairro || "",
         cidade: data.localidade || value.cidade || "",
         uf: data.uf || value.uf || "",
+        codigoMunicipioIbge: data.ibge || value.codigoMunicipioIbge || "",
+        pais: value.pais || "Brasil",
       });
       setCepLoading(false);
     })();
