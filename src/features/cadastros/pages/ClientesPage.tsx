@@ -21,6 +21,17 @@ const statusOptions = [
   { value: "INATIVO", label: "Inativo" },
 ];
 
+const tipoPessoaOptions = [
+  { value: "PJ", label: "Pessoa juridica" },
+  { value: "PF", label: "Pessoa fisica" },
+];
+
+const indicadorIeOptions = [
+  { value: "CONTRIBUINTE", label: "Contribuinte" },
+  { value: "ISENTO", label: "Isento" },
+  { value: "NAO_CONTRIBUINTE", label: "Nao contribuinte" },
+];
+
 const ClientesPage = () => {
   const [itens, setItens] = useState<ClienteResumo[]>([]);
   const [error, setError] = useState("");
@@ -29,7 +40,25 @@ const ClientesPage = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     nome: "",
+    nomeFantasia: "",
     documento: "",
+    tipoPessoa: "PJ",
+    email: "",
+    telefone: "",
+    inscricaoEstadual: "",
+    inscricaoMunicipal: "",
+    indicadorIE: "CONTRIBUINTE",
+    endereco: {
+      cep: "",
+      logradouro: "",
+      numero: "",
+      complemento: "",
+      bairro: "",
+      cidade: "",
+      uf: "",
+      codigoMunicipioIbge: "",
+      pais: "",
+    },
     status: "ATIVO",
   });
   const [page, setPage] = useState(1);
@@ -82,7 +111,25 @@ const ClientesPage = () => {
                 setEditingId(row.id);
                 setFormData({
                   nome: row.nome,
+                  nomeFantasia: row.nomeFantasia ?? "",
                   documento: row.documento ?? "",
+                  tipoPessoa: row.tipoPessoa ?? "PJ",
+                  email: row.email ?? "",
+                  telefone: row.telefone ?? "",
+                  inscricaoEstadual: row.inscricaoEstadual ?? "",
+                  inscricaoMunicipal: row.inscricaoMunicipal ?? "",
+                  indicadorIE: row.indicadorIE ?? "CONTRIBUINTE",
+                  endereco: {
+                    cep: row.endereco?.cep ?? "",
+                    logradouro: row.endereco?.logradouro ?? "",
+                    numero: row.endereco?.numero ?? "",
+                    complemento: row.endereco?.complemento ?? "",
+                    bairro: row.endereco?.bairro ?? "",
+                    cidade: row.endereco?.cidade ?? "",
+                    uf: row.endereco?.uf ?? "",
+                    codigoMunicipioIbge: row.endereco?.codigoMunicipioIbge ?? "",
+                    pais: row.endereco?.pais ?? "",
+                  },
                   status: row.status ?? "ATIVO",
                 });
                 setFormError("");
@@ -123,7 +170,25 @@ const ClientesPage = () => {
     setEditingId(null);
     setFormData({
       nome: "",
+      nomeFantasia: "",
       documento: "",
+      tipoPessoa: "PJ",
+      email: "",
+      telefone: "",
+      inscricaoEstadual: "",
+      inscricaoMunicipal: "",
+      indicadorIE: "CONTRIBUINTE",
+      endereco: {
+        cep: "",
+        logradouro: "",
+        numero: "",
+        complemento: "",
+        bairro: "",
+        cidade: "",
+        uf: "",
+        codigoMunicipioIbge: "",
+        pais: "",
+      },
       status: "ATIVO",
     });
   };
@@ -142,13 +207,55 @@ const ClientesPage = () => {
       if (editingId) {
         await updateCliente(editingId, {
           nome: formData.nome,
+          nomeFantasia: formData.nomeFantasia || undefined,
           documento: formData.documento || undefined,
+          tipoPessoa: formData.tipoPessoa as "PF" | "PJ",
+          email: formData.email || undefined,
+          telefone: formData.telefone || undefined,
+          inscricaoEstadual: formData.inscricaoEstadual || undefined,
+          inscricaoMunicipal: formData.inscricaoMunicipal || undefined,
+          indicadorIE: formData.indicadorIE as
+            | "CONTRIBUINTE"
+            | "ISENTO"
+            | "NAO_CONTRIBUINTE",
+          endereco: {
+            cep: formData.endereco.cep || undefined,
+            logradouro: formData.endereco.logradouro || undefined,
+            numero: formData.endereco.numero || undefined,
+            complemento: formData.endereco.complemento || undefined,
+            bairro: formData.endereco.bairro || undefined,
+            cidade: formData.endereco.cidade || undefined,
+            uf: formData.endereco.uf || undefined,
+            codigoMunicipioIbge: formData.endereco.codigoMunicipioIbge || undefined,
+            pais: formData.endereco.pais || undefined,
+          },
           status: formData.status,
         });
       } else {
         await createCliente({
           nome: formData.nome,
+          nomeFantasia: formData.nomeFantasia || undefined,
           documento: formData.documento || undefined,
+          tipoPessoa: formData.tipoPessoa as "PF" | "PJ",
+          email: formData.email || undefined,
+          telefone: formData.telefone || undefined,
+          inscricaoEstadual: formData.inscricaoEstadual || undefined,
+          inscricaoMunicipal: formData.inscricaoMunicipal || undefined,
+          indicadorIE: formData.indicadorIE as
+            | "CONTRIBUINTE"
+            | "ISENTO"
+            | "NAO_CONTRIBUINTE",
+          endereco: {
+            cep: formData.endereco.cep || undefined,
+            logradouro: formData.endereco.logradouro || undefined,
+            numero: formData.endereco.numero || undefined,
+            complemento: formData.endereco.complemento || undefined,
+            bairro: formData.endereco.bairro || undefined,
+            cidade: formData.endereco.cidade || undefined,
+            uf: formData.endereco.uf || undefined,
+            codigoMunicipioIbge: formData.endereco.codigoMunicipioIbge || undefined,
+            pais: formData.endereco.pais || undefined,
+          },
           status: formData.status,
         });
       }
@@ -182,7 +289,7 @@ const ClientesPage = () => {
 
       {formOpen ? (
         <Card>
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-3">
             <AppTextInput
               required
               title="Nome"
@@ -192,10 +299,166 @@ const ClientesPage = () => {
               }
             />
             <AppTextInput
+              title="Nome fantasia"
+              value={formData.nomeFantasia}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  nomeFantasia: e.target.value,
+                }))
+              }
+            />
+            <AppTextInput
               title="Documento"
               value={formData.documento}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, documento: e.target.value }))
+              }
+            />
+            <AppSelectInput
+              title="Tipo pessoa"
+              value={formData.tipoPessoa}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, tipoPessoa: e.target.value }))
+              }
+              data={tipoPessoaOptions}
+            />
+            <AppTextInput
+              title="Email"
+              value={formData.email}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, email: e.target.value }))
+              }
+            />
+            <AppTextInput
+              title="Telefone"
+              value={formData.telefone}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, telefone: e.target.value }))
+              }
+            />
+            <AppTextInput
+              title="Inscricao estadual"
+              value={formData.inscricaoEstadual}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  inscricaoEstadual: e.target.value,
+                }))
+              }
+            />
+            <AppTextInput
+              title="Inscricao municipal"
+              value={formData.inscricaoMunicipal}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  inscricaoMunicipal: e.target.value,
+                }))
+              }
+            />
+            <AppSelectInput
+              title="Indicador IE"
+              value={formData.indicadorIE}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  indicadorIE: e.target.value,
+                }))
+              }
+              data={indicadorIeOptions}
+            />
+            <AppTextInput
+              title="CEP"
+              value={formData.endereco.cep}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  endereco: { ...prev.endereco, cep: e.target.value },
+                }))
+              }
+            />
+            <AppTextInput
+              title="Logradouro"
+              value={formData.endereco.logradouro}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  endereco: { ...prev.endereco, logradouro: e.target.value },
+                }))
+              }
+            />
+            <AppTextInput
+              title="Numero"
+              value={formData.endereco.numero}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  endereco: { ...prev.endereco, numero: e.target.value },
+                }))
+              }
+            />
+            <AppTextInput
+              title="Complemento"
+              value={formData.endereco.complemento}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  endereco: { ...prev.endereco, complemento: e.target.value },
+                }))
+              }
+            />
+            <AppTextInput
+              title="Bairro"
+              value={formData.endereco.bairro}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  endereco: { ...prev.endereco, bairro: e.target.value },
+                }))
+              }
+            />
+            <AppTextInput
+              title="Cidade"
+              value={formData.endereco.cidade}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  endereco: { ...prev.endereco, cidade: e.target.value },
+                }))
+              }
+            />
+            <AppTextInput
+              title="UF"
+              value={formData.endereco.uf}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  endereco: { ...prev.endereco, uf: e.target.value },
+                }))
+              }
+            />
+            <AppTextInput
+              title="Codigo IBGE"
+              value={formData.endereco.codigoMunicipioIbge}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  endereco: {
+                    ...prev.endereco,
+                    codigoMunicipioIbge: e.target.value,
+                  },
+                }))
+              }
+            />
+            <AppTextInput
+              title="Pais"
+              value={formData.endereco.pais}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  endereco: { ...prev.endereco, pais: e.target.value },
+                }))
               }
             />
             <AppSelectInput

@@ -14,7 +14,11 @@ import type { NcmItem } from "../../../shared/services/ncm";
 import { listCategorias } from "../../financeiro/services/categorias.service";
 import { listContas } from "../../financeiro/services/contas.service";
 import { listEmpresas } from "../../empresa/services/empresas.service";
-import { listProdutosServicos } from "../../cadastros/services/cadastros.service";
+import {
+  listProdutosServicos,
+  listClientes,
+  type ClienteResumo,
+} from "../../cadastros/services/cadastros.service";
 import { formatBRL, formatCpfCnpj } from "../../../shared/utils/formater";
 import { notaDraftSchema } from "../validation/notaDraft.schema";
 import { createDraft, emitir } from "../services/notas.service";
@@ -58,6 +62,7 @@ const NotaNovaPage = () => {
   const [categorias, setCategorias] = useState<Array<{ value: string; label: string }>>([]);
   const [empresas, setEmpresas] = useState<Array<{ value: string; label: string }>>([]);
   const [catalogo, setCatalogo] = useState<ProdutoServicoResumo[]>([]);
+  const [clientes, setClientes] = useState<ClienteResumo[]>([]);
   const [form, setForm] = useState<NotaDraftRequest>({
     empresaId: searchParams.get("empresaId") ?? "",
     tipo: "SERVICO",
@@ -99,16 +104,24 @@ const NotaNovaPage = () => {
   const [cnaeSelections, setCnaeSelections] = useState<Record<number, CnaeItem | null>>({});
   const [ncmSelections, setNcmSelections] = useState<Record<number, NcmItem | null>>({});
   const [catalogSelections, setCatalogSelections] = useState<Record<number, string>>({});
+  const [clienteSelecionado, setClienteSelecionado] = useState("");
 
   useEffect(() => {
     let isMounted = true;
     const load = async () => {
-      const [contasResult, categoriasResult, empresasResult, catalogoResult] =
+      const [
+        contasResult,
+        categoriasResult,
+        empresasResult,
+        catalogoResult,
+        clientesResult,
+      ] =
         await Promise.allSettled([
           listContas(),
           listCategorias(),
           listEmpresas({ page: 1, pageSize: 200 }),
           listProdutosServicos({ page: 1, pageSize: 200 }),
+          listClientes({ page: 1, pageSize: 200 }),
         ]);
       if (!isMounted) return;
       if (contasResult.status === "fulfilled") {
@@ -152,6 +165,12 @@ const NotaNovaPage = () => {
       } else {
         setCatalogo([]);
       }
+
+      if (clientesResult.status === "fulfilled") {
+        setClientes(clientesResult.value.data);
+      } else {
+        setClientes([]);
+      }
     };
     load();
     return () => {
@@ -185,6 +204,42 @@ const NotaNovaPage = () => {
         })),
     [catalogo, form.tipo]
   );
+
+  const clienteOptions = useMemo(
+    () =>
+      clientes.map((cliente) => ({
+        value: cliente.id,
+        label: `${cliente.nome}${cliente.documento ? ` (${cliente.documento})` : ""}`,
+      })),
+    [clientes]
+  );
+
+  const applyCliente = (clienteId: string) => {
+    const cliente = clientes.find((item) => item.id === clienteId);
+    if (!cliente) return;
+    setForm((prev) => ({
+      ...prev,
+      tomador: {
+        ...prev.tomador,
+        nomeRazao: cliente.nome,
+        documento: cliente.documento ?? "",
+        email: cliente.email,
+        telefone: cliente.telefone,
+        endereco: {
+          ...prev.tomador.endereco,
+          cep: cliente.endereco?.cep,
+          logradouro: cliente.endereco?.logradouro,
+          numero: cliente.endereco?.numero,
+          complemento: cliente.endereco?.complemento,
+          bairro: cliente.endereco?.bairro,
+          cidade: cliente.endereco?.cidade,
+          uf: cliente.endereco?.uf,
+          codigoMunicipioIbge: cliente.endereco?.codigoMunicipioIbge,
+          pais: cliente.endereco?.pais,
+        },
+      },
+    }));
+  };
 
   const applyCatalogoItem = (index: number, productId: string) => {
     const item = catalogo.find((p) => p.id === productId);
@@ -345,6 +400,18 @@ const NotaNovaPage = () => {
       <Card>
         <AppSubTitle text="Tomador" />
         <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
+          <AppSelectInput
+            title="Cliente cadastrado"
+            value={clienteSelecionado}
+            onChange={(e) => {
+              const value = e.target.value;
+              setClienteSelecionado(value);
+              if (value) applyCliente(value);
+            }}
+            data={clienteOptions}
+            placeholder="Selecione"
+          />
+
           <AppTextInput
             required
             title="Nome/Razao social"
