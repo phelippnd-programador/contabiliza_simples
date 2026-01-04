@@ -5,17 +5,54 @@ const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 
 export type ContaPagarResumo = {
   id: string;
-  fornecedor: string;
+  fornecedorId?: string;
+  fornecedorNome?: string;
+  fornecedor?: string;
   vencimento: string;
   valor: number;
   status?: string;
+  origem?: "COMPRA" | "MANUAL";
+  origemId?: string;
+  descricao?: string;
+  numeroDocumento?: string;
+  competencia?: string;
+  parcela?: number;
+  totalParcelas?: number;
+  valorOriginal?: number;
+  desconto?: number;
+  juros?: number;
+  multa?: number;
+  valorPago?: number;
+  dataPagamento?: string;
+  formaPagamento?: string;
+  contaId?: string;
+  categoriaId?: string;
+  observacoes?: string;
 };
 
 export type ContaPagarPayload = {
-  fornecedor: string;
+  fornecedorId: string;
+  fornecedorNome?: string;
   vencimento: string;
   valor: number;
   status?: string;
+  origem?: "COMPRA" | "MANUAL";
+  origemId?: string;
+  descricao?: string;
+  numeroDocumento?: string;
+  competencia?: string;
+  parcela?: number;
+  totalParcelas?: number;
+  valorOriginal?: number;
+  desconto?: number;
+  juros?: number;
+  multa?: number;
+  valorPago?: number;
+  dataPagamento?: string;
+  formaPagamento?: string;
+  contaId?: string;
+  categoriaId?: string;
+  observacoes?: string;
 };
 
 export type ListContasPagarParams = {

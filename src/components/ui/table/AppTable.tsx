@@ -103,6 +103,7 @@ const AppTable = <T,>({
                 <td
                   key={column.key}
                   className={[
+                    "dark:text-gray-100",
                     "px-4 py-3",
                     getAlignClass(column.align),
                     column.className ?? "",

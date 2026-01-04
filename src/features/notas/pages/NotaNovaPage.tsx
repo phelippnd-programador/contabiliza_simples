@@ -7,6 +7,7 @@ import AppTextInput from "../../../components/ui/input/AppTextInput";
 import AppSelectInput from "../../../components/ui/input/AppSelectInput";
 import AppDateInput from "../../../components/ui/input/AppDateInput";
 import AppListNotFound from "../../../components/ui/AppListNotFound";
+import AppEndereco from "../../../components/ui/input/AppEndereco";
 import { CnaePicker } from "../../../components/ui/picked/CnaePicker";
 import { NcmPicker } from "../../../components/ui/picked/NcmPicker";
 import type { CnaeItem } from "../../../shared/services/ibgeCnae";
@@ -14,7 +15,11 @@ import type { NcmItem } from "../../../shared/services/ncm";
 import { listCategorias } from "../../financeiro/services/categorias.service";
 import { listContas } from "../../financeiro/services/contas.service";
 import { listEmpresas } from "../../empresa/services/empresas.service";
-import { listProdutosServicos } from "../../cadastros/services/cadastros.service";
+import {
+  listProdutosServicos,
+  listClientes,
+  type ClienteResumo,
+} from "../../cadastros/services/cadastros.service";
 import { formatBRL, formatCpfCnpj } from "../../../shared/utils/formater";
 import { notaDraftSchema } from "../validation/notaDraft.schema";
 import { createDraft, emitir } from "../services/notas.service";
@@ -25,6 +30,7 @@ import type {
   NotaTipo,
 } from "../types";
 import type { ProdutoServicoResumo } from "../../cadastros/services/cadastros.service";
+import { getErrorMessage } from "../../../shared/services/apiClient";
 
 type ItemForm = NotaDraftRequest["itens"][number];
 
@@ -58,6 +64,7 @@ const NotaNovaPage = () => {
   const [categorias, setCategorias] = useState<Array<{ value: string; label: string }>>([]);
   const [empresas, setEmpresas] = useState<Array<{ value: string; label: string }>>([]);
   const [catalogo, setCatalogo] = useState<ProdutoServicoResumo[]>([]);
+  const [clientes, setClientes] = useState<ClienteResumo[]>([]);
   const [form, setForm] = useState<NotaDraftRequest>({
     empresaId: searchParams.get("empresaId") ?? "",
     tipo: "SERVICO",
@@ -96,19 +103,31 @@ const NotaNovaPage = () => {
   const [draftId, setDraftId] = useState<string | null>(null);
   const [emissao, setEmissao] = useState<NotaEmissaoResponse | null>(null);
   const [submitError, setSubmitError] = useState("");
+  const [isLoadingBase, setIsLoadingBase] = useState(false);
+  const [isDraftLoading, setIsDraftLoading] = useState(false);
+  const [isEmitLoading, setIsEmitLoading] = useState(false);
   const [cnaeSelections, setCnaeSelections] = useState<Record<number, CnaeItem | null>>({});
   const [ncmSelections, setNcmSelections] = useState<Record<number, NcmItem | null>>({});
   const [catalogSelections, setCatalogSelections] = useState<Record<number, string>>({});
+  const [clienteSelecionado, setClienteSelecionado] = useState("");
 
   useEffect(() => {
     let isMounted = true;
     const load = async () => {
-      const [contasResult, categoriasResult, empresasResult, catalogoResult] =
+      setIsLoadingBase(true);
+      const [
+        contasResult,
+        categoriasResult,
+        empresasResult,
+        catalogoResult,
+        clientesResult,
+      ] =
         await Promise.allSettled([
           listContas(),
           listCategorias(),
           listEmpresas({ page: 1, pageSize: 200 }),
           listProdutosServicos({ page: 1, pageSize: 200 }),
+          listClientes({ page: 1, pageSize: 200 }),
         ]);
       if (!isMounted) return;
       if (contasResult.status === "fulfilled") {
@@ -152,6 +171,13 @@ const NotaNovaPage = () => {
       } else {
         setCatalogo([]);
       }
+
+      if (clientesResult.status === "fulfilled") {
+        setClientes(clientesResult.value.data);
+      } else {
+        setClientes([]);
+      }
+      if (isMounted) setIsLoadingBase(false);
     };
     load();
     return () => {
@@ -185,6 +211,42 @@ const NotaNovaPage = () => {
         })),
     [catalogo, form.tipo]
   );
+
+  const clienteOptions = useMemo(
+    () =>
+      clientes.map((cliente) => ({
+        value: cliente.id,
+        label: `${cliente.nome}${cliente.documento ? ` (${cliente.documento})` : ""}`,
+      })),
+    [clientes]
+  );
+
+  const applyCliente = (clienteId: string) => {
+    const cliente = clientes.find((item) => item.id === clienteId);
+    if (!cliente) return;
+    setForm((prev) => ({
+      ...prev,
+      tomador: {
+        ...prev.tomador,
+        nomeRazao: cliente.nome,
+        documento: cliente.documento ?? "",
+        email: cliente.email,
+        telefone: cliente.telefone,
+        endereco: {
+          ...prev.tomador.endereco,
+          cep: cliente.endereco?.cep,
+          logradouro: cliente.endereco?.logradouro,
+          numero: cliente.endereco?.numero,
+          complemento: cliente.endereco?.complemento,
+          bairro: cliente.endereco?.bairro,
+          cidade: cliente.endereco?.cidade,
+          uf: cliente.endereco?.uf,
+          codigoMunicipioIbge: cliente.endereco?.codigoMunicipioIbge,
+          pais: cliente.endereco?.pais,
+        },
+      },
+    }));
+  };
 
   const applyCatalogoItem = (index: number, productId: string) => {
     const item = catalogo.find((p) => p.id === productId);
@@ -261,6 +323,7 @@ const NotaNovaPage = () => {
   const handleCreateDraft = async () => {
     if (!validateForm()) return;
     try {
+      setIsDraftLoading(true);
       setSubmitError("");
       setApiErrors([]);
       setEmissao(null);
@@ -268,19 +331,24 @@ const NotaNovaPage = () => {
       setDraftId(res.draftId);
       setPreview(res.preview);
       setApiErrors(res.faltando ?? []);
-    } catch {
-      setSubmitError("Nao foi possivel criar o rascunho.");
+    } catch (err) {
+      setSubmitError(getErrorMessage(err, "Nao foi possivel criar o rascunho."));
+    } finally {
+      setIsDraftLoading(false);
     }
   };
 
   const handleEmitir = async () => {
     if (!draftId) return;
     try {
+      setIsEmitLoading(true);
       setSubmitError("");
       const res = await emitir(draftId);
       setEmissao(res);
-    } catch {
-      setSubmitError("Nao foi possivel emitir a nota.");
+    } catch (err) {
+      setSubmitError(getErrorMessage(err, "Nao foi possivel emitir a nota."));
+    } finally {
+      setIsEmitLoading(false);
     }
   };
 
@@ -302,6 +370,9 @@ const NotaNovaPage = () => {
 
       <Card>
         <AppSubTitle text="Dados da nota" />
+        {isLoadingBase ? (
+          <p className="mt-2 text-sm text-gray-500">Carregando dados auxiliares...</p>
+        ) : null}
         <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
           <AppSelectInput
             required
@@ -345,6 +416,18 @@ const NotaNovaPage = () => {
       <Card>
         <AppSubTitle text="Tomador" />
         <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
+          <AppSelectInput
+            title="Cliente cadastrado"
+            value={clienteSelecionado}
+            onChange={(e) => {
+              const value = e.target.value;
+              setClienteSelecionado(value);
+              if (value) applyCliente(value);
+            }}
+            data={clienteOptions}
+            placeholder="Selecione"
+          />
+
           <AppTextInput
             required
             title="Nome/Razao social"
@@ -397,140 +480,20 @@ const NotaNovaPage = () => {
             }
           />
 
-          <AppTextInput
-            title="CEP"
-            value={form.tomador.endereco?.cep ?? ""}
-            onChange={(e) =>
-              setForm((prev) => ({
-                ...prev,
-                tomador: {
-                  ...prev.tomador,
-                  endereco: { ...prev.tomador.endereco, cep: e.target.value },
-                },
-              }))
-            }
-          />
-
-          <AppTextInput
-            title="Logradouro"
-            value={form.tomador.endereco?.logradouro ?? ""}
-            onChange={(e) =>
-              setForm((prev) => ({
-                ...prev,
-                tomador: {
-                  ...prev.tomador,
-                  endereco: {
-                    ...prev.tomador.endereco,
-                    logradouro: e.target.value,
+          <div className="md:col-span-3">
+            <AppEndereco
+              value={form.tomador.endereco ?? {}}
+              onChange={(next) =>
+                setForm((prev) => ({
+                  ...prev,
+                  tomador: {
+                    ...prev.tomador,
+                    endereco: { ...prev.tomador.endereco, ...next },
                   },
-                },
-              }))
-            }
-          />
-
-          <AppTextInput
-            title="Numero"
-            value={form.tomador.endereco?.numero ?? ""}
-            onChange={(e) =>
-              setForm((prev) => ({
-                ...prev,
-                tomador: {
-                  ...prev.tomador,
-                  endereco: { ...prev.tomador.endereco, numero: e.target.value },
-                },
-              }))
-            }
-          />
-
-          <AppTextInput
-            title="Complemento"
-            value={form.tomador.endereco?.complemento ?? ""}
-            onChange={(e) =>
-              setForm((prev) => ({
-                ...prev,
-                tomador: {
-                  ...prev.tomador,
-                  endereco: {
-                    ...prev.tomador.endereco,
-                    complemento: e.target.value,
-                  },
-                },
-              }))
-            }
-          />
-
-          <AppTextInput
-            title="Bairro"
-            value={form.tomador.endereco?.bairro ?? ""}
-            onChange={(e) =>
-              setForm((prev) => ({
-                ...prev,
-                tomador: {
-                  ...prev.tomador,
-                  endereco: { ...prev.tomador.endereco, bairro: e.target.value },
-                },
-              }))
-            }
-          />
-
-          <AppTextInput
-            title="Cidade"
-            value={form.tomador.endereco?.cidade ?? ""}
-            onChange={(e) =>
-              setForm((prev) => ({
-                ...prev,
-                tomador: {
-                  ...prev.tomador,
-                  endereco: { ...prev.tomador.endereco, cidade: e.target.value },
-                },
-              }))
-            }
-          />
-
-          <AppTextInput
-            title="UF"
-            value={form.tomador.endereco?.uf ?? ""}
-            onChange={(e) =>
-              setForm((prev) => ({
-                ...prev,
-                tomador: {
-                  ...prev.tomador,
-                  endereco: { ...prev.tomador.endereco, uf: e.target.value },
-                },
-              }))
-            }
-          />
-
-          <AppTextInput
-            title="Codigo IBGE"
-            value={form.tomador.endereco?.codigoMunicipioIbge ?? ""}
-            onChange={(e) =>
-              setForm((prev) => ({
-                ...prev,
-                tomador: {
-                  ...prev.tomador,
-                  endereco: {
-                    ...prev.tomador.endereco,
-                    codigoMunicipioIbge: e.target.value,
-                  },
-                },
-              }))
-            }
-          />
-
-          <AppTextInput
-            title="Pais"
-            value={form.tomador.endereco?.pais ?? ""}
-            onChange={(e) =>
-              setForm((prev) => ({
-                ...prev,
-                tomador: {
-                  ...prev.tomador,
-                  endereco: { ...prev.tomador.endereco, pais: e.target.value },
-                },
-              }))
-            }
-          />
+                }))
+              }
+            />
+          </div>
         </div>
       </Card>
 
@@ -793,7 +756,12 @@ const NotaNovaPage = () => {
         ) : null}
 
         <div className="mt-6 flex flex-wrap gap-3">
-          <AppButton type="button" className="w-auto" onClick={handleCreateDraft}>
+          <AppButton
+            type="button"
+            className="w-auto"
+            onClick={handleCreateDraft}
+            loading={isDraftLoading}
+          >
             Validar / Criar rascunho
           </AppButton>
           <AppButton
@@ -801,6 +769,7 @@ const NotaNovaPage = () => {
             className="w-auto"
             onClick={handleEmitir}
             disabled={!draftId}
+            loading={isEmitLoading}
           >
             Emitir nota
           </AppButton>

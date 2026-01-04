@@ -9,6 +9,7 @@ export type ApuracaoResumo = {
   tributo: string;
   valor: number;
   status?: string;
+  vencimento?: string;
 };
 
 export type ObrigacaoResumo = {
@@ -23,6 +24,7 @@ export type ApuracaoPayload = {
   tributo: string;
   valor: number;
   status?: string;
+  vencimento?: string;
 };
 
 export type ObrigacaoPayload = {

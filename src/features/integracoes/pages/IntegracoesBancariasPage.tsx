@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import AppTitle, { AppSubTitle } from "../../../components/ui/text/AppTitle";
 import Card from "../../../components/ui/card/Card";
 import AppTable from "../../../components/ui/table/AppTable";
+import AppTableSkeleton from "../../../components/ui/table/AppTableSkeleton";
 import AppListNotFound from "../../../components/ui/AppListNotFound";
 import {
   listIntegracoesBancarias,
@@ -11,8 +12,14 @@ import {
   type IntegracaoBancariaResumo,
 } from "../services/integracoes-bancarias.service";
 import AppButton from "../../../components/ui/button/AppButton";
+import AppIconButton from "../../../components/ui/button/AppIconButton";
 import AppTextInput from "../../../components/ui/input/AppTextInput";
 import AppSelectInput from "../../../components/ui/input/AppSelectInput";
+import { getErrorMessage } from "../../../shared/services/apiClient";
+import { formatLocalDate } from "../../../shared/utils/formater";
+import { EditIcon, TrashIcon } from "../../../components/ui/icon/AppIcons";
+import AppPopup from "../../../components/ui/popup/AppPopup";
+import useConfirmPopup from "../../../shared/hooks/useConfirmPopup";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 
@@ -21,12 +28,28 @@ const statusOptions = [
   { value: "INATIVA", label: "Inativa" },
 ];
 
+const bancoOptions = [
+  { value: "BANCO_DO_BRASIL", label: "Banco do Brasil" },
+  { value: "BRADESCO", label: "Bradesco" },
+  { value: "ITAU", label: "Itau" },
+  { value: "SANTANDER", label: "Santander" },
+  { value: "CAIXA", label: "Caixa" },
+  { value: "INTER", label: "Banco Inter" },
+  { value: "NU", label: "Nubank" },
+  { value: "SICOOB", label: "Sicoob" },
+  { value: "SICREDI", label: "Sicredi" },
+  { value: "PIX", label: "PIX" },
+];
+
 const IntegracoesBancariasPage = () => {
   const [itens, setItens] = useState<IntegracaoBancariaResumo[]>([]);
   const [error, setError] = useState("");
   const [formError, setFormError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const { popupProps, openConfirm } = useConfirmPopup();
   const [formData, setFormData] = useState({
     banco: "",
     status: "ATIVA",
@@ -37,13 +60,16 @@ const IntegracoesBancariasPage = () => {
 
   const load = async () => {
     try {
+      setIsLoading(true);
       setError("");
       const response = await listIntegracoesBancarias({ page, pageSize });
       setItens(response.data);
       setTotal(response.meta.total);
-    } catch {
+    } catch (err) {
       setItens([]);
-      setError("Nao foi possivel carregar as integracoes.");
+      setError(getErrorMessage(err, "Nao foi possivel carregar as integracoes."));
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -61,7 +87,8 @@ const IntegracoesBancariasPage = () => {
       {
         key: "ultimaAtualizacao",
         header: "Ultima atualizacao",
-        render: (row: IntegracaoBancariaResumo) => row.ultimaAtualizacao ?? "-",
+        render: (row: IntegracaoBancariaResumo) =>
+          row.ultimaAtualizacao ? formatLocalDate(row.ultimaAtualizacao) : "-",
       },
       {
         key: "status",
@@ -74,9 +101,9 @@ const IntegracoesBancariasPage = () => {
         align: "right" as const,
         render: (row: IntegracaoBancariaResumo) => (
           <div className="flex justify-end gap-2">
-            <AppButton
-              type="button"
-              className="w-auto px-4"
+            <AppIconButton
+              icon={<EditIcon className="h-4 w-4" />}
+              label={`Editar integracao ${row.banco}`}
               onClick={() => {
                 setEditingId(row.id);
                 setFormData({
@@ -86,30 +113,37 @@ const IntegracoesBancariasPage = () => {
                 setFormError("");
                 setFormOpen(true);
               }}
-            >
-              Editar
-            </AppButton>
-            <AppButton
-              type="button"
-              className="w-auto px-4"
-              onClick={async () => {
-                if (!API_BASE) {
-                  setError("API nao configurada.");
-                  return;
-                }
-                const confirmed = window.confirm("Excluir esta integracao?");
-                if (!confirmed) return;
-                try {
-                  setError("");
-                  await deleteIntegracaoBancaria(row.id);
-                  load();
-                } catch {
-                  setError("Nao foi possivel excluir a integracao.");
-                }
-              }}
-            >
-              Excluir
-            </AppButton>
+            />
+            <AppIconButton
+              icon={<TrashIcon className="h-4 w-4" />}
+              label={`Excluir integracao ${row.banco}`}
+              variant="danger"
+              onClick={() =>
+                openConfirm(
+                  {
+                    title: "Excluir integracao",
+                    description: "Deseja excluir esta integracao?",
+                    confirmLabel: "Excluir",
+                    tone: "danger",
+                  },
+                  async () => {
+                    if (!API_BASE) {
+                      setError("API nao configurada.");
+                      return;
+                    }
+                    try {
+                      setError("");
+                      await deleteIntegracaoBancaria(row.id);
+                      load();
+                    } catch (err) {
+                      setError(
+                        getErrorMessage(err, "Nao foi possivel excluir a integracao.")
+                      );
+                    }
+                  }
+                )
+              }
+            />
           </div>
         ),
       },
@@ -136,6 +170,7 @@ const IntegracoesBancariasPage = () => {
       return;
     }
     try {
+      setIsSaving(true);
       const payload = {
         banco: formData.banco,
         status: formData.status,
@@ -148,8 +183,10 @@ const IntegracoesBancariasPage = () => {
       resetForm();
       setFormOpen(false);
       load();
-    } catch {
-      setFormError("Nao foi possivel salvar a integracao.");
+    } catch (err) {
+      setFormError(getErrorMessage(err, "Nao foi possivel salvar a integracao."));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -176,13 +213,15 @@ const IntegracoesBancariasPage = () => {
       {formOpen ? (
         <Card>
           <div className="grid gap-4 md:grid-cols-2">
-            <AppTextInput
+            <AppSelectInput
               required
               title="Banco"
               value={formData.banco}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, banco: e.target.value }))
               }
+              data={bancoOptions}
+              placeholder="Selecione"
             />
             <AppSelectInput
               title="Status"
@@ -195,7 +234,12 @@ const IntegracoesBancariasPage = () => {
           </div>
           {formError ? <p className="text-sm text-red-600">{formError}</p> : null}
           <div className="flex gap-3">
-            <AppButton type="button" className="w-auto px-6" onClick={handleSubmit}>
+            <AppButton
+              type="button"
+              className="w-auto px-6"
+              onClick={handleSubmit}
+              loading={isSaving}
+            >
               {editingId ? "Atualizar" : "Salvar"}
             </AppButton>
             <AppButton
@@ -219,21 +263,33 @@ const IntegracoesBancariasPage = () => {
       </Card>
 
       <Card>
-        {error ? <p className="text-sm text-red-600">{error}</p> : null}
-        <AppTable
-          data={itens}
-          rowKey={(row) => row.id}
-          emptyState={<AppListNotFound texto="Nenhuma integracao cadastrada." />}
-          pagination={{
-            enabled: true,
-            pageSize,
-            page,
-            total,
-            onPageChange: setPage,
-          }}
-          columns={columns}
-        />
+        {error ? (
+          <div className="mb-4 flex items-center gap-3 text-sm text-red-600">
+            <span>{error}</span>
+            <AppButton type="button" className="w-auto px-4" onClick={load}>
+              Tentar novamente
+            </AppButton>
+          </div>
+        ) : null}
+        {isLoading ? (
+          <AppTableSkeleton columns={columns.length} rows={6} />
+        ) : (
+          <AppTable
+            data={itens}
+            rowKey={(row) => row.id}
+            emptyState={<AppListNotFound texto="Nenhuma integracao cadastrada." />}
+            pagination={{
+              enabled: true,
+              pageSize,
+              page,
+              total,
+              onPageChange: setPage,
+            }}
+            columns={columns}
+          />
+        )}
       </Card>
+      <AppPopup {...popupProps} />
     </div>
   );
 };

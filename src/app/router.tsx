@@ -60,6 +60,9 @@ const ConciliacaoTributacaoPage = lazy(
 );
 const VendasPage = lazy(() => import("../features/comercial/pages/VendasPage"));
 const ComprasPage = lazy(() => import("../features/comercial/pages/ComprasPage"));
+const VendasAnalyticsPage = lazy(
+  () => import("../features/comercial/pages/VendasAnalyticsPage")
+);
 const ClientesPage = lazy(() => import("../features/cadastros/pages/ClientesPage"));
 const FornecedoresPage = lazy(
   () => import("../features/cadastros/pages/FornecedoresPage")
@@ -68,6 +71,12 @@ const ProdutosServicosPage = lazy(
   () => import("../features/cadastros/pages/ProdutosServicosPage")
 );
 const EstoquePage = lazy(() => import("../features/estoque/pages/EstoquePage"));
+const EstoqueMovimentosPage = lazy(
+  () => import("../features/estoque/pages/EstoqueMovimentosPage")
+);
+const EstoqueImportacaoPage = lazy(
+  () => import("../features/estoque/pages/EstoqueImportacaoPage")
+);
 const ApuracaoImpostosPage = lazy(
   () => import("../features/fiscal/pages/ApuracaoImpostosPage")
 );
@@ -79,6 +88,12 @@ const IntegracoesBancariasPage = lazy(
 );
 const FolhaPagamentoPage = lazy(
   () => import("../features/folha/pages/FolhaPagamentoPage")
+);
+const FolhaSimuladorPage = lazy(
+  () => import("../features/folha/pages/FolhaSimuladorPage")
+);
+const ColaboradoresPage = lazy(
+  () => import("../features/folha/pages/ColaboradoresPage")
 );
 
 const withLoading = (node: React.ReactNode) => (
@@ -110,7 +125,7 @@ export const router = createBrowserRouter([
       {
         path: "empresa",
         element: withLoading(
-          <RequireRole allowedRoles={["EMPRESA"]}>
+          <RequireRole allowedRoles={["CONTADOR","EMPRESA"]}>
             <EmpresasPage />
           </RequireRole>
         ),
@@ -300,6 +315,14 @@ export const router = createBrowserRouter([
         ),
       },
       {
+        path: "comercial/vendas/analytics",
+        element: withLoading(
+          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
+            <VendasAnalyticsPage />
+          </RequireRole>
+        ),
+      },
+      {
         path: "cadastros/clientes",
         element: withLoading(
           <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
@@ -332,6 +355,22 @@ export const router = createBrowserRouter([
         ),
       },
       {
+        path: "estoque/movimentos",
+        element: withLoading(
+          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
+            <EstoqueMovimentosPage />
+          </RequireRole>
+        ),
+      },
+      {
+        path: "estoque/importacao",
+        element: withLoading(
+          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
+            <EstoqueImportacaoPage />
+          </RequireRole>
+        ),
+      },
+      {
         path: "integracoes/bancos",
         element: withLoading(
           <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
@@ -344,6 +383,22 @@ export const router = createBrowserRouter([
         element: withLoading(
           <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
             <FolhaPagamentoPage />
+          </RequireRole>
+        ),
+      },
+      {
+        path: "folha/simulador",
+        element: withLoading(
+          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
+            <FolhaSimuladorPage />
+          </RequireRole>
+        ),
+      },
+      {
+        path: "folha/colaboradores",
+        element: withLoading(
+          <RequireRole allowedRoles={["CONTADOR", "EMPRESA"]}>
+            <ColaboradoresPage />
           </RequireRole>
         ),
       },

@@ -6,14 +6,50 @@ const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 export type ClienteResumo = {
   id: string;
   nome: string;
+  nomeFantasia?: string;
   documento?: string;
+  tipoPessoa?: "PF" | "PJ";
+  email?: string;
+  telefone?: string;
+  inscricaoEstadual?: string;
+  inscricaoMunicipal?: string;
+  indicadorIE?: "CONTRIBUINTE" | "ISENTO" | "NAO_CONTRIBUINTE";
+  endereco?: {
+    cep?: string;
+    logradouro?: string;
+    numero?: string;
+    complemento?: string;
+    bairro?: string;
+    cidade?: string;
+    uf?: string;
+    codigoMunicipioIbge?: string;
+    pais?: string;
+  };
   status?: string;
 };
 
 export type FornecedorResumo = {
   id: string;
   nome: string;
+  nomeFantasia?: string;
   documento?: string;
+  tipoPessoa?: "PF" | "PJ";
+  email?: string;
+  telefone?: string;
+  inscricaoEstadual?: string;
+  inscricaoMunicipal?: string;
+  indicadorIE?: "CONTRIBUINTE" | "ISENTO" | "NAO_CONTRIBUINTE";
+  endereco?: {
+    cep?: string;
+    logradouro?: string;
+    numero?: string;
+    complemento?: string;
+    bairro?: string;
+    cidade?: string;
+    uf?: string;
+    codigoMunicipioIbge?: string;
+    pais?: string;
+  };
   status?: string;
 };
 
@@ -33,13 +69,49 @@ export type ProdutoServicoResumo = {
 
 export type ClientePayload = {
   nome: string;
+  nomeFantasia?: string;
   documento?: string;
+  tipoPessoa?: "PF" | "PJ";
+  email?: string;
+  telefone?: string;
+  inscricaoEstadual?: string;
+  inscricaoMunicipal?: string;
+  indicadorIE?: "CONTRIBUINTE" | "ISENTO" | "NAO_CONTRIBUINTE";
+  endereco?: {
+    cep?: string;
+    logradouro?: string;
+    numero?: string;
+    complemento?: string;
+    bairro?: string;
+    cidade?: string;
+    uf?: string;
+    codigoMunicipioIbge?: string;
+    pais?: string;
+  };
   status?: string;
 };
 
 export type FornecedorPayload = {
   nome: string;
+  nomeFantasia?: string;
   documento?: string;
+  tipoPessoa?: "PF" | "PJ";
+  email?: string;
+  telefone?: string;
+  inscricaoEstadual?: string;
+  inscricaoMunicipal?: string;
+  indicadorIE?: "CONTRIBUINTE" | "ISENTO" | "NAO_CONTRIBUINTE";
+  endereco?: {
+    cep?: string;
+    logradouro?: string;
+    numero?: string;
+    complemento?: string;
+    bairro?: string;
+    cidade?: string;
+    uf?: string;
+    codigoMunicipioIbge?: string;
+    pais?: string;
+  };
   status?: string;
 };
 

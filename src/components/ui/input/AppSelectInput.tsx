@@ -19,7 +19,7 @@ interface AppSelectInputProps
 
 const AppOption = ({ value, label }: ItemSelect) => {
   return (
-    <option className="text-sm text-gray-800" value={value}>
+    <option className="text-sm text-gray-800 dark:bg-slate-900 dark:text-gray-100" value={value}>
       {label}
     </option>
   );

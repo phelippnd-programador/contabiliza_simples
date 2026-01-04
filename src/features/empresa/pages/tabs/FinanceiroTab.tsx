@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import AppTextInput from "../../../../components/ui/input/AppTextInput";
 import AppSelectInput from "../../../../components/ui/input/AppSelectInput";
 import AppButton from "../../../../components/ui/button/AppButton";
+import Card from "../../../../components/ui/card/Card";
+import AppTitle, { AppSubTitle } from "../../../../components/ui/text/AppTitle";
 
 import { formatBRL, formatPercentBR } from "../../../../shared/utils/formater";
 import {
@@ -86,14 +88,16 @@ export function FinanceiroTab({ onSave }: Props) {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* ATIVAR PRO-LABORE */}
-      <div className="rounded-lg border border-gray-200 bg-white p-4">
-        <div className="mb-4">
-          <h2 className="text-base font-semibold">Pro-labore</h2>
-          <p className="text-sm text-gray-500">
-            Configure o pagamento mensal do socio e encargos relacionados.
-          </p>
-        </div>
+      <div className="mb-4">
+        <AppTitle text="Financeiro" />
+        <AppSubTitle text="Defina regras de pro-labore e encargos." />
+      </div>
+
+      <Card>
+        <AppSubTitle text="Pro-labore" />
+        <p className="text-sm text-gray-600 dark:text-gray-300">
+          Configure o pagamento mensal do socio e encargos relacionados.
+        </p>
 
         <label className="flex items-center gap-3 text-sm">
           <input
@@ -108,16 +112,12 @@ export function FinanceiroTab({ onSave }: Props) {
           />
           A empresa possui pro-labore
         </label>
-      </div>
+      </Card>
 
-      {/* CONFIGURACOES */}
       {form.temProlabore && (
         <>
-          {/* DADOS PRINCIPAIS */}
-          <div className="rounded-lg border border-gray-200 bg-white p-4">
-            <div className="mb-4">
-              <h3 className="text-sm font-semibold">Dados do pagamento</h3>
-            </div>
+          <Card>
+            <AppSubTitle text="Dados do pagamento" />
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               <AppTextInput
@@ -181,13 +181,10 @@ export function FinanceiroTab({ onSave }: Props) {
                 error={errors.categoriaProlaboreId}
               />
             </div>
-          </div>
+          </Card>
 
-          {/* INSS */}
-          <div className="rounded-lg border border-gray-200 bg-white p-4">
-            <div className="mb-4">
-              <h3 className="text-sm font-semibold">INSS</h3>
-            </div>
+          <Card>
+            <AppSubTitle text="INSS" />
 
             <label className="mb-4 flex items-center gap-3 text-sm">
               <input
@@ -236,11 +233,10 @@ export function FinanceiroTab({ onSave }: Props) {
                 />
               </div>
             )}
-          </div>
+          </Card>
         </>
       )}
 
-      {/* ACOES */}
       <div className="flex justify-end">
         <AppButton onClick={handleSave}>Salvar</AppButton>
       </div>

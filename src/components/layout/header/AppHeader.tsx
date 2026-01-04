@@ -116,6 +116,7 @@ const AppHeader = () => {
       children: [
         { id: "vendas", label: "Vendas", to: "/comercial/vendas", icon: <IconChart /> },
         { id: "compras", label: "Compras", to: "/comercial/compras", icon: <IconChart /> },
+        { id: "vendas_analytics", label: "Analise de vendas", to: "/comercial/vendas/analytics", icon: <IconChart /> },
       ],
     },
     {
@@ -130,7 +131,26 @@ const AppHeader = () => {
       ],
     },
     { id: "relatorios", label: "Relatorios", to: "/relatorios", icon: <IconChart /> },
-    { id: "estoque", label: "Estoque", to: "/estoque", icon: <IconList /> },
+    {
+      id: "estoque",
+      label: "Estoque",
+      icon: <IconList />,
+      children: [
+        { id: "estoque_lista", label: "Itens", to: "/estoque", icon: <IconList /> },
+        {
+          id: "estoque_movimentos",
+          label: "Movimentos",
+          to: "/estoque/movimentos",
+          icon: <IconList />,
+        },
+        {
+          id: "estoque_importacao",
+          label: "Importacao CSV",
+          to: "/estoque/importacao",
+          icon: <IconList />,
+        },
+      ],
+    },
     {
       id: "tributacao",
       label: "Tributacao",
@@ -149,7 +169,16 @@ const AppHeader = () => {
         { id: "bancos", label: "Bancos", to: "/integracoes/bancos", icon: <IconList /> },
       ],
     },
-    { id: "folha", label: "Folha", to: "/folha", icon: <IconList /> },
+    {
+      id: "folha",
+      label: "Folha",
+      icon: <IconList />,
+      children: [
+        { id: "folha_execucao", label: "Folha de pagamento", to: "/folha", icon: <IconList />,  end: true },
+        { id: "folha_simulador", label: "Simulador", to: "/folha/simulador", icon: <IconList /> },
+        { id: "folha_colaboradores", label: "Colaboradores", to: "/folha/colaboradores", icon: <IconList /> },
+      ],
+    },
     {
       id: "logout",
       label: "Sair",
@@ -191,7 +220,7 @@ const AppHeader = () => {
 
   return (
     <>
-      <AppMenu title="Main" subtitle="Menu" menu={menu} />
+      <AppMenu title="Contabiliza Simples" subtitle="" menu={menu} />
       <div className="fixed right-6 top-4 z-50" ref={settingsRef}>
         <button
           type="button"

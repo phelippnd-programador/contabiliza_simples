@@ -11,6 +11,16 @@ Base
 - Competencia: `YYYY-MM`
 - Currency: integer cents (UI divides by 100)
 
+## Mock API (json-server)
+
+Prereqs
+- Install dependency: `npm install`
+- Create `.env.local` with `VITE_API_BASE_URL=http://localhost:3001`
+
+Run
+- `npm run mock`
+- `npm run dev`
+
 Perfil
 - `GET /usuarios/perfil`
 - `PUT /usuarios/perfil`
@@ -97,6 +107,7 @@ Comercial
 - `POST /comercial/vendas`
 - `PUT /comercial/vendas/:id`
 - `DELETE /comercial/vendas/:id`
+- `GET /comercial/vendas/analytics`
 - `GET /comercial/compras`
 - `GET /comercial/compras/:id`
 - `POST /comercial/compras`
@@ -109,6 +120,17 @@ Estoque
 - `POST /estoque`
 - `PUT /estoque/:id`
 - `DELETE /estoque/:id`
+- `GET /estoque/:id/movimentos`
+- `POST /estoque/:id/movimentos`
+
+Regra de custo medio (backend sugerido)
+- Entrada: custo medio = ((saldoAtual * custoMedioAtual) + (qtdEntrada * custoUnitario)) / (saldoAtual + qtdEntrada)
+- Saida: custo medio mantem o mesmo da ultima entrada (nao recalcula)
+- Ajuste/inventario: se vier custoUnitario, recalcula como entrada; se nao vier, mantem o custo medio atual
+
+CSV inventario (front)
+- Colunas: itemId ou item, tipo (ENTRADA/SAIDA/AJUSTE), data, quantidade, custoUnitario (centavos), lote, serie, origem, origemId, observacoes
+- Datas: YYYY-MM-DD
 
 Fiscal
 - `GET /fiscal/apuracoes`
@@ -141,6 +163,11 @@ Folha
 - `POST /folha`
 - `PUT /folha/:id`
 - `DELETE /folha/:id`
+- `GET /folha/colaboradores`
+- `GET /folha/colaboradores/:id`
+- `POST /folha/colaboradores`
+- `PUT /folha/colaboradores/:id`
+- `DELETE /folha/colaboradores/:id`
 
 Currently, two official plugins are available:
 

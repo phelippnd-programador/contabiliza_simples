@@ -5,32 +5,70 @@ const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 
 export type VendaResumo = {
   id: string;
-  cliente: string;
+  clienteId?: string;
+  clienteNome?: string;
+  cliente?: string;
   data: string;
   total: number;
   status?: string;
+  itens?: ComercialItem[];
+  subtotal?: number;
+  desconto?: number;
+  frete?: number;
+  impostos?: number;
+  observacoes?: string;
+  financeiro?: ComercialFinanceiro;
+  estoque?: ComercialEstoque;
 };
 
 export type CompraResumo = {
   id: string;
-  fornecedor: string;
+  fornecedorId?: string;
+  fornecedorNome?: string;
+  fornecedor?: string;
   data: string;
   total: number;
   status?: string;
+  itens?: ComercialItem[];
+  subtotal?: number;
+  desconto?: number;
+  frete?: number;
+  impostos?: number;
+  observacoes?: string;
+  financeiro?: ComercialFinanceiro;
+  estoque?: ComercialEstoque;
 };
 
 export type VendaPayload = {
-  cliente: string;
+  clienteId: string;
+  clienteNome?: string;
   data: string;
   total: number;
   status?: string;
+  itens?: ComercialItem[];
+  subtotal?: number;
+  desconto?: number;
+  frete?: number;
+  impostos?: number;
+  observacoes?: string;
+  financeiro?: ComercialFinanceiro;
+  estoque?: ComercialEstoque;
 };
 
 export type CompraPayload = {
-  fornecedor: string;
+  fornecedorId: string;
+  fornecedorNome?: string;
   data: string;
   total: number;
   status?: string;
+  itens?: ComercialItem[];
+  subtotal?: number;
+  desconto?: number;
+  frete?: number;
+  impostos?: number;
+  observacoes?: string;
+  financeiro?: ComercialFinanceiro;
+  estoque?: ComercialEstoque;
 };
 
 export type ListComercialParams = {
@@ -41,6 +79,68 @@ export type ListComercialParams = {
   status?: string;
   q?: string;
 };
+
+export type VendaProdutoResumo = {
+  produtoId?: string;
+  descricao: string;
+  quantidade: number;
+  total: number;
+};
+
+export type VendaSaidaResumo = {
+  id: string;
+  data: string;
+  produto: string;
+  quantidade: number;
+  total: number;
+};
+
+export type VendasAnalyticsResponse = {
+  totais?: {
+    quantidade: number;
+    total: number;
+  };
+  maisVendidos: VendaProdutoResumo[];
+  menosVendidos: VendaProdutoResumo[];
+  ultimosSaidos: VendaSaidaResumo[];
+};
+
+export type ComercialItem = {
+  produtoId?: string;
+  descricao: string;
+  quantidade: number;
+  valorUnitario: number;
+  total: number;
+};
+
+export type ComercialFinanceiro = {
+  gerarConta?: boolean;
+  contaId?: string;
+  categoriaId?: string;
+  vencimento?: string;
+  formaPagamento?: string;
+};
+
+export type ComercialEstoque = {
+  gerarMovimento?: boolean;
+};
+
+export async function getVendasAnalytics(
+  params: { dataInicio?: string; dataFim?: string } = {}
+): Promise<VendasAnalyticsResponse> {
+  if (!API_BASE) {
+    return { maisVendidos: [], menosVendidos: [], ultimosSaidos: [] };
+  }
+  const query = new URLSearchParams();
+  if (params.dataInicio) query.set("dataInicio", params.dataInicio);
+  if (params.dataFim) query.set("dataFim", params.dataFim);
+  const suffix = query.toString() ? `?${query.toString()}` : "";
+  const res = await apiFetch(`/comercial/vendas/analytics${suffix}`);
+  if (!res.ok) {
+    throw new Error("GET_VENDAS_ANALYTICS_FAILED");
+  }
+  return (await res.json()) as VendasAnalyticsResponse;
+}
 
 export async function getVenda(id: string): Promise<VendaResumo> {
   if (!API_BASE) {

@@ -1,4 +1,4 @@
-import { apiFetch } from "../../../shared/services/apiClient";
+import { apiFetch, toApiError } from "../../../shared/services/apiClient";
 import type { ApiListResponse } from "../../../shared/types/api-types";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
@@ -27,9 +27,12 @@ export async function getIntegracaoBancaria(
   if (!API_BASE) {
     throw new Error("API_NOT_CONFIGURED");
   }
+  console.info("[integracoes] getIntegracaoBancaria", { id });
   const res = await apiFetch(`/integracoes/bancos/${id}`);
   if (!res.ok) {
-    throw new Error("GET_INTEGRACAO_BANCARIA_FAILED");
+    const apiError = await toApiError(res, "Nao foi possivel carregar a integracao.");
+    console.error("[integracoes] getIntegracaoBancaria failed", apiError);
+    throw apiError;
   }
   return (await res.json()) as IntegracaoBancariaResumo;
 }
@@ -42,6 +45,11 @@ export async function listIntegracoesBancarias(
   if (!API_BASE) {
     return { data: [], meta: { page, pageSize, total: 0 } };
   }
+  console.info("[integracoes] listIntegracoesBancarias", {
+    page,
+    pageSize,
+    status: params.status,
+  });
   const query = new URLSearchParams();
   query.set("page", String(page));
   query.set("pageSize", String(pageSize));
@@ -49,7 +57,9 @@ export async function listIntegracoesBancarias(
 
   const res = await apiFetch(`/integracoes/bancos?${query.toString()}`);
   if (!res.ok) {
-    throw new Error("LIST_INTEGRACOES_BANCARIAS_FAILED");
+    const apiError = await toApiError(res, "Nao foi possivel carregar as integracoes.");
+    console.error("[integracoes] listIntegracoesBancarias failed", apiError);
+    throw apiError;
   }
   return (await res.json()) as ApiListResponse<IntegracaoBancariaResumo>;
 }
@@ -60,13 +70,16 @@ export async function createIntegracaoBancaria(
   if (!API_BASE) {
     throw new Error("API_NOT_CONFIGURED");
   }
+  console.info("[integracoes] createIntegracaoBancaria", { banco: payload.banco });
   const res = await apiFetch("/integracoes/bancos", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
   if (!res.ok) {
-    throw new Error("CREATE_INTEGRACAO_BANCARIA_FAILED");
+    const apiError = await toApiError(res, "Nao foi possivel criar a integracao.");
+    console.error("[integracoes] createIntegracaoBancaria failed", apiError);
+    throw apiError;
   }
   return (await res.json()) as IntegracaoBancariaResumo;
 }
@@ -78,13 +91,16 @@ export async function updateIntegracaoBancaria(
   if (!API_BASE) {
     throw new Error("API_NOT_CONFIGURED");
   }
+  console.info("[integracoes] updateIntegracaoBancaria", { id });
   const res = await apiFetch(`/integracoes/bancos/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
   if (!res.ok) {
-    throw new Error("UPDATE_INTEGRACAO_BANCARIA_FAILED");
+    const apiError = await toApiError(res, "Nao foi possivel atualizar a integracao.");
+    console.error("[integracoes] updateIntegracaoBancaria failed", apiError);
+    throw apiError;
   }
   return (await res.json()) as IntegracaoBancariaResumo;
 }
@@ -93,10 +109,13 @@ export async function deleteIntegracaoBancaria(id: string): Promise<void> {
   if (!API_BASE) {
     throw new Error("API_NOT_CONFIGURED");
   }
+  console.info("[integracoes] deleteIntegracaoBancaria", { id });
   const res = await apiFetch(`/integracoes/bancos/${id}`, {
     method: "DELETE",
   });
   if (!res.ok) {
-    throw new Error("DELETE_INTEGRACAO_BANCARIA_FAILED");
+    const apiError = await toApiError(res, "Nao foi possivel excluir a integracao.");
+    console.error("[integracoes] deleteIntegracaoBancaria failed", apiError);
+    throw apiError;
   }
 }

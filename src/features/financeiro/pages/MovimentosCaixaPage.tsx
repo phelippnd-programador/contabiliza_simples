@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import AppTitle, { AppSubTitle } from "../../../components/ui/text/AppTitle";
 import Card from "../../../components/ui/card/Card";
 import AppButton from "../../../components/ui/button/AppButton";
+import AppIconButton from "../../../components/ui/button/AppIconButton";
 import AppTextInput from "../../../components/ui/input/AppTextInput";
 import AppDateInput from "../../../components/ui/input/AppDateInput";
 import { CnaePicker } from "../../../components/ui/picked/CnaePicker";
@@ -22,18 +23,11 @@ import {
   type ContaBancaria,
   type MovimentoCaixa,
 } from "../types";
-import { formatBRL } from "../../../shared/utils/formater";
+import { formatBRL, formatLocalDate } from "../../../shared/utils/formater";
+import { EditIcon, TrashIcon } from "../../../components/ui/icon/AppIcons";
+import AppPopup from "../../../components/ui/popup/AppPopup";
+import useConfirmPopup from "../../../shared/hooks/useConfirmPopup";
 
-const EditIcon = () => (
-  <svg
-    className="h-4 w-4"
-    viewBox="0 0 20 20"
-    fill="currentColor"
-    aria-hidden="true"
-  >
-    <path d="M13.586 2.586a2 2 0 0 1 2.828 2.828l-9.5 9.5a1 1 0 0 1-.39.242l-4 1.333a.5.5 0 0 1-.632-.632l1.333-4a1 1 0 0 1 .242-.39l9.5-9.5Z" />
-  </svg>
-);
 
 const tipoMovimentoOptions = [
   { value: TipoMovimentoCaixa.ENTRADA, label: "Entrada" },
@@ -58,6 +52,7 @@ const MovimentosCaixaPage = () => {
   const [form, setForm] = useState({ id: "", ...emptyForm });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [cnaeItem, setCnaeItem] = useState<CnaeItem | null>(null);
+  const { popupProps, openConfirm } = useConfirmPopup();
 
   const refresh = async () => setMovimentos(await listMovimentos());
 
@@ -146,16 +141,22 @@ const MovimentosCaixaPage = () => {
     setErrors({});
   };
 
-  const handleRemove = async (movimento: MovimentoCaixa) => {
-    const confirmed = window.confirm(
-      "Deseja remover este movimento de caixa?"
+  const handleRemove = (movimento: MovimentoCaixa) => {
+    openConfirm(
+      {
+        title: "Remover movimento",
+        description: "Deseja remover este movimento de caixa?",
+        confirmLabel: "Remover",
+        tone: "danger",
+      },
+      async () => {
+        await deleteMovimento(movimento.id);
+        if (form.id === movimento.id) {
+          setForm({ id: "", ...emptyForm });
+        }
+        await refresh();
+      }
     );
-    if (!confirmed) return;
-    await deleteMovimento(movimento.id);
-    if (form.id === movimento.id) {
-      setForm({ id: "", ...emptyForm });
-    }
-    await refresh();
   };
 
   const handleReset = () => {
@@ -298,7 +299,7 @@ const MovimentosCaixaPage = () => {
               {
                 key: "data",
                 header: "Data",
-                render: (movimento) => movimento.data,
+                render: (movimento) => formatLocalDate(movimento.data),
               },
               {
                 key: "conta",
@@ -338,23 +339,17 @@ const MovimentosCaixaPage = () => {
                 align: "right",
                 render: (movimento) => (
                   <div className="flex justify-end gap-2">
-                    <button
-                      type="button"
-                      className="inline-flex items-center gap-2 rounded-md border border-gray-200 px-3 py-2 text-xs font-medium text-gray-700 hover:border-blue-500"
+                    <AppIconButton
+                      icon={<EditIcon className="h-4 w-4" />}
+                      label="Editar movimento"
                       onClick={() => handleEdit(movimento)}
-                      aria-label="Editar movimento"
-                    >
-                      <EditIcon />
-                      Editar
-                    </button>
-                    <button
-                      type="button"
-                      className="inline-flex items-center gap-2 rounded-md border border-red-200 px-3 py-2 text-xs font-medium text-red-600 hover:border-red-400"
+                    />
+                    <AppIconButton
+                      icon={<TrashIcon className="h-4 w-4" />}
+                      label="Remover movimento"
+                      variant="danger"
                       onClick={() => handleRemove(movimento)}
-                      aria-label="Remover movimento"
-                    >
-                      Remover
-                    </button>
+                    />
                   </div>
                 ),
               },
@@ -362,6 +357,7 @@ const MovimentosCaixaPage = () => {
           />
         </div>
       </Card>
+      <AppPopup {...popupProps} />
     </div>
   );
 };

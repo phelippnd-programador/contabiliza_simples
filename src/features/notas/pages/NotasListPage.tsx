@@ -3,12 +3,17 @@ import { useNavigate } from "react-router-dom";
 import AppTitle, { AppSubTitle } from "../../../components/ui/text/AppTitle";
 import Card from "../../../components/ui/card/Card";
 import AppButton from "../../../components/ui/button/AppButton";
+import AppIconButton from "../../../components/ui/button/AppIconButton";
 import AppSelectInput from "../../../components/ui/input/AppSelectInput";
 import AppDateInput from "../../../components/ui/input/AppDateInput";
 import AppTable from "../../../components/ui/table/AppTable";
+import AppTableSkeleton from "../../../components/ui/table/AppTableSkeleton";
 import AppListNotFound from "../../../components/ui/AppListNotFound";
 import { listNotas } from "../services/notas.service";
 import type { NotaResumo, NotaStatus } from "../types";
+import { getErrorMessage } from "../../../shared/services/apiClient";
+import { formatLocalDate } from "../../../shared/utils/formater";
+import { EyeIcon } from "../../../components/ui/icon/AppIcons";
 
 const statusOptions = [
   { value: "", label: "Todos" },
@@ -28,6 +33,7 @@ const NotasListPage = () => {
   const navigate = useNavigate();
   const [notas, setNotas] = useState<NotaResumo[]>([]);
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const pageSize = 10;
@@ -38,6 +44,7 @@ const NotasListPage = () => {
 
   const load = async () => {
     try {
+      setIsLoading(true);
       setError("");
       const response = await listNotas({
         page,
@@ -47,9 +54,11 @@ const NotasListPage = () => {
       });
       setNotas(response.data);
       setTotal(response.meta.total);
-    } catch {
-      setError("Nao foi possivel carregar as notas.");
+    } catch (err) {
+      setError(getErrorMessage(err, "Nao foi possivel carregar as notas."));
       setNotas([]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -61,7 +70,11 @@ const NotasListPage = () => {
     () => [
       { key: "status", header: "Status", render: (row: NotaResumo) => row.status },
       { key: "tipo", header: "Tipo", render: (row: NotaResumo) => row.tipo },
-      { key: "competencia", header: "Competencia", render: (row: NotaResumo) => row.competencia },
+      {
+        key: "competencia",
+        header: "Competencia",
+        render: (row: NotaResumo) => formatLocalDate(row.competencia),
+      },
       { key: "tomador", header: "Tomador", render: (row: NotaResumo) => row.tomador?.nomeRazao ?? "-" },
       {
         key: "total",
@@ -74,13 +87,11 @@ const NotasListPage = () => {
         header: "Acoes",
         align: "right" as const,
         render: (row: NotaResumo) => (
-          <AppButton
-            type="button"
-            className="w-auto px-4"
+          <AppIconButton
+            icon={<EyeIcon className="h-4 w-4" />}
+            label="Ver nota"
             onClick={() => navigate(`/fiscal/notas/${row.id}`)}
-          >
-            Ver
-          </AppButton>
+          />
         ),
       },
     ],
@@ -138,22 +149,33 @@ const NotasListPage = () => {
           </div>
         </div>
 
-        {error ? <p className="mt-4 text-sm text-red-600">{error}</p> : null}
+        {error ? (
+          <div className="mt-4 flex items-center gap-3 text-sm text-red-600">
+            <span>{error}</span>
+            <AppButton type="button" className="w-auto px-4" onClick={load}>
+              Tentar novamente
+            </AppButton>
+          </div>
+        ) : null}
 
         <div className="mt-6">
-          <AppTable
-            data={notas}
-            rowKey={(row) => row.id}
-            emptyState={<AppListNotFound texto="Nenhuma nota encontrada." />}
-            pagination={{
-              enabled: true,
-              pageSize,
-              page,
-              total,
-              onPageChange: setPage,
-            }}
-            columns={columns}
-          />
+          {isLoading ? (
+            <AppTableSkeleton columns={columns.length} rows={6} />
+          ) : (
+            <AppTable
+              data={notas}
+              rowKey={(row) => row.id}
+              emptyState={<AppListNotFound texto="Nenhuma nota encontrada." />}
+              pagination={{
+                enabled: true,
+                pageSize,
+                page,
+                total,
+                onPageChange: setPage,
+              }}
+              columns={columns}
+            />
+          )}
         </div>
       </Card>
     </div>

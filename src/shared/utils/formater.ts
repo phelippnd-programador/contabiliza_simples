@@ -112,6 +112,33 @@ export const formatBRLRangeClamp = (
     currency: "BRL",
   });
 };
+
+export const formatLocalDate = (
+  value?: string | null,
+  options?: Intl.DateTimeFormatOptions
+) => {
+  if (!value) return "";
+  const raw = String(value);
+  if (/^\d{4}-\d{2}$/.test(raw)) {
+    const [yearRaw, monthRaw] = raw.split("-");
+    const year = Number(yearRaw);
+    const month = Number(monthRaw);
+    if (!year || !month) return raw;
+    const date = new Date(year, month - 1, 1);
+    return date.toLocaleDateString(
+      undefined,
+      options ?? { year: "numeric", month: "2-digit" }
+    );
+  }
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+    const date = new Date(`${raw}T00:00:00`);
+    if (Number.isNaN(date.getTime())) return raw;
+    return date.toLocaleDateString(undefined, options);
+  }
+  const date = new Date(raw);
+  if (Number.isNaN(date.getTime())) return raw;
+  return date.toLocaleDateString(undefined, options);
+};
 export function formatCnae(codigo: string) {
   const digits = onlyDigits(codigo);
   if (digits.length !== 7) return codigo;

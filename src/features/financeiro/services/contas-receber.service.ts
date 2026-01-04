@@ -5,17 +5,54 @@ const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 
 export type ContaReceberResumo = {
   id: string;
-  cliente: string;
+  clienteId?: string;
+  clienteNome?: string;
+  cliente?: string;
   vencimento: string;
   valor: number;
   status?: string;
+  origem?: "VENDA" | "MANUAL";
+  origemId?: string;
+  descricao?: string;
+  numeroDocumento?: string;
+  competencia?: string;
+  parcela?: number;
+  totalParcelas?: number;
+  valorOriginal?: number;
+  desconto?: number;
+  juros?: number;
+  multa?: number;
+  valorRecebido?: number;
+  dataRecebimento?: string;
+  formaPagamento?: string;
+  contaId?: string;
+  categoriaId?: string;
+  observacoes?: string;
 };
 
 export type ContaReceberPayload = {
-  cliente: string;
+  clienteId: string;
+  clienteNome?: string;
   vencimento: string;
   valor: number;
   status?: string;
+  origem?: "VENDA" | "MANUAL";
+  origemId?: string;
+  descricao?: string;
+  numeroDocumento?: string;
+  competencia?: string;
+  parcela?: number;
+  totalParcelas?: number;
+  valorOriginal?: number;
+  desconto?: number;
+  juros?: number;
+  multa?: number;
+  valorRecebido?: number;
+  dataRecebimento?: string;
+  formaPagamento?: string;
+  contaId?: string;
+  categoriaId?: string;
+  observacoes?: string;
 };
 
 export type ListContasReceberParams = {

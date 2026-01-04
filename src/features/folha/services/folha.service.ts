@@ -7,13 +7,51 @@ export type FolhaResumo = {
   id: string;
   referencia: string;
   colaboradores: number;
+  colaboradorId?: string;
+  colaborador?: {
+    id: string;
+    nome: string;
+  };
+  salarioBase?: number;
+  horasExtras?: number;
+  outrosProventos?: number;
+  descontos?: number;
+  dependentes?: number;
+  inssPercentBps?: number;
+  irrfPercentBps?: number;
+  fgtsPercentBps?: number;
+  verbasRescisorias?: number;
   status?: string;
+  totalProventos?: number;
+  totalDescontos?: number;
+  totalLiquido?: number;
+  inss?: number;
+  fgts?: number;
+  irrf?: number;
+  rescisaoTipo?: string;
 };
 
 export type FolhaPayload = {
   referencia: string;
   colaboradores: number;
+  colaboradorId?: string;
+  salarioBase?: number;
+  horasExtras?: number;
+  outrosProventos?: number;
+  descontos?: number;
+  dependentes?: number;
+  inssPercentBps?: number;
+  irrfPercentBps?: number;
+  fgtsPercentBps?: number;
+  verbasRescisorias?: number;
   status?: string;
+  totalProventos?: number;
+  totalDescontos?: number;
+  totalLiquido?: number;
+  inss?: number;
+  fgts?: number;
+  irrf?: number;
+  rescisaoTipo?: string;
 };
 
 export type ListFolhaParams = {
@@ -84,6 +122,24 @@ export async function updateFolha(
   });
   if (!res.ok) {
     throw new Error("UPDATE_FOLHA_FAILED");
+  }
+  return (await res.json()) as FolhaResumo;
+}
+
+export async function updateFolhaStatus(
+  id: string,
+  status: string
+): Promise<FolhaResumo> {
+  if (!API_BASE) {
+    throw new Error("API_NOT_CONFIGURED");
+  }
+  const res = await apiFetch(`/folha/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status }),
+  });
+  if (!res.ok) {
+    throw new Error("UPDATE_FOLHA_STATUS_FAILED");
   }
   return (await res.json()) as FolhaResumo;
 }
