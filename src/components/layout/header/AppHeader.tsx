@@ -307,6 +307,7 @@ const AppHeader = () => {
             to: "/estoque",
             icon: <IconList />,
             moduleKey: "estoque",
+            end: true,
           },
           {
             id: "estoque_movimentos",
