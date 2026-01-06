@@ -9,6 +9,9 @@ import DashboardStatCard from "../../../components/ui/card/DashboardStatCard";
 import PeriodCashChart, {
   type PeriodCashPoint,
 } from "../../../components/ui/chart/PeriodCashChart";
+import PeriodBalanceChart, {
+  type PeriodBalancePoint,
+} from "../../../components/ui/chart/PeriodBalanceChart";
 import { listMovimentos } from "../services/movimentos.service";
 import { listContasPagar, type ContaPagarResumo } from "../services/contas-pagar.service";
 import { listContasReceber, type ContaReceberResumo } from "../services/contas-receber.service";
@@ -21,6 +24,7 @@ type ProjecaoItem = {
   nome: string;
   vencimento: string;
   valor: number;
+  recorrente?: boolean;
   parcela?: number;
   totalParcelas?: number;
   status?: string;
@@ -137,6 +141,38 @@ const ProjecaoPage = () => {
     ) => {
       const baseDate = parseDate(item.vencimento);
       if (!baseDate) return [];
+      const isRecorrente =
+        tipo === "RECEBER"
+          ? (item as ContaReceberResumo).recorrente
+          : (item as ContaPagarResumo).recorrente;
+      if (isRecorrente) {
+        const items: ProjecaoItem[] = [];
+        let cursor = new Date(baseDate);
+        const day = cursor.getDate();
+        while (true) {
+          const vencimentoStr = formatDateInput(cursor);
+          if (startDate && cursor < startDate) {
+            cursor = addMonths(cursor, 1);
+            continue;
+          }
+          if (endDate && cursor > endDate) break;
+          items.push({
+            id: `${item.id}-rec-${vencimentoStr}`,
+            tipo,
+            nome,
+            vencimento: vencimentoStr,
+            valor: item.valor,
+            recorrente: true,
+            status: item.status,
+            origem: item.origem,
+          });
+          const next = addMonths(cursor, 1);
+          const maxDay = new Date(next.getFullYear(), next.getMonth() + 1, 0).getDate();
+          next.setDate(Math.min(day, maxDay));
+          cursor = next;
+        }
+        return items;
+      }
       const rawTotal = item.totalParcelas && item.totalParcelas > 0 ? item.totalParcelas : 1;
       const rawParcela = item.parcela && item.parcela > 0 ? item.parcela : 1;
       const totalParcelas = rawTotal < rawParcela ? rawParcela : rawTotal;
@@ -167,6 +203,7 @@ const ProjecaoPage = () => {
             parcelaInicial + i === totalParcelas
               ? parcelaValor + valorResto
               : parcelaValor,
+          recorrente: false,
           parcela: parcelaInicial + i,
           totalParcelas,
           status: item.status,
@@ -211,6 +248,20 @@ const ProjecaoPage = () => {
     [projecoes]
   );
 
+  const totalPagarPago = useMemo(
+    () =>
+      contasPagar
+        .filter((item) => item.status === "PAGA")
+        .reduce((acc, item) => acc + item.valor, 0),
+    [contasPagar]
+  );
+
+  const fixos = useMemo(
+    () => projecoes.filter((item) => item.recorrente),
+    [projecoes]
+  );
+
+  const saldoAposPagar = saldoBase + totalReceber - totalPagarPago;
   const saldoProjetado = saldoBase + totalReceber - totalPagar;
 
   const chartData = useMemo<PeriodCashPoint[]>(() => {
@@ -237,6 +288,38 @@ const ProjecaoPage = () => {
         entradas: values.entradas / 100,
         saidas: values.saidas / 100,
       }));
+  }, [filters.fim, filters.inicio, projecoes, saldoBase, startDate]);
+
+  const balanceData = useMemo<PeriodBalancePoint[]>(() => {
+    if (!filters.inicio || !filters.fim) return [];
+    const deltas = new Map<string, number>();
+    projecoes.forEach((item) => {
+      if (!item.vencimento) return;
+      const delta = item.tipo === "RECEBER" ? item.valor : -item.valor;
+      deltas.set(item.vencimento, (deltas.get(item.vencimento) ?? 0) + delta);
+    });
+    const sortedDates = Array.from(deltas.keys()).sort();
+    const baseLabel = startDate ? filters.inicio : new Date().toISOString().slice(0, 10);
+    const endLabel = endDate ? filters.fim : baseLabel;
+    if (!sortedDates.includes(endLabel)) {
+      sortedDates.push(endLabel);
+      sortedDates.sort();
+    }
+    let running = saldoBase;
+    const points: PeriodBalancePoint[] = [
+      {
+        label: formatLocalDate(baseLabel, { day: "2-digit", month: "2-digit" }),
+        saldo: running / 100,
+      },
+    ];
+    sortedDates.forEach((date) => {
+      running += deltas.get(date) ?? 0;
+      points.push({
+        label: formatLocalDate(date, { day: "2-digit", month: "2-digit" }),
+        saldo: running / 100,
+      });
+    });
+    return points;
   }, [filters.fim, filters.inicio, projecoes, saldoBase, startDate]);
 
   return (
@@ -274,7 +357,7 @@ const ProjecaoPage = () => {
         {error ? <p className="mt-3 text-sm text-red-600">{error}</p> : null}
       </Card>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
         <DashboardStatCard
           title="Saldo base"
           value={formatCurrency(saldoBase)}
@@ -294,6 +377,12 @@ const ProjecaoPage = () => {
           tone="amber"
         />
         <DashboardStatCard
+          title="Saldo atual"
+          value={formatCurrency(saldoAposPagar)}
+          helper="Saldo base + receber - contas pagas no periodo"
+          tone={saldoAposPagar < 0 ? "red" : "blue"}
+        />
+        <DashboardStatCard
           title="Saldo projetado"
           value={formatCurrency(saldoProjetado)}
           helper="Saldo base + receber - pagar no periodo"
@@ -303,6 +392,10 @@ const ProjecaoPage = () => {
 
       <Card>
         <PeriodCashChart title="Fluxo projetado" data={chartData} />
+      </Card>
+
+      <Card>
+        <PeriodBalanceChart title="Saldo projetado" data={balanceData} />
       </Card>
 
       <Card>
@@ -330,8 +423,18 @@ const ProjecaoPage = () => {
               {
                 key: "tipo",
                 header: "Tipo",
-                render: (row) =>
-                  row.tipo === "RECEBER" ? "Conta a receber" : "Conta a pagar",
+                render: (row) => (
+                  <div className="flex items-center gap-2">
+                    {row.tipo === "RECEBER" ? (
+                      <span className="text-green-600">↑</span>
+                    ) : (
+                      <span className="text-red-600">↓</span>
+                    )}
+                    <span>
+                      {row.tipo === "RECEBER" ? "Conta a receber" : "Conta a pagar"}
+                    </span>
+                  </div>
+                ),
               },
               {
                 key: "nome",
@@ -342,7 +445,71 @@ const ProjecaoPage = () => {
                 key: "valor",
                 header: "Valor",
                 align: "right" as const,
-                render: (row) => formatCurrency(row.valor),
+                render: (row) => (
+                  <div className="flex items-center justify-end gap-2">
+                    {row.tipo === "RECEBER" ? (
+                      <span className="text-green-600">↑</span>
+                    ) : (
+                      <span className="text-red-600">↓</span>
+                    )}
+                    <span>{formatCurrency(row.valor)}</span>
+                  </div>
+                ),
+              },
+            ]}
+          />
+        </div>
+      </Card>
+
+      <Card>
+        <AppSubTitle text="Fixos" />
+        <div className="mt-4">
+          <AppTable
+            data={fixos}
+            rowKey={(row) => `${row.tipo}-${row.id}`}
+            emptyState={<AppListNotFound texto="Sem recorrentes no periodo." />}
+            pagination={{ enabled: true, pageSize: 8 }}
+            columns={[
+              {
+                key: "vencimento",
+                header: "Vencimento",
+                render: (row) => formatLocalDate(row.vencimento),
+              },
+              {
+                key: "tipo",
+                header: "Tipo",
+                render: (row) => (
+                  <div className="flex items-center gap-2">
+                    {row.tipo === "RECEBER" ? (
+                      <span className="text-green-600">↑</span>
+                    ) : (
+                      <span className="text-red-600">↓</span>
+                    )}
+                    <span>
+                      {row.tipo === "RECEBER" ? "Conta a receber" : "Conta a pagar"}
+                    </span>
+                  </div>
+                ),
+              },
+              {
+                key: "nome",
+                header: "Cliente/Fornecedor",
+                render: (row) => row.nome,
+              },
+              {
+                key: "valor",
+                header: "Valor",
+                align: "right" as const,
+                render: (row) => (
+                  <div className="flex items-center justify-end gap-2">
+                    {row.tipo === "RECEBER" ? (
+                      <span className="text-green-600">↑</span>
+                    ) : (
+                      <span className="text-red-600">↓</span>
+                    )}
+                    <span>{formatCurrency(row.valor)}</span>
+                  </div>
+                ),
               },
             ]}
           />

@@ -33,7 +33,10 @@ export async function listCategorias(
   if (!res.ok) {
     throw new Error("LIST_CATEGORIAS_FAILED");
   }
-  const data = (await res.json()) as ApiListResponse<CategoriaMovimento>;
+  const data = (await res.json()) as
+    | ApiListResponse<CategoriaMovimento>
+    | CategoriaMovimento[];
+  if (Array.isArray(data)) return data;
   return data.data ?? [];
 }
 

@@ -1,577 +1,382 @@
 {
   "clientes": [
     {
-      "id": "cli_1",
-      "nome": "Cliente Demo",
-      "nomeFantasia": "Cliente Demo LTDA",
-      "documento": "12345678000199",
+      "nome": "Prosolution",
+      "documento": "11111111111111",
       "tipoPessoa": "PJ",
-      "email": "cliente@demo.com",
-      "telefone": "11999990000",
-      "inscricaoEstadual": "123456789",
-      "inscricaoMunicipal": "998877",
+      "inscricaoEstadual": "111111111111111111",
       "indicadorIE": "CONTRIBUINTE",
       "endereco": {
-        "cep": "01001000",
-        "logradouro": "Praca da Se",
-        "numero": "100",
-        "complemento": "Sala 1",
-        "bairro": "Se",
-        "cidade": "Sao Paulo",
-        "uf": "SP",
-        "codigoMunicipioIbge": "3550308",
-        "pais": "Brasil"
-      },
-      "status": "ATIVO"
-    },
-    {
-      "id": "cli_2",
-      "nome": "Cliente Alpha",
-      "documento": "11111111111",
-      "tipoPessoa": "PF",
-      "email": "alpha@demo.com",
-      "telefone": "21999990000",
-      "indicadorIE": "NAO_CONTRIBUINTE",
-      "endereco": {
-        "cep": "20040002",
-        "logradouro": "Rua da Quitanda",
-        "numero": "50",
-        "bairro": "Centro",
+        "cep": "23030310",
+        "logradouro": "Estrada do Marmeleiro",
+        "bairro": "Guaratiba",
         "cidade": "Rio de Janeiro",
         "uf": "RJ",
         "codigoMunicipioIbge": "3304557",
         "pais": "Brasil"
       },
-      "status": "ATIVO"
+      "status": "ATIVO",
+      "id": 1
     }
   ],
   "fornecedores": [
     {
-      "id": "for_1",
-      "nome": "Fornecedor Demo",
-      "documento": "98765432000155",
-      "tipoPessoa": "PJ",
-      "email": "fornecedor@demo.com",
-      "telefone": "11988880000",
-      "indicadorIE": "ISENTO",
-      "endereco": {
-        "cep": "20040002",
-        "logradouro": "Rua da Quitanda",
-        "numero": "50",
-        "bairro": "Centro",
-        "cidade": "Rio de Janeiro",
-        "uf": "RJ",
-        "codigoMunicipioIbge": "3304557",
-        "pais": "Brasil"
-      },
-      "status": "ATIVO"
-    },
-    {
-      "id": "for_2",
-      "nome": "Fornecedor Beta",
-      "documento": "22445566000188",
-      "tipoPessoa": "PJ",
-      "email": "beta@demo.com",
-      "telefone": "1133334444",
-      "indicadorIE": "CONTRIBUINTE",
-      "endereco": {
-        "cep": "01310930",
-        "logradouro": "Avenida Paulista",
-        "numero": "1000",
-        "bairro": "Bela Vista",
-        "cidade": "Sao Paulo",
-        "uf": "SP",
-        "codigoMunicipioIbge": "3550308",
-        "pais": "Brasil"
-      },
-      "status": "ATIVO"
+      "nome": "Proprietario Casa",
+      "documento": "11111111111",
+      "tipoPessoa": "PF",
+      "indicadorIE": "NAO_CONTRIBUINTE",
+      "endereco": {},
+      "status": "ATIVO",
+      "id": 1
     }
   ],
-  "produtosServicos": [
-    {
-      "id": "prd_1",
-      "descricao": "Servico de consultoria",
-      "tipo": "SERVICO",
-      "status": "ATIVO",
-      "codigo": "SERV001",
-      "unidade": "UN",
-      "valorUnitario": 15000,
-      "cnae": "6202300",
-      "codigoServico": "1001"
-    },
-    {
-      "id": "prd_2",
-      "descricao": "Produto demo",
-      "tipo": "PRODUTO",
-      "status": "ATIVO",
-      "codigo": "PROD001",
-      "unidade": "UN",
-      "valorUnitario": 3500,
-      "ncm": "01012100",
-      "cfop": "5101"
-    },
-    {
-      "id": "prd_3",
-      "descricao": "Produto premium",
-      "tipo": "PRODUTO",
-      "status": "ATIVO",
-      "codigo": "PROD002",
-      "unidade": "UN",
-      "valorUnitario": 9800,
-      "ncm": "22030000",
-      "cfop": "5102"
-    }
-  ],
+  "produtosServicos": [],
   "contas": [
     {
-      "id": "cta_1",
-      "nome": "Conta principal",
-      "banco": "Banco Demo",
-      "agencia": "0001",
-      "conta": "12345-6",
-      "tipo": "CORRENTE",
+      "nome": "Itau Phelipp",
+      "banco": "ITAU",
+      "agencia": "1111111",
+      "conta": "11111111",
+      "digito": "1",
+      "tipo": "BANCO",
       "categoria": "ENTRADA",
-      "saldoInicial": 100000
+      "id": 1
     },
     {
-      "id": "cta_2",
-      "nome": "Conta secundario",
-      "banco": "Banco Demo",
-      "agencia": "0001",
-      "conta": "98765-4",
-      "tipo": "CORRENTE",
+      "nome": "Cartão Henrique",
+      "banco": "",
+      "agencia": "",
+      "conta": "",
+      "digito": "",
+      "tipo": "CARTAO",
       "categoria": "SAIDA",
-      "saldoInicial": 50000
+      "id": 2
     }
   ],
   "categorias": [
     {
-      "id": "cat_1",
-      "nome": "Receita de servicos",
-      "tipo": "ENTRADA"
+      "nome": "Salario",
+      "tipo": "ENTRADA",
+      "id": 1
     },
     {
-      "id": "cat_2",
-      "nome": "Compra de mercadorias",
-      "tipo": "SAIDA"
-    },
-    {
-      "id": "cat_3",
-      "nome": "Folha de pagamento",
-      "tipo": "SAIDA"
-    },
-    {
-      "nome": "Cartão Mirian",
+      "nome": "Aluguel",
       "tipo": "SAIDA",
-      "id": "QOfPKMl"
+      "id": 2
     }
   ],
-  "contasPagar": [
+  "movimentos": [],
+  "cartoes": [
     {
-      "fornecedorId": "for_1",
-      "fornecedorNome": "Fornecedor Demo",
-      "vencimento": "2025-03-15",
-      "valor": 350000,
-      "status": "ABERTA",
-      "descricao": "Compra cmp_1",
-      "numeroDocumento": "CMP-0001",
-      "competencia": "2025-02",
-      "parcela": 1,
-      "totalParcelas": 20,
-      "parcelaPaga": 11,
-      "valorOriginal": 350000,
-      "valorPago": 350000,
-      "dataPagamento": "2026-01-04",
-      "contaId": "cta_2",
-      "categoriaId": "cat_2",
-      "id": "cp_1"
-    },
-    {
-      "id": "cp_2",
-      "fornecedorId": "for_2",
-      "fornecedorNome": "Fornecedor Beta",
-      "vencimento": "2025-01-20",
-      "valor": 9800,
-      "status": "PAGA",
-      "origem": "MANUAL",
-      "descricao": "Servico recorrente",
-      "competencia": "2025-01",
-      "contaId": "cta_2",
-      "categoriaId": "cat_2",
-      "dataPagamento": "2025-01-18",
-      "valorPago": 9800,
-      "formaPagamento": "PIX"
+      "nome": "Henrique",
+      "banco": "341",
+      "vencimentoDia": 8,
+      "limiteInicial": 0,
+      "fechamentoDia": 1,
+      "id": 1
     }
   ],
   "contasReceber": [
     {
-      "id": "cr_1",
-      "clienteId": "cli_1",
-      "clienteNome": "Cliente Demo",
-      "vencimento": "2025-02-05",
-      "valor": 67200,
+      "clienteId": "1",
+      "vencimento": "2026-01-05",
+      "valor": 580000,
       "status": "ABERTA",
-      "origem": "VENDA",
-      "origemId": "ven_1",
-      "descricao": "Venda ven_1",
-      "numeroDocumento": "VEN-0001",
-      "competencia": "2025-02",
-      "contaId": "cta_1",
-      "categoriaId": "cat_1"
+      "descricao": "Salario",
+      "recorrente": true,
+      "valorOriginal": 580000,
+      "formaPagamento": "TRANSFERENCIA",
+      "contaId": "1",
+      "categoriaId": "1",
+      "id": 1
     }
   ],
-  "movimentos": [
+  "contasPagar": [
     {
-      "id": "mov_1",
-      "data": "2025-01-15",
-      "contaId": "cta_1",
-      "tipo": "ENTRADA",
-      "valor": 67200,
-      "descricao": "Recebimento venda ven_1",
-      "competencia": "2025-01",
-      "categoriaId": "cat_1",
-      "referencia": {
-        "tipo": "RECEITA",
-        "id": "ven_1"
-      }
+      "fornecedorId": "fornecedor-avulso",
+      "fornecedorNome": "IFD*JULIANNIE DRUMMOND",
+      "vencimento": "2026-01-08",
+      "valor": 10478,
+      "status": "PAGA",
+      "origem": "MANUAL",
+      "descricao": "IFD*JULIANNIE DRUMMOND",
+      "competencia": "2025-11-06",
+      "contaId": "",
+      "id": 1,
+      "parcelaPaga": 1,
+      "dataPagamento": "2026-01-06",
+      "valorPago": 10478
     },
     {
-      "id": "mov_2",
-      "data": "2025-01-18",
-      "contaId": "cta_2",
-      "tipo": "SAIDA",
-      "valor": 350000,
-      "descricao": "Pagamento compra cmp_1",
-      "competencia": "2025-01",
-      "categoriaId": "cat_2",
-      "referencia": {
-        "tipo": "DESPESA",
-        "id": "cmp_1"
-      }
-    }
-  ],
-  "empresas": [
-    {
-      "id": "emp_1",
-      "razaoSocial": "Empresa Demo LTDA",
-      "nomeFantasia": "Empresa Demo",
-      "cnpj": "11222333000199"
+      "fornecedorId": "fornecedor-avulso",
+      "fornecedorNome": "DROGASMILRIO D",
+      "vencimento": "2025-12-08",
+      "valor": 29327,
+      "status": "ABERTA",
+      "origem": "MANUAL",
+      "descricao": "DROGASMILRIO D 2/6",
+      "competencia": "2025-10-19",
+      "parcela": 2,
+      "totalParcelas": 6,
+      "parcelaPaga": 1,
+      "contaId": "",
+      "id": 2
     },
     {
-      "id": "emp_2",
-      "razaoSocial": "Empresa Alpha LTDA",
-      "nomeFantasia": "Empresa Alpha",
-      "cnpj": "55667788000122"
-    }
-  ],
-  "integracoesBancarias": [
-    {
-      "id": "int_1",
-      "banco": "BANCO_DO_BRASIL",
-      "status": "ATIVA",
-      "ultimaAtualizacao": "2025-01-12"
-    }
-  ],
-  "vendas": [
-    {
-      "id": "ven_1",
-      "clienteId": "cli_1",
-      "clienteNome": "Cliente Demo",
-      "data": "2025-01-10",
-      "total": 67200,
-      "status": "FATURADA",
-      "itens": [
-        {
-          "produtoId": "prd_2",
-          "descricao": "Produto demo",
-          "quantidade": 8,
-          "valorUnitario": 3500,
-          "total": 28000
-        },
-        {
-          "produtoId": "prd_3",
-          "descricao": "Produto premium",
-          "quantidade": 4,
-          "valorUnitario": 9800,
-          "total": 39200
-        }
-      ],
-      "subtotal": 67200,
-      "desconto": 0,
-      "frete": 0,
-      "impostos": 0,
-      "observacoes": "Venda teste",
-      "financeiro": {
-        "gerarConta": true,
-        "contaId": "cta_1",
-        "categoriaId": "cat_1",
-        "vencimento": "2025-02-05",
-        "formaPagamento": "PIX"
-      },
-      "estoque": {
-        "gerarMovimento": true
-      }
+      "fornecedorId": "fornecedor-avulso",
+      "fornecedorNome": "IFOOD CLUBOsascoBR",
+      "vencimento": "2026-01-08",
+      "valor": 798,
+      "status": "ABERTA",
+      "origem": "MANUAL",
+      "descricao": "IFOOD CLUBOsascoBR",
+      "competencia": "2025-11-05",
+      "contaId": "",
+      "id": 3
     },
     {
-      "clienteId": "cli_1",
-      "clienteNome": "Cliente Demo",
-      "data": "2026-01-01",
-      "status": "APROVADA",
-      "itens": [
-        {
-          "produtoId": "prd_2",
-          "descricao": "Produto demo",
-          "quantidade": 10,
-          "valorUnitario": 3500,
-          "total": 35000
-        }
-      ],
-      "subtotal": 35000,
-      "desconto": 0,
-      "frete": 0,
-      "impostos": 0,
-      "total": 35000,
-      "financeiro": {
-        "gerarConta": false
-      },
-      "estoque": {
-        "gerarMovimento": true
-      },
-      "id": "mtNioag"
-    }
-  ],
-  "compras": [
-    {
-      "id": "cmp_1",
-      "fornecedorId": "for_1",
-      "fornecedorNome": "Fornecedor Demo",
-      "data": "2025-01-12",
-      "total": 350000,
-      "status": "RECEBIDA",
-      "itens": [
-        {
-          "produtoId": "prd_2",
-          "descricao": "Produto demo",
-          "quantidade": 100,
-          "valorUnitario": 3500,
-          "total": 350000
-        }
-      ],
-      "subtotal": 350000,
-      "desconto": 0,
-      "frete": 0,
-      "impostos": 0,
-      "observacoes": "Compra teste",
-      "financeiro": {
-        "gerarConta": true,
-        "contaId": "cta_2",
-        "categoriaId": "cat_2",
-        "vencimento": "2025-02-10",
-        "formaPagamento": "BOLETO"
-      },
-      "estoque": {
-        "gerarMovimento": true
-      }
-    }
-  ],
-  "notas": [
-    {
-      "id": "nota_1",
-      "status": "EMITIDA",
-      "tipo": "SERVICO",
-      "competencia": "2025-01",
-      "dataEmissao": "2025-01-20",
-      "numero": "123",
-      "tomador": {
-        "nomeRazao": "Cliente Demo"
-      },
-      "total": 15000
-    }
-  ],
-  "estoque": [
-    {
-      "id": "prd_2",
-      "produtoId": "prd_2",
-      "descricao": "Produto demo",
-      "quantidade": 120,
-      "custoMedio": 3500,
-      "estoqueMinimo": 10
+      "fornecedorId": "fornecedor-avulso",
+      "fornecedorNome": "MERCADOLIVRE*7",
+      "vencimento": "2025-12-08",
+      "valor": 5932,
+      "status": "ABERTA",
+      "origem": "MANUAL",
+      "descricao": "MERCADOLIVRE*7 2/4",
+      "competencia": "2025-10-20",
+      "parcela": 2,
+      "totalParcelas": 4,
+      "parcelaPaga": 1,
+      "contaId": "",
+      "id": 4
     },
     {
-      "id": "prd_3",
-      "produtoId": "prd_3",
-      "descricao": "Produto premium",
-      "quantidade": 40,
-      "custoMedio": 9800,
-      "estoqueMinimo": 5
-    }
-  ],
-  "estoqueMovimentos": [
-    {
-      "id": "estmov_1",
-      "itemId": "prd_2",
-      "tipo": "ENTRADA",
-      "quantidade": 100,
-      "custoUnitario": 3500,
-      "data": "2025-01-12",
-      "lote": "L-001",
-      "serie": "S-0001",
-      "origem": "COMPRA",
-      "origemId": "cmp_1",
-      "observacoes": "Entrada compra"
+      "fornecedorId": "fornecedor-avulso",
+      "fornecedorNome": "MP*PHDDIGITALM",
+      "vencimento": "2025-12-08",
+      "valor": 22550,
+      "status": "ABERTA",
+      "origem": "MANUAL",
+      "descricao": "MP*PHDDIGITALM 2/4",
+      "competencia": "2025-10-20",
+      "parcela": 2,
+      "totalParcelas": 4,
+      "parcelaPaga": 1,
+      "contaId": "",
+      "id": 5
     },
     {
-      "id": "estmov_2",
-      "itemId": "prd_2",
-      "tipo": "SAIDA",
-      "quantidade": 2,
-      "data": "2025-01-20",
-      "origem": "VENDA",
-      "origemId": "ven_1",
-      "observacoes": "Saida venda"
+      "fornecedorId": "fornecedor-avulso",
+      "fornecedorNome": "MERCADOLIVRE*M",
+      "vencimento": "2026-01-08",
+      "valor": 5501,
+      "status": "ABERTA",
+      "origem": "MANUAL",
+      "descricao": "MERCADOLIVRE*M 1/4",
+      "competencia": "2025-11-05",
+      "parcela": 1,
+      "totalParcelas": 4,
+      "contaId": "",
+      "id": 6
     },
     {
-      "tipo": "SAIDA",
-      "data": "2026-01-01",
-      "quantidade": 10,
-      "origem": "VENDA",
-      "origemId": "mtNioag",
-      "observacoes": "Venda mtNioag",
-      "id": "seK3Zxy"
-    }
-  ],
-  "folha": [
+      "fornecedorId": "fornecedor-avulso",
+      "fornecedorNome": "EC *PHDDIGITAL",
+      "vencimento": "2025-12-08",
+      "valor": 27979,
+      "status": "ABERTA",
+      "origem": "MANUAL",
+      "descricao": "EC *PHDDIGITAL 2/4",
+      "competencia": "2025-10-20",
+      "parcela": 2,
+      "totalParcelas": 4,
+      "parcelaPaga": 1,
+      "contaId": "",
+      "id": 7
+    },
     {
-      "referencia": "2026-03",
-      "colaboradores": 1,
-      "colaboradorId": "col_1",
-      "salarioBase": 450000,
-      "horasExtras": 0,
-      "outrosProventos": 0,
-      "descontos": 0,
-      "dependentes": 0,
-      "inssPercentBps": 800,
-      "irrfPercentBps": 750,
-      "fgtsPercentBps": 800,
-      "verbasRescisorias": 0,
-      "status": "CANCELADA",
-      "totalProventos": 450000,
-      "totalDescontos": 67050,
-      "totalLiquido": 382950,
-      "inss": 36000,
-      "fgts": 36000,
-      "irrf": 31050,
-      "id": "0ddM-tO"
-    }
-  ],
-  "colaboradores": [
+      "fornecedorId": "fornecedor-avulso",
+      "fornecedorNome": "MERCADOLIVRE*J",
+      "vencimento": "2025-12-08",
+      "valor": 8423,
+      "status": "ABERTA",
+      "origem": "MANUAL",
+      "descricao": "MERCADOLIVRE*J 2/4",
+      "competencia": "2025-10-26",
+      "parcela": 2,
+      "totalParcelas": 4,
+      "parcelaPaga": 1,
+      "contaId": "",
+      "id": 8
+    },
     {
-      "id": "col_1",
-      "nome": "Joao Silva",
-      "documento": "12345678901",
-      "tipoColaborador": "CLT",
-      "email": "joao@demo.com",
-      "telefone": "11955550000",
-      "dataAdmissao": "2024-06-01",
-      "cargo": "Analista",
-      "pis": "12345678900",
-      "categoriaInss": "Empregado",
-      "salarioBase": 450000,
-      "percentualInss": 800,
-      "endereco": {
-        "cep": "01310930",
-        "logradouro": "Avenida Paulista",
-        "numero": "1000",
-        "bairro": "Bela Vista",
-        "cidade": "Sao Paulo",
-        "uf": "SP",
-        "codigoMunicipioIbge": "3550308",
-        "pais": "Brasil"
-      },
-      "status": "ATIVO"
-    }
-  ],
-  "receitasTributacao": [
+      "fornecedorId": "fornecedor-avulso",
+      "fornecedorNome": "IFD*MENDES E PIGLIASCOR",
+      "vencimento": "2026-01-08",
+      "valor": 7788,
+      "status": "PAGA",
+      "origem": "MANUAL",
+      "descricao": "IFD*MENDES E PIGLIASCOR",
+      "competencia": "2025-11-04",
+      "contaId": "",
+      "id": 9,
+      "parcelaPaga": 1,
+      "dataPagamento": "2026-01-06",
+      "valorPago": 7788
+    },
     {
-      "id": "rec_1",
-      "competencia": "2025-01",
-      "valor": 67200,
-      "origem": "Receitas operacionais",
-      "status": "APURADA"
-    }
-  ],
-  "caixaTributacao": [
+      "fornecedorId": "fornecedor-avulso",
+      "fornecedorNome": "MERCADOLIVRE*55402074GU",
+      "vencimento": "2026-01-08",
+      "valor": 2757,
+      "status": "PAGA",
+      "origem": "MANUAL",
+      "descricao": "MERCADOLIVRE*55402074GU",
+      "competencia": "2025-11-03",
+      "contaId": "",
+      "id": 10,
+      "parcelaPaga": 1,
+      "dataPagamento": "2026-01-06",
+      "valorPago": 2757
+    },
     {
-      "id": "cx_1",
-      "competencia": "2025-01",
-      "conta": "cta_1",
-      "valor": 67200,
-      "status": "FECHADO"
-    }
-  ],
-  "conciliacaoTributacao": [
+      "fornecedorId": "fornecedor-avulso",
+      "fornecedorNome": "IFD*41.357.472 MICHEL S",
+      "vencimento": "2025-12-08",
+      "valor": 3788,
+      "status": "ABERTA",
+      "origem": "MANUAL",
+      "descricao": "IFD*41.357.472 MICHEL S",
+      "competencia": "2025-11-01",
+      "contaId": "",
+      "id": 11
+    },
     {
-      "id": "conc_1",
-      "data": "2025-01-31",
-      "conta": "cta_1",
-      "valor": 67200,
-      "status": "CONCILIADO"
-    }
-  ],
-  "apuracoes": [
+      "fornecedorId": "fornecedor-avulso",
+      "fornecedorNome": "IFD*FABIANE DE AGUIAR S",
+      "vencimento": "2025-12-08",
+      "valor": 2524,
+      "status": "ABERTA",
+      "origem": "MANUAL",
+      "descricao": "IFD*FABIANE DE AGUIAR S",
+      "competencia": "2025-10-30",
+      "contaId": "",
+      "id": 12
+    },
     {
-      "id": "apu_1",
-      "competencia": "2025-01",
-      "tributo": "DAS",
-      "valor": 25000,
-      "status": "EMITIDA",
-      "vencimento": "2025-02-20"
-    }
-  ],
-  "obrigacoes": [
+      "fornecedorId": "fornecedor-avulso",
+      "fornecedorNome": "IFD*JEYSON OLIVEIRA TUR",
+      "vencimento": "2025-12-08",
+      "valor": 2981,
+      "status": "ABERTA",
+      "origem": "MANUAL",
+      "descricao": "IFD*JEYSON OLIVEIRA TUR",
+      "competencia": "2025-10-29",
+      "contaId": "",
+      "id": 13
+    },
     {
-      "id": "obr_1",
-      "obrigacao": "DCTFWeb",
-      "vencimento": "2025-02-15",
-      "status": "PENDENTE"
+      "fornecedorId": "fornecedor-avulso",
+      "fornecedorNome": "IFD*29.500.172 RODRIGO",
+      "vencimento": "2025-12-08",
+      "valor": 3479,
+      "status": "ABERTA",
+      "origem": "MANUAL",
+      "descricao": "IFD*29.500.172 RODRIGO",
+      "competencia": "2025-10-28",
+      "contaId": "",
+      "id": 14
+    },
+    {
+      "fornecedorId": "fornecedor-avulso",
+      "fornecedorNome": "EC *PHDDIGITAL",
+      "vencimento": "2025-12-08",
+      "valor": 7126,
+      "status": "ABERTA",
+      "origem": "MANUAL",
+      "descricao": "EC *PHDDIGITAL 2/2",
+      "competencia": "2025-10-25",
+      "parcela": 2,
+      "totalParcelas": 2,
+      "parcelaPaga": 1,
+      "contaId": "",
+      "id": 15
+    },
+    {
+      "fornecedorId": "fornecedor-avulso",
+      "fornecedorNome": "MULTA",
+      "vencimento": "2026-01-08",
+      "valor": 2480,
+      "status": "ABERTA",
+      "origem": "MANUAL",
+      "descricao": "MULTA",
+      "competencia": "2025-11-29",
+      "contaId": "",
+      "id": 16
+    },
+    {
+      "fornecedorId": "fornecedor-avulso",
+      "fornecedorNome": "JUROS DE MORA",
+      "vencimento": "2026-01-08",
+      "valor": 1240,
+      "status": "ABERTA",
+      "origem": "MANUAL",
+      "descricao": "JUROS DE MORA",
+      "competencia": "2025-11-29",
+      "contaId": "",
+      "id": 17
+    },
+    {
+      "fornecedorId": "fornecedor-avulso",
+      "fornecedorNome": "ENCARGOS REFINANCIAMENT",
+      "vencimento": "2026-01-08",
+      "valor": 18107,
+      "status": "ABERTA",
+      "origem": "MANUAL",
+      "descricao": "ENCARGOS REFINANCIAMENT",
+      "competencia": "2025-11-29",
+      "contaId": "",
+      "id": 18
+    },
+    {
+      "fornecedorId": "1",
+      "vencimento": "2026-01-12",
+      "valor": 120000,
+      "status": "ABERTA",
+      "descricao": "Aluguel Casa",
+      "recorrente": true,
+      "valorOriginal": 120000,
+      "contaId": "1",
+      "categoriaId": "2",
+      "id": 19
     }
   ],
+  "vendas": [],
+  "compras": [],
   "vendasAnalytics": {
     "totais": {
-      "quantidade": 12,
-      "total": 67200
+      "quantidade": 0,
+      "total": 0
     },
-    "maisVendidos": [
-      {
-        "produtoId": "prd_2",
-        "descricao": "Produto demo",
-        "quantidade": 8,
-        "total": 28000
-      }
-    ],
-    "menosVendidos": [
-      {
-        "produtoId": "prd_1",
-        "descricao": "Servico de consultoria",
-        "quantidade": 1,
-        "total": 15000
-      }
-    ],
-    "ultimosSaidos": [
-      {
-        "id": "saida_1",
-        "data": "2025-01-10",
-        "produto": "Produto demo",
-        "quantidade": 2,
-        "total": 7000
-      }
-    ]
+    "maisVendidos": [],
+    "menosVendidos": [],
+    "ultimosSaidos": []
   },
-  "usuarioPerfil": {
-    "id": "user_1",
-    "nome": "Usuario Demo",
-    "email": "usuario@demo.com",
-    "telefone": "11999990000",
-    "fotoUrl": ""
-  }
+  "folha": [],
+  "colaboradores": [],
+  "notas": [],
+  "integracoesBancarias": [
+    {
+      "banco": "ITAU",
+      "status": "ATIVA",
+      "id": 1
+    }
+  ],
+  "receitasTributacao": [],
+  "caixaTributacao": [],
+  "conciliacaoTributacao": [],
+  "apuracoes": [],
+  "obrigacoes": [],
+  "empresas": [],
+  "estoque": [],
+  "usuarioPerfil": {}
 }

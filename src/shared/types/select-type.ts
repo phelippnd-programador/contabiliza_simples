@@ -43,6 +43,19 @@ export const tipoContaOptions: ItemSelect[] = (
     })
     );
 
+export const bancoOptions: ItemSelect[] = [
+    { value: "BANCO_DO_BRASIL", label: "Banco do Brasil" },
+    { value: "BRADESCO", label: "Bradesco" },
+    { value: "ITAU", label: "Itau" },
+    { value: "SANTANDER", label: "Santander" },
+    { value: "CAIXA", label: "Caixa" },
+    { value: "INTER", label: "Banco Inter" },
+    { value: "NU", label: "Nubank" },
+    { value: "SICOOB", label: "Sicoob" },
+    { value: "SICREDI", label: "Sicredi" },
+    { value: "PIX", label: "PIX" },
+];
+
 // const diasPagamentoOptions = Array.from({ length: 28 }, (_, i) => ({
 //   label: String(i + 1),
 //   value: i + 1,

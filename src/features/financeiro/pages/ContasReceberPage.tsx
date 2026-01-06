@@ -19,6 +19,7 @@ import { listContas } from "../services/contas.service";
 import { listCategorias } from "../services/categorias.service";
 import { listClientes, type ClienteResumo } from "../../cadastros/services/cadastros.service";
 import { formatBRL, formatLocalDate } from "../../../shared/utils/formater";
+import { TipoMovimentoCaixa } from "../types";
 import { EditIcon, TrashIcon } from "../../../components/ui/icon/AppIcons";
 import AppPopup from "../../../components/ui/popup/AppPopup";
 import useConfirmPopup from "../../../shared/hooks/useConfirmPopup";
@@ -65,6 +66,7 @@ const ContasReceberPage = () => {
     competencia: "",
     parcela: 1,
     totalParcelas: 1,
+    recorrente: false,
     vencimento: "",
     valorOriginalCents: 0,
     descontoCents: 0,
@@ -103,7 +105,7 @@ const ContasReceberPage = () => {
     const loadLookups = async () => {
       const [contasResult, categoriasResult, clientesResult] = await Promise.allSettled([
         listContas(),
-        listCategorias(),
+        listCategorias({ tipo: TipoMovimentoCaixa.ENTRADA }),
         listClientes({ page: 1, pageSize: 200 }),
       ]);
       if (!isMounted) return;
@@ -119,7 +121,9 @@ const ContasReceberPage = () => {
       }
       if (categoriasResult.status === "fulfilled") {
         setCategorias(
-          categoriasResult.value.map((categoria) => ({
+          categoriasResult.value
+            .filter((categoria) => categoria.tipo === TipoMovimentoCaixa.ENTRADA)
+            .map((categoria) => ({
             value: categoria.id,
             label: categoria.nome,
           }))
@@ -193,7 +197,9 @@ const ContasReceberPage = () => {
         key: "parcela",
         header: contaLabels.table.parcela,
         render: (row: ContaReceberResumo) =>
-          row.parcela && row.totalParcelas
+          row.recorrente
+            ? "Recorrente"
+            : row.parcela && row.totalParcelas
             ? `${row.parcela}/${row.totalParcelas}`
             : "-",
       },
@@ -230,6 +236,7 @@ const ContasReceberPage = () => {
                   competencia: row.competencia ?? "",
                   parcela: row.parcela ?? 1,
                   totalParcelas: row.totalParcelas ?? 1,
+                  recorrente: row.recorrente ?? false,
                   vencimento: row.vencimento,
                   valorOriginalCents: row.valorOriginal ?? row.valor,
                   descontoCents: row.desconto ?? 0,
@@ -291,6 +298,7 @@ const ContasReceberPage = () => {
       competencia: "",
       parcela: 1,
       totalParcelas: 1,
+      recorrente: false,
       vencimento: "",
       valorOriginalCents: 0,
       descontoCents: 0,
@@ -342,8 +350,9 @@ const ContasReceberPage = () => {
         descricao: formData.descricao || undefined,
         numeroDocumento: formData.numeroDocumento || undefined,
         competencia: formData.competencia || undefined,
-        parcela: formData.parcela || undefined,
-        totalParcelas: formData.totalParcelas || undefined,
+        parcela: formData.recorrente ? undefined : formData.parcela || undefined,
+        totalParcelas: formData.recorrente ? undefined : formData.totalParcelas || undefined,
+        recorrente: formData.recorrente,
         valorOriginal: formData.valorOriginalCents || undefined,
         desconto: formData.descontoCents || undefined,
         juros: formData.jurosCents || undefined,
@@ -439,24 +448,48 @@ const ContasReceberPage = () => {
                 setFormData((prev) => ({ ...prev, competencia: e.target.value }))
               }
             />
-            <AppTextInput
-              title={contaLabels.fields.parcela}
-              value={formData.parcela ? String(formData.parcela) : ""}
-              sanitizeRegex={/[0-9]/g}
-              onValueChange={(raw) =>
-                setFormData((prev) => ({ ...prev, parcela: Number(raw || "0") }))
-              }
-            />
-            <AppTextInput
-              title={contaLabels.fields.totalParcelas}
-              value={formData.totalParcelas ? String(formData.totalParcelas) : ""}
-              sanitizeRegex={/[0-9]/g}
-              onValueChange={(raw) =>
+            {!formData.recorrente ? (
+              <>
+                <AppTextInput
+                  title={contaLabels.fields.parcela}
+                  value={formData.parcela ? String(formData.parcela) : ""}
+                  sanitizeRegex={/[0-9]/g}
+                  onValueChange={(raw) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      parcela: Number(raw || "0"),
+                    }))
+                  }
+                />
+                <AppTextInput
+                  title={contaLabels.fields.totalParcelas}
+                  value={
+                    formData.totalParcelas ? String(formData.totalParcelas) : ""
+                  }
+                  sanitizeRegex={/[0-9]/g}
+                  onValueChange={(raw) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      totalParcelas: Number(raw || "0"),
+                    }))
+                  }
+                />
+              </>
+            ) : null}
+            <AppSelectInput
+              title="Recorrente"
+              value={formData.recorrente ? "SIM" : "NAO"}
+              onChange={(e) =>
                 setFormData((prev) => ({
                   ...prev,
-                  totalParcelas: Number(raw || "0"),
+                  recorrente: e.target.value === "SIM",
                 }))
               }
+              data={[
+                { value: "NAO", label: "Nao" },
+                { value: "SIM", label: "Sim" },
+              ]}
+              helperText="Cai todo mes sem quantidade de parcelas."
             />
             <AppTextInput
               required

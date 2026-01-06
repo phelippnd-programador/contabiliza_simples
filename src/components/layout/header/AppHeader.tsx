@@ -137,6 +137,13 @@ const AppHeader = () => {
             moduleKey: "financeiro",
           },
           {
+            id: "cartoes",
+            label: "Cartoes",
+            to: "/financeiro/cartoes",
+            icon: <IconWallet />,
+            moduleKey: "financeiro",
+          },
+          {
             id: "contas_pagar",
             label: "Contas a pagar",
             to: "/financeiro/contas-pagar",
@@ -356,6 +363,13 @@ const AppHeader = () => {
             id: "bancos",
             label: "Bancos",
             to: "/integracoes/bancos",
+            icon: <IconList />,
+            moduleKey: "integracoes",
+          },
+          {
+            id: "importacao_extratos",
+            label: planConfig.labels.integracoes.importMenu,
+            to: "/integracoes/importacao",
             icon: <IconList />,
             moduleKey: "integracoes",
           },

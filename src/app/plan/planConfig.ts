@@ -51,6 +51,11 @@ type PlanLabels = {
     empty: string;
     hint: string;
   };
+  integracoes: {
+    importMenu: string;
+    importTitle: string;
+    importSubtitle: string;
+  };
   financeiro: {
     contasPagar: {
       title: string;
@@ -286,6 +291,11 @@ const baseLabels = {
     empty: "Nenhum evento gerado.",
     hint: "Simulador ativo: calcule folha e eventos eSocial localmente.",
   },
+  integracoes: {
+    importMenu: "Importar extrato / conciliacao",
+    importTitle: "Importar extrato / conciliacao",
+    importSubtitle: "Importe CSV, OFX ou PDF com revisao.",
+  },
 };
 
 const planConfig: Record<AppPlan, PlanConfig> = {
@@ -373,6 +383,11 @@ const planConfig: Record<AppPlan, PlanConfig> = {
         send: "Enviar eventos",
         empty: "Nenhum evento gerado.",
         hint: "Simulador ativo: calcule pagamentos localmente.",
+      },
+      integracoes: {
+        importMenu: "Importar extrato",
+        importTitle: "Importar extrato",
+        importSubtitle: "Importe CSV, OFX ou PDF com revisao.",
       },
       financeiro: {
         contasPagar: {
