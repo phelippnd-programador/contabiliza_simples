@@ -11,6 +11,8 @@ import {
 } from "../../../shared/types/select-type";
 import { getConta, saveConta } from "../services/contas.service";
 import { TipoConta, TipoMovimentoCaixa, type ContaBancaria } from "../types";
+import { BankPicker } from "../../../components/ui/picked/BankPicker";
+import { getBankByValueCached, type BankItem } from "../../../shared/services/banks";
 
 const ContaBancariaPage = () => {
   const { id } = useParams();
@@ -24,7 +26,9 @@ const ContaBancariaPage = () => {
     tipo: TipoConta.BANCO as TipoConta,
     categoria: TipoMovimentoCaixa.SAIDA as TipoMovimentoCaixa,
   });
+  const [bankItem, setBankItem] = useState<BankItem | null>(null);
   const [notFound, setNotFound] = useState<boolean>(false);
+  const isBanco = form.tipo === TipoConta.BANCO;
 
   useEffect(() => {
     let isMounted = true;
@@ -44,6 +48,48 @@ const ContaBancariaPage = () => {
       isMounted = false;
     };
   }, [id]);
+
+  useEffect(() => {
+    let isMounted = true;
+    const value = form.banco?.trim();
+    if (!value) {
+      setBankItem(null);
+      return () => {
+        isMounted = false;
+      };
+    }
+    const loadBank = async () => {
+      const found = await getBankByValueCached(value);
+      if (!isMounted) return;
+      if (found) {
+        setBankItem(found);
+        return;
+      }
+      const code = /^\d+$/.test(value) ? Number(value) : undefined;
+      setBankItem({
+        ispb: "",
+        name: value,
+        code: Number.isFinite(code) ? code : undefined,
+      });
+    };
+    loadBank();
+    return () => {
+      isMounted = false;
+    };
+  }, [form.banco]);
+
+  useEffect(() => {
+    if (!isBanco) {
+      setForm((prev) => ({
+        ...prev,
+        banco: "",
+        agencia: "",
+        conta: "",
+        digito: "",
+      }));
+      setBankItem(null);
+    }
+  }, [isBanco]);
 
   const handleChange =
     (field: keyof typeof form) =>
@@ -82,35 +128,48 @@ const ContaBancariaPage = () => {
             onChange={handleChange("nome")}
           />
 
-          <AppTextInput
-            required
-            title="Banco"
-            value={form.banco}
-            onChange={handleChange("banco")}
-          />
+          {isBanco ? (
+            <BankPicker
+              required
+              value={bankItem}
+              onChange={(item) => {
+                setBankItem(item);
+                setForm((prev) => ({
+                  ...prev,
+                  banco: item ? (item.code != null ? String(item.code) : item.name) : "",
+                }));
+              }}
+            />
+          ) : null}
 
-          <AppTextInput
-            required
-            title="Agencia"
-            value={form.agencia}
-            onChange={handleChange("agencia")}
-            sanitizeRegex={/[0-9]/g}
-          />
+          {isBanco ? (
+            <AppTextInput
+              required
+              title="Agencia"
+              value={form.agencia}
+              onChange={handleChange("agencia")}
+              sanitizeRegex={/[0-9]/g}
+            />
+          ) : null}
 
-          <AppTextInput
-            required
-            title="Conta"
-            value={form.conta}
-            onChange={handleChange("conta")}
-            sanitizeRegex={/[0-9]/g}
-          />
+          {isBanco ? (
+            <AppTextInput
+              required
+              title="Conta"
+              value={form.conta}
+              onChange={handleChange("conta")}
+              sanitizeRegex={/[0-9]/g}
+            />
+          ) : null}
 
-          <AppTextInput
-            title="Digito"
-            value={form.digito}
-            onChange={handleChange("digito")}
-            sanitizeRegex={/[0-9]/g}
-          />
+          {isBanco ? (
+            <AppTextInput
+              title="Digito"
+              value={form.digito}
+              onChange={handleChange("digito")}
+              sanitizeRegex={/[0-9]/g}
+            />
+          ) : null}
 
           <AppSelectInput
             required

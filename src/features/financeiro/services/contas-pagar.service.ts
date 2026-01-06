@@ -29,6 +29,7 @@ export type ContaPagarResumo = {
   contaId?: string;
   categoriaId?: string;
   observacoes?: string;
+  recorrente?: boolean;
 };
 
 export type ContaPagarPayload = {
@@ -55,6 +56,7 @@ export type ContaPagarPayload = {
   contaId?: string;
   categoriaId?: string;
   observacoes?: string;
+  recorrente?: boolean;
 };
 
 export type ListContasPagarParams = {

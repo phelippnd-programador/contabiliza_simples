@@ -120,7 +120,7 @@ const AppTable = <T,>({
       {isPaginated && totalPages > 1 ? (
         <div className="flex items-center justify-between border-t border-gray-100 bg-white px-4 py-3 text-xs text-gray-500 dark:border-slate-800 dark:bg-slate-900 dark:text-gray-400">
           <span>
-            Pagina {currentPage} de {totalPages}
+            Pagina {currentPage} de {totalPages} • {totalItems} itens
           </span>
           <div className="flex gap-2">
             <button

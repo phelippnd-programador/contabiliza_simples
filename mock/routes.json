@@ -7,7 +7,7 @@
   "/cadastros/produtos-servicos/:id": "/produtosServicos/:id",
   "/financeiro/contas": "/contas",
   "/financeiro/contas/:id": "/contas/:id",
-  "/financeiro/categorias": "/categorias",
+  "/financeiro/categorias*": "/categorias$1",
   "/financeiro/categorias/:id": "/categorias/:id",
   "/financeiro/movimentos": "/movimentos",
   "/financeiro/movimentos/:id": "/movimentos/:id",
@@ -46,5 +46,7 @@
   "/estoque/:id": "/estoque/:id",
   "/estoque/:id/movimentos": "/estoqueMovimentos?itemId=:id",
   "/usuarios/perfil": "/usuarioPerfil",
-  "/usuarios/perfil/:id": "/usuarioPerfil/:id"
+  "/usuarios/perfil/:id": "/usuarioPerfil/:id",
+  "/financeiro/cartoes": "/cartoes",
+  "/financeiro/cartoes/:id": "/cartoes/:id"
 }

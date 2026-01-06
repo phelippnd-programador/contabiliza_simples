@@ -28,6 +28,7 @@ export type ContaReceberResumo = {
   contaId?: string;
   categoriaId?: string;
   observacoes?: string;
+  recorrente?: boolean;
 };
 
 export type ContaReceberPayload = {
@@ -53,6 +54,7 @@ export type ContaReceberPayload = {
   contaId?: string;
   categoriaId?: string;
   observacoes?: string;
+  recorrente?: boolean;
 };
 
 export type ListContasReceberParams = {

@@ -37,6 +37,12 @@ const ContasBancariasPage = lazy(
 const ContaBancariaPage = lazy(
   () => import("../features/financeiro/pages/ContaBancariaPage")
 );
+const CartoesPage = lazy(
+  () => import("../features/financeiro/pages/CartoesPage")
+);
+const CartaoPage = lazy(
+  () => import("../features/financeiro/pages/CartaoPage")
+);
 const ContasPagarPage = lazy(
   () => import("../features/financeiro/pages/ContasPagarPage")
 );
@@ -90,6 +96,9 @@ const ObrigacoesPage = lazy(
 );
 const IntegracoesBancariasPage = lazy(
   () => import("../features/integracoes/pages/IntegracoesBancariasPage")
+);
+const ImportWizardPage = lazy(
+  () => import("../features/import/pages/ImportWizardPage")
 );
 const FolhaPagamentoPage = lazy(
   () => import("../features/folha/pages/FolhaPagamentoPage")
@@ -161,6 +170,18 @@ export const router = createBrowserRouter([
       {
         path: "financeiro/contas",
         element: withPlanGuard(["CONTADOR", "EMPRESA"], "financeiro", <ContasBancariasPage />),
+      },
+      {
+        path: "financeiro/cartoes",
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "financeiro", <CartoesPage />),
+      },
+      {
+        path: "financeiro/cartoes/novo",
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "financeiro", <CartaoPage />),
+      },
+      {
+        path: "financeiro/cartoes/:id",
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "financeiro", <CartaoPage />),
       },
       {
         path: "financeiro/contas/nova",
@@ -265,6 +286,10 @@ export const router = createBrowserRouter([
       {
         path: "integracoes/bancos",
         element: withPlanGuard(["CONTADOR", "EMPRESA"], "integracoes", <IntegracoesBancariasPage />),
+      },
+      {
+        path: "integracoes/importacao",
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "integracoes", <ImportWizardPage />),
       },
       {
         path: "folha",

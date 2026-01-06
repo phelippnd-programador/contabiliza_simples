@@ -73,4 +73,13 @@ export type ContaBancaria = {
     categoria: TipoMovimentoCaixa;
 };
 
+export type CartaoCredito = {
+    id: string;
+    nome: string;
+    banco: string;
+    vencimentoDia: number;
+    fechamentoDia: number;
+    limiteInicial: number;
+};
+
 

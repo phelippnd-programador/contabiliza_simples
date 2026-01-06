@@ -13,32 +13,25 @@ import {
 } from "../services/integracoes-bancarias.service";
 import AppButton from "../../../components/ui/button/AppButton";
 import AppIconButton from "../../../components/ui/button/AppIconButton";
-import AppTextInput from "../../../components/ui/input/AppTextInput";
 import AppSelectInput from "../../../components/ui/input/AppSelectInput";
 import { getErrorMessage } from "../../../shared/services/apiClient";
 import { formatLocalDate } from "../../../shared/utils/formater";
 import { EditIcon, TrashIcon } from "../../../components/ui/icon/AppIcons";
 import AppPopup from "../../../components/ui/popup/AppPopup";
 import useConfirmPopup from "../../../shared/hooks/useConfirmPopup";
+import { BankPicker } from "../../../components/ui/picked/BankPicker";
+import {
+  getBanksCached,
+  getBankByValueCached,
+  resolveBankLabel,
+  type BankItem,
+} from "../../../shared/services/banks";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 
 const statusOptions = [
   { value: "ATIVA", label: "Ativa" },
   { value: "INATIVA", label: "Inativa" },
-];
-
-const bancoOptions = [
-  { value: "BANCO_DO_BRASIL", label: "Banco do Brasil" },
-  { value: "BRADESCO", label: "Bradesco" },
-  { value: "ITAU", label: "Itau" },
-  { value: "SANTANDER", label: "Santander" },
-  { value: "CAIXA", label: "Caixa" },
-  { value: "INTER", label: "Banco Inter" },
-  { value: "NU", label: "Nubank" },
-  { value: "SICOOB", label: "Sicoob" },
-  { value: "SICREDI", label: "Sicredi" },
-  { value: "PIX", label: "PIX" },
 ];
 
 const IntegracoesBancariasPage = () => {
@@ -50,6 +43,8 @@ const IntegracoesBancariasPage = () => {
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const { popupProps, openConfirm } = useConfirmPopup();
+  const [banks, setBanks] = useState<BankItem[]>([]);
+  const [bankItem, setBankItem] = useState<BankItem | null>(null);
   const [formData, setFormData] = useState({
     banco: "",
     status: "ATIVA",
@@ -77,12 +72,55 @@ const IntegracoesBancariasPage = () => {
     load();
   }, [page]);
 
+  useEffect(() => {
+    let isMounted = true;
+    const loadBanks = async () => {
+      const data = await getBanksCached();
+      if (!isMounted) return;
+      setBanks(data);
+    };
+    loadBanks();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+    const value = formData.banco?.trim();
+    if (!value) {
+      setBankItem(null);
+      return () => {
+        isMounted = false;
+      };
+    }
+    const loadBank = async () => {
+      const found = await getBankByValueCached(value);
+      if (!isMounted) return;
+      if (found) {
+        setBankItem(found);
+        return;
+      }
+      const code = /^\d+$/.test(value) ? Number(value) : undefined;
+      setBankItem({
+        ispb: "",
+        name: value,
+        code: Number.isFinite(code) ? code : undefined,
+      });
+    };
+    loadBank();
+    return () => {
+      isMounted = false;
+    };
+  }, [formData.banco]);
+
   const columns = useMemo(
     () => [
       {
         key: "banco",
         header: "Banco",
-        render: (row: IntegracaoBancariaResumo) => row.banco,
+        render: (row: IntegracaoBancariaResumo) =>
+          resolveBankLabel(row.banco, banks),
       },
       {
         key: "ultimaAtualizacao",
@@ -148,7 +186,7 @@ const IntegracoesBancariasPage = () => {
         ),
       },
     ],
-    []
+    [banks, openConfirm]
   );
 
   const resetForm = () => {
@@ -157,6 +195,7 @@ const IntegracoesBancariasPage = () => {
       banco: "",
       status: "ATIVA",
     });
+    setBankItem(null);
   };
 
   const handleSubmit = async () => {
@@ -213,15 +252,16 @@ const IntegracoesBancariasPage = () => {
       {formOpen ? (
         <Card>
           <div className="grid gap-4 md:grid-cols-2">
-            <AppSelectInput
+            <BankPicker
               required
-              title="Banco"
-              value={formData.banco}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, banco: e.target.value }))
-              }
-              data={bancoOptions}
-              placeholder="Selecione"
+              value={bankItem}
+              onChange={(item) => {
+                setBankItem(item);
+                setFormData((prev) => ({
+                  ...prev,
+                  banco: item ? (item.code != null ? String(item.code) : item.name) : "",
+                }));
+              }}
             />
             <AppSelectInput
               title="Status"
