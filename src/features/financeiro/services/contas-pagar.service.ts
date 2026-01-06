@@ -1,5 +1,6 @@
 import { apiFetch } from "../../../shared/services/apiClient";
 import type { ApiListResponse } from "../../../shared/types/api-types";
+import type { BaixaTitulo } from "../types";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 
@@ -30,6 +31,7 @@ export type ContaPagarResumo = {
   categoriaId?: string;
   observacoes?: string;
   recorrente?: boolean;
+  baixas?: BaixaTitulo[];
 };
 
 export type ContaPagarPayload = {
@@ -57,6 +59,7 @@ export type ContaPagarPayload = {
   categoriaId?: string;
   observacoes?: string;
   recorrente?: boolean;
+  baixas?: BaixaTitulo[];
 };
 
 export type ListContasPagarParams = {

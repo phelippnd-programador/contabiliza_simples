@@ -62,6 +62,18 @@ export type CategoriaMovimento = {
     tipo: TipoMovimentoCaixa;
 };
 
+export type BaixaTitulo = {
+    id: string;
+    data: string;
+    valor: number;
+    parcela?: number;
+    formaPagamento?: string;
+    contaId?: string;
+    categoriaId?: string;
+    observacoes?: string;
+    movimentoId?: string;
+};
+
 export type ContaBancaria = {
     id: string;
     nome: string;
