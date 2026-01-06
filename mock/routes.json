@@ -48,7 +48,7 @@
   "/empresas/:id": "/empresas/:id",
   "/estoque": "/estoque",
   "/estoque/:id": "/estoque/:id",
-  "/estoque/:id/movimentos": "/estoqueMovimentos?itemId=:id",
+  "/estoque/:id/movimentos*": "/estoqueMovimentos?itemId=:id$1",
   "/usuarios/perfil": "/usuarioPerfil",
   "/usuarios/perfil/:id": "/usuarioPerfil/:id",
   "/financeiro/cartoes": "/cartoes",

@@ -12,6 +12,7 @@ import {
   type EstoqueResumo,
   type EstoqueMovimentoTipo,
 } from "../services/estoque.service";
+import { toLocalISODate } from "../../../shared/utils/formater";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 
@@ -124,10 +125,12 @@ const EstoqueImportacaoPage = () => {
       );
     }
     if (itemLabel) {
-      const needle = itemLabel.toLowerCase();
+      const normalize = (value: string) =>
+        value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+      const needle = normalize(itemLabel);
       return (
         itens.find((item) => {
-          const label = (item.descricao || item.item || "").toLowerCase();
+          const label = normalize(item.descricao || item.item || "");
           return label === needle;
         }) ?? null
       );
@@ -228,7 +231,13 @@ const EstoqueImportacaoPage = () => {
         );
         return;
       }
-      const dataMov = data || new Date().toISOString().slice(0, 10);
+      if (delta < 0 && Math.abs(delta) > saldoAtual) {
+        errors.push(
+          `Linha ${index + 2}: ajuste negativo maior que o saldo atual.`
+        );
+        return;
+      }
+      const dataMov = data || toLocalISODate(new Date());
       rows.push({
         itemId: resolvedItem.id,
         itemLabel: resolvedItem.descricao || resolvedItem.item,
@@ -338,7 +347,7 @@ const EstoqueImportacaoPage = () => {
       setBatchError("Adicione ao menos um item.");
       return;
     }
-    const dataMov = batchDate || new Date().toISOString().slice(0, 10);
+    const dataMov = batchDate || toLocalISODate(new Date());
     const payloads: Array<{ itemId: string; quantidade: number; custo?: number }> =
       [];
     let hasError = false;
@@ -364,6 +373,13 @@ const EstoqueImportacaoPage = () => {
       if (delta > 0 && row.custoUnitarioCents <= 0) {
         setBatchError(
           `Linha ${index + 1}: custo unitario obrigatorio para ajuste positivo.`
+        );
+        hasError = true;
+        return;
+      }
+      if (delta < 0 && Math.abs(delta) > (item.quantidade ?? 0)) {
+        setBatchError(
+          `Linha ${index + 1}: ajuste negativo maior que o saldo atual.`
         );
         hasError = true;
         return;

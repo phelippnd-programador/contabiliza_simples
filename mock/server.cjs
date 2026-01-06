@@ -13,6 +13,11 @@ server.use((req, _res, next) => {
   const url = new URL(req.originalUrl, `http://${req.headers.host}`);
   const page = url.searchParams.get("page");
   const pageSize = url.searchParams.get("pageSize");
+  const dataInicio = url.searchParams.get("dataInicio");
+  const dataFim = url.searchParams.get("dataFim");
+  const origem = url.searchParams.get("origem");
+  const lote = url.searchParams.get("lote");
+  const serie = url.searchParams.get("serie");
 
   if (page || pageSize) {
     req.query = req.query || {};
@@ -24,6 +29,12 @@ server.use((req, _res, next) => {
     if (pageSize) req.query._limit = pageSize;
     delete req.query.page;
     delete req.query.pageSize;
+
+    if (dataInicio) req.query.dataInicio = dataInicio;
+    if (dataFim) req.query.dataFim = dataFim;
+    if (origem) req.query.origem = origem;
+    if (lote) req.query.lote = lote;
+    if (serie) req.query.serie = serie;
 
     req.url = url.pathname;
     req.originalUrl = url.pathname;
@@ -53,6 +64,35 @@ server.post("/auth/refresh", (req, res) => {
 
 server.get("/auth/me", (req, res) => {
   res.json({ role: "CONTADOR" });
+});
+
+server.get("/estoque/:id/movimentos", (req, res, next) => {
+  if (!router?.db) {
+    next();
+    return;
+  }
+  const itemId = String(req.params.id);
+  const dataInicio = req.query?.dataInicio ? String(req.query.dataInicio) : "";
+  const dataFim = req.query?.dataFim ? String(req.query.dataFim) : "";
+  const origem = req.query?.origem ? String(req.query.origem) : "";
+  const lote = req.query?.lote ? String(req.query.lote) : "";
+  const serie = req.query?.serie ? String(req.query.serie) : "";
+  const all = router.db.get("estoqueMovimentos").value() || [];
+  let filtered = all.filter((mov) => String(mov.itemId) === itemId);
+  if (dataInicio) filtered = filtered.filter((mov) => mov.data >= dataInicio);
+  if (dataFim) filtered = filtered.filter((mov) => mov.data <= dataFim);
+  if (origem) filtered = filtered.filter((mov) => mov.origem === origem);
+  if (lote) filtered = filtered.filter((mov) => mov.lote === lote);
+  if (serie) filtered = filtered.filter((mov) => mov.serie === serie);
+
+  const page = Number(req.query?._page ?? req.query?.page ?? 1);
+  const pageSize = Number(req.query?._limit ?? req.query?.pageSize ?? filtered.length || 10);
+  const start = (page - 1) * pageSize;
+  const data = filtered.slice(start, start + pageSize);
+  res.jsonp({
+    data,
+    meta: { page, pageSize, total: filtered.length },
+  });
 });
 
 server.post("/notas/draft", (req, res) => {

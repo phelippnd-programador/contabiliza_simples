@@ -97,30 +97,36 @@ const EstoqueMovimentosPage = () => {
     };
   }, []);
 
-  useEffect(() => {
+  const loadMovimentos = async () => {
     const itemId = movimentoData.itemId;
     if (!itemId) {
       setMovimentos([]);
       setMovimentoTotal(0);
       return;
     }
-    const loadMovimentos = async () => {
-      try {
-        setMovimentoError("");
-        const response = await listMovimentos(itemId, {
-          page: movimentoPage,
-          pageSize: 8,
-        });
-        setMovimentos(response.data);
-        setMovimentoTotal(response.meta.total);
-      } catch {
-        setMovimentos([]);
-        setMovimentoTotal(0);
-        setMovimentoError("Nao foi possivel carregar os movimentos.");
-      }
-    };
+    try {
+      setMovimentoError("");
+      const response = await listMovimentos(itemId, {
+        page: movimentoPage,
+        pageSize: 8,
+        dataInicio: filtros.dataInicio || undefined,
+        dataFim: filtros.dataFim || undefined,
+        origem: filtros.origem ? (filtros.origem as "MANUAL" | "VENDA" | "COMPRA") : undefined,
+        lote: filtros.lote || undefined,
+        serie: filtros.serie || undefined,
+      });
+      setMovimentos(response.data);
+      setMovimentoTotal(response.meta.total);
+    } catch {
+      setMovimentos([]);
+      setMovimentoTotal(0);
+      setMovimentoError("Nao foi possivel carregar os movimentos.");
+    }
+  };
+
+  useEffect(() => {
     loadMovimentos();
-  }, [movimentoData.itemId, movimentoPage]);
+  }, [movimentoData.itemId, movimentoPage, filtros]);
 
   useEffect(() => {
     if (
@@ -209,7 +215,7 @@ const EstoqueMovimentosPage = () => {
       return;
     }
     try {
-      await createMovimento(movimentoData.itemId, {
+      const resultado = await createMovimento(movimentoData.itemId, {
         tipo: movimentoData.tipo,
         data: movimentoData.data,
         quantidade: effectiveQuantidade,
@@ -224,6 +230,18 @@ const EstoqueMovimentosPage = () => {
         origemId: movimentoData.origemId || undefined,
         observacoes: movimentoData.observacoes || undefined,
       });
+      if (
+        typeof resultado.custoMedio === "number" &&
+        selectedItem &&
+        typeof selectedItem.custoMedio === "number"
+      ) {
+        const diff = Math.abs(resultado.custoMedio - selectedItem.custoMedio);
+        if (diff > 0) {
+          setMovimentoError(
+            "Custo medio recalculado pelo sistema. Atualize a lista para conferir."
+          );
+        }
+      }
       setMovimentoData((prev) => ({
         ...prev,
         quantidade: 0,
@@ -236,6 +254,7 @@ const EstoqueMovimentosPage = () => {
       setAjusteDirecao("ENTRADA");
       setMovimentoPage(1);
       loadItens();
+      loadMovimentos();
     } catch {
       setMovimentoError("Nao foi possivel registrar o movimento.");
     }
@@ -363,26 +382,6 @@ const EstoqueMovimentosPage = () => {
     return [];
   }, [compras, vendas, movimentoData.origem]);
 
-  const movimentosFiltrados = useMemo(() => {
-    if (
-      !filtros.dataInicio &&
-      !filtros.dataFim &&
-      !filtros.origem &&
-      !filtros.lote &&
-      !filtros.serie
-    ) {
-      return movimentos;
-    }
-    return movimentos.filter((item) => {
-      if (filtros.origem && item.origem !== filtros.origem) return false;
-      if (filtros.dataInicio && item.data < filtros.dataInicio) return false;
-      if (filtros.dataFim && item.data > filtros.dataFim) return false;
-      if (filtros.lote && item.lote !== filtros.lote) return false;
-      if (filtros.serie && item.serie !== filtros.serie) return false;
-      return true;
-    });
-  }, [filtros, movimentos]);
-
   const rastreioLotes = useMemo(() => {
     const map = new Map<
       string,
@@ -395,7 +394,7 @@ const EstoqueMovimentosPage = () => {
         ultimaData: string;
       }
     >();
-    movimentosFiltrados.forEach((mov) => {
+    movimentos.forEach((mov) => {
       if (!mov.lote && !mov.serie) return;
       const key = `${mov.lote ?? ""}||${mov.serie ?? ""}`;
       const signed =
@@ -424,7 +423,7 @@ const EstoqueMovimentosPage = () => {
     return Array.from(map.values()).sort((a, b) =>
       a.ultimaData < b.ultimaData ? 1 : -1
     );
-  }, [movimentosFiltrados]);
+  }, [movimentos]);
 
   const filtrosAtivos = Boolean(
     filtros.dataInicio ||
@@ -605,6 +604,9 @@ const EstoqueMovimentosPage = () => {
               Alerta: saldo abaixo do estoque minimo.
             </span>
           ) : null}
+          <span className="text-xs text-gray-500">
+            Custo medio definitivo e calculado no backend.
+          </span>
         </div>
         {movimentoError ? <p className="mt-2 text-sm text-red-600">{movimentoError}</p> : null}
         <div className="mt-3">
@@ -677,22 +679,23 @@ const EstoqueMovimentosPage = () => {
             </AppButton>
           </div>
         </div>
+        {filtrosAtivos ? (
+          <p className="mt-2 text-xs text-gray-500">
+            Filtros aplicados no servidor.
+          </p>
+        ) : null}
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
         <AppTable
-          data={movimentosFiltrados}
+          data={movimentos}
           rowKey={(row) => row.id}
           emptyState={<AppListNotFound texto="Nenhum movimento registrado." />}
-          pagination={
-            filtrosAtivos
-              ? { enabled: false }
-              : {
-                  enabled: true,
-                  pageSize: 8,
-                  page: movimentoPage,
-                  total: movimentoTotal,
-                  onPageChange: setMovimentoPage,
-                }
-          }
+          pagination={{
+            enabled: true,
+            pageSize: 8,
+            page: movimentoPage,
+            total: movimentoTotal,
+            onPageChange: setMovimentoPage,
+          }}
           columns={movimentoColumns}
         />
       </Card>

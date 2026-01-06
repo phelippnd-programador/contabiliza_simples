@@ -150,9 +150,13 @@ const EstoquePage = () => {
               icon={<EditIcon className="h-4 w-4" />}
               label={`Editar estoque ${row.descricao ?? row.id}`}
               onClick={() => {
+                if (!row.produtoId) {
+                  setFormError("Este item nao possui produto vinculado.");
+                  return;
+                }
                 setEditingId(row.id);
                 setFormData({
-                  produtoId: row.produtoId ?? row.id,
+                  produtoId: row.produtoId,
                   quantidade: row.quantidade,
                   custoMedioCents: row.custoMedio ?? 0,
                   estoqueMinimo: row.estoqueMinimo ?? 0,

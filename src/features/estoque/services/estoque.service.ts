@@ -60,6 +60,11 @@ export type ListEstoqueParams = {
 export type ListMovimentosParams = {
   page?: number;
   pageSize?: number;
+  dataInicio?: string;
+  dataFim?: string;
+  origem?: "MANUAL" | "VENDA" | "COMPRA";
+  lote?: string;
+  serie?: string;
 };
 
 export async function getEstoqueItem(id: string): Promise<EstoqueResumo> {
@@ -84,6 +89,11 @@ export async function listEstoque(
   const query = new URLSearchParams();
   query.set("page", String(page));
   query.set("pageSize", String(pageSize));
+  if (params.dataInicio) query.set("dataInicio", params.dataInicio);
+  if (params.dataFim) query.set("dataFim", params.dataFim);
+  if (params.origem) query.set("origem", params.origem);
+  if (params.lote) query.set("lote", params.lote);
+  if (params.serie) query.set("serie", params.serie);
   if (params.q) query.set("q", params.q);
 
   const res = await apiFetch(`/estoque?${query.toString()}`);
