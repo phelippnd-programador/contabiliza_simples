@@ -131,13 +131,24 @@ export const formatLocalDate = (
     );
   }
   if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
-    const date = new Date(`${raw}T00:00:00`);
-    if (Number.isNaN(date.getTime())) return raw;
+    const [yearRaw, monthRaw, dayRaw] = raw.split("-");
+    const year = Number(yearRaw);
+    const month = Number(monthRaw);
+    const day = Number(dayRaw);
+    if (!year || !month || !day) return raw;
+    const date = new Date(year, month - 1, day);
     return date.toLocaleDateString(undefined, options);
   }
   const date = new Date(raw);
   if (Number.isNaN(date.getTime())) return raw;
   return date.toLocaleDateString(undefined, options);
+};
+
+export const toLocalISODate = (date: Date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 };
 export function formatCnae(codigo: string) {
   const digits = onlyDigits(codigo);
