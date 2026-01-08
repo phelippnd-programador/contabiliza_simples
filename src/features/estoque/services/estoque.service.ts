@@ -1,5 +1,6 @@
 import { apiFetch } from "../../../shared/services/apiClient";
 import type { ApiListResponse } from "../../../shared/types/api-types";
+import { getLocalEstoqueData, getLocalMovimentosData } from "../utils/estoque.mock";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 
@@ -81,21 +82,14 @@ export async function getEstoqueItem(id: string): Promise<EstoqueResumo> {
 export async function listEstoque(
   params: ListEstoqueParams = {}
 ): Promise<ApiListResponse<EstoqueResumo>> {
-  const page = params.page ?? 1;
-  const pageSize = params.pageSize ?? 10;
+  const { page = 1, pageSize = 10, ...paramFiltro } = params;
   if (!API_BASE) {
-    return { data: [], meta: { page, pageSize, total: 0 } };
+    return getLocalEstoqueData(page, pageSize, paramFiltro.q);
   }
   const query = new URLSearchParams();
   query.set("page", String(page));
   query.set("pageSize", String(pageSize));
-  if (params.dataInicio) query.set("dataInicio", params.dataInicio);
-  if (params.dataFim) query.set("dataFim", params.dataFim);
-  if (params.origem) query.set("origem", params.origem);
-  if (params.lote) query.set("lote", params.lote);
-  if (params.serie) query.set("serie", params.serie);
-  if (params.q) query.set("q", params.q);
-
+  if (paramFiltro.q) query.set("q", paramFiltro.q);
   const res = await apiFetch(`/estoque?${query.toString()}`);
   if (!res.ok) {
     throw new Error("LIST_ESTOQUE_FAILED");
@@ -154,21 +148,30 @@ export async function listMovimentos(
   itemId: string,
   params: ListMovimentosParams = {}
 ): Promise<ApiListResponse<EstoqueMovimentoResumo>> {
-  const page = params.page ?? 1;
-  const pageSize = params.pageSize ?? 10;
+  const { page = 1, pageSize = 10, ...paramFiltro } = params;
   if (!API_BASE) {
-    return { data: [], meta: { page, pageSize, total: 0 } };
+    return getLocalMovimentosData(itemId, page, pageSize, paramFiltro);
   }
   const query = new URLSearchParams();
   query.set("page", String(page));
   query.set("pageSize", String(pageSize));
+  if (paramFiltro.dataInicio) query.set("data_gte", paramFiltro.dataInicio);
+  if (paramFiltro.dataFim) query.set("data_lte", paramFiltro.dataFim);
+  if (paramFiltro.origem) query.set("origem", paramFiltro.origem);
+  if (paramFiltro.lote) query.set("lote", paramFiltro.lote);
+  if (paramFiltro.serie) query.set("serie", paramFiltro.serie);
+  const urlBase = itemId
+    ? `/estoque/${itemId}/movimentos?${query.toString()}`
+    : `/estoque/movimentos?${query.toString()}`;
 
-  const res = await apiFetch(`/estoque/${itemId}/movimentos?${query.toString()}`);
+  const res = await apiFetch(urlBase);
   if (!res.ok) {
     throw new Error("LIST_ESTOQUE_MOVIMENTOS_FAILED");
   }
   return (await res.json()) as ApiListResponse<EstoqueMovimentoResumo>;
 }
+
+
 
 export async function createMovimento(
   itemId: string,
