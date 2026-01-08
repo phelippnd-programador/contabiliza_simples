@@ -11,11 +11,17 @@ export type ImportBatchSummary = {
 export type ImportBatch = {
   id: string;
   createdAt: string;
+  sourceType: ImportSourceType;
   fileName: string;
   fileType: ImportFileType;
   provider?: string;
   status: ImportBatchStatus;
   summary: ImportBatchSummary;
+  accountId?: string;
+  cardId?: string;
+  invoiceMonth?: string;
+  confirmedAt?: string;
+  canceledAt?: string;
 };
 
 export type ImportTransaction = {
@@ -37,6 +43,9 @@ export type ImportTransaction = {
   rawLine?: string;
   accountId?: string;
   importBatchId?: string;
+  movimentoId?: string;
+  contaPagarId?: string;
+  reconciledAt?: string;
   raw?: string;
   hash?: string;
   duplicateInBatch?: boolean;

@@ -17,6 +17,25 @@
       },
       "status": "ATIVO",
       "id": 1
+    },
+    {
+      "nome": "Pag ",
+      "documento": "11111111111111",
+      "tipoPessoa": "PJ",
+      "inscricaoEstadual": "1111111111111111111111",
+      "indicadorIE": "CONTRIBUINTE",
+      "endereco": {
+        "cep": "25730520",
+        "logradouro": "Rua Promenade",
+        "numero": "123",
+        "bairro": "Nogueira",
+        "cidade": "Petrópolis",
+        "uf": "RJ",
+        "codigoMunicipioIbge": "3303906",
+        "pais": "Brasil"
+      },
+      "status": "ATIVO",
+      "id": 2
     }
   ],
   "fornecedores": [
@@ -30,7 +49,32 @@
       "id": 1
     }
   ],
-  "produtosServicos": [],
+  "produtosServicos": [
+    {
+      "descricao": "Teste",
+      "tipo": "PRODUTO",
+      "status": "ATIVO",
+      "codigo": "SKU_0001",
+      "unidade": "10",
+      "valorUnitario": 1000,
+      "fornecedorId": "1",
+      "localizacao": "Rua A / Prateleira 1",
+      "ncm": "8419.89.91",
+      "cfop": "111111",
+      "id": 1
+    },
+    {
+      "descricao": "Servico de suporte",
+      "tipo": "SERVICO",
+      "status": "ATIVO",
+      "codigo": "SKU_0002",
+      "unidade": "UN",
+      "valorUnitario": 2500,
+      "fornecedorId": "1",
+      "localizacao": "Sala 2",
+      "id": 2
+    }
+  ],
   "contas": [
     {
       "nome": "Itau Phelipp",
@@ -51,6 +95,16 @@
       "tipo": "CARTAO",
       "categoria": "SAIDA",
       "id": 2
+    },
+    {
+      "nome": "Riane",
+      "banco": "341",
+      "agencia": "11111",
+      "conta": "111111111",
+      "digito": "1",
+      "tipo": "BANCO",
+      "categoria": "ENTRADA",
+      "id": 3
     }
   ],
   "categorias": [
@@ -66,6 +120,126 @@
     }
   ],
   "movimentos": [],
+  "estoqueMovimentos": [
+    {
+      "id": 1,
+      "itemId": "1",
+      "depositoId": "dep_1",
+      "tipo": "ENTRADA",
+      "data": "2026-01-05",
+      "quantidade": 100,
+      "custoUnitario": 1000,
+      "custoMedio": 1000,
+      "saldo": 100,
+      "lote": "LOTE_001",
+      "origem": "MANUAL",
+      "origemId": null,
+      "observacoes": "Carga inicial",
+      "createdAt": "2026-01-05T10:00:00.000Z",
+      "createdBy": "Sistema",
+      "dedupeKey": "MANUAL:1:2026-01-05:ENTRADA:100"
+    },
+    {
+      "id": 2,
+      "itemId": "1",
+      "depositoId": "dep_1",
+      "tipo": "SAIDA",
+      "data": "2026-01-07",
+      "quantidade": 10,
+      "custoUnitario": 1000,
+      "custoMedio": 1000,
+      "saldo": 90,
+      "lote": "LOTE_001",
+      "serie": "002",
+      "origem": "MANUAL",
+      "origemId": null,
+      "observacoes": "Ajuste de saldo",
+      "createdAt": "2026-01-07T10:00:00.000Z",
+      "createdBy": "Sistema",
+      "dedupeKey": "MANUAL:1:2026-01-07:SAIDA:10"
+    },
+    {
+      "itemId": "1",
+      "depositoId": "dep_1",
+      "tipo": "ENTRADA",
+      "data": "2026-01-05",
+      "quantidade": 10,
+      "custoUnitario": 1000,
+      "custoMedio": 1000,
+      "saldo": 100,
+      "origem": "COMPRA",
+      "origemId": "1",
+      "observacoes": "Compra 1",
+      "createdAt": "2026-01-05T12:00:00.000Z",
+      "createdBy": "Sistema",
+      "dedupeKey": "COMPRA:1:2026-01-05:ENTRADA:10",
+      "id": 3
+    },
+    {
+      "itemId": "1",
+      "depositoId": "dep_1",
+      "tipo": "SAIDA",
+      "data": "2026-01-08",
+      "quantidade": 5,
+      "custoUnitario": 1000,
+      "custoMedio": 1000,
+      "saldo": 95,
+      "origem": "VENDA",
+      "origemId": "1",
+      "observacoes": "Venda 1",
+      "createdAt": "2026-01-08T12:00:00.000Z",
+      "createdBy": "Sistema",
+      "dedupeKey": "VENDA:1:2026-01-08:SAIDA:5",
+      "id": 4
+    },
+    {
+      "itemId": "1",
+      "depositoId": "dep_1",
+      "tipo": "SAIDA",
+      "data": "2026-01-09",
+      "quantidade": 5,
+      "custoUnitario": 1000,
+      "custoMedio": 1000,
+      "saldo": 90,
+      "origem": "MANUAL",
+      "origemId": "TRANSFERENCIA",
+      "observacoes": "Transferencia para dep_2",
+      "createdAt": "2026-01-09T12:00:00.000Z",
+      "createdBy": "Sistema",
+      "dedupeKey": "TRANSFERENCIA:dep_1:dep_2:2026-01-09:5",
+      "id": 5
+    },
+    {
+      "itemId": "1",
+      "depositoId": "dep_2",
+      "tipo": "ENTRADA",
+      "data": "2026-01-09",
+      "quantidade": 5,
+      "custoUnitario": 1000,
+      "custoMedio": 1000,
+      "saldo": 30,
+      "origem": "MANUAL",
+      "origemId": "TRANSFERENCIA",
+      "observacoes": "Transferencia de dep_1",
+      "createdAt": "2026-01-09T12:00:00.000Z",
+      "createdBy": "Sistema",
+      "dedupeKey": "TRANSFERENCIA:dep_1:dep_2:2026-01-09:5:IN",
+      "id": 6
+    }
+  ],
+  "estoqueDepositos": [
+    {
+      "id": "dep_1",
+      "nome": "Principal",
+      "ativo": true
+    },
+    {
+      "id": "dep_2",
+      "nome": "Secundario",
+      "ativo": true,
+      "observacoes": "Deposito auxiliar"
+    }
+  ],
   "cartoes": [
     {
       "nome": "Henrique",
@@ -85,10 +259,25 @@
       "descricao": "Salario",
       "recorrente": true,
       "valorOriginal": 580000,
+      "valorRecebido": 580000,
+      "dataRecebimento": "2026-01-01",
       "formaPagamento": "TRANSFERENCIA",
       "contaId": "1",
       "categoriaId": "1",
       "id": 1
+    },
+    {
+      "clienteId": "2",
+      "vencimento": "2026-01-14",
+      "valor": 2000000,
+      "status": "ABERTA",
+      "descricao": "Salario Riane",
+      "recorrente": true,
+      "valorOriginal": 2000000,
+      "valorRecebido": 2000000,
+      "contaId": "3",
+      "categoriaId": "1",
+      "id": 2
     }
   ],
   "contasPagar": [
@@ -109,17 +298,17 @@
     },
     {
       "fornecedorId": "fornecedor-avulso",
-      "fornecedorNome": "DROGASMILRIO D",
-      "vencimento": "2025-12-08",
+      "vencimento": "2025-12-01",
       "valor": 29327,
       "status": "ABERTA",
-      "origem": "MANUAL",
       "descricao": "DROGASMILRIO D 2/6",
       "competencia": "2025-10-19",
       "parcela": 2,
       "totalParcelas": 6,
+      "recorrente": false,
       "parcelaPaga": 1,
-      "contaId": "",
+      "valorOriginal": 29327,
+      "valorPago": 29327,
       "id": 2
     },
     {
@@ -127,42 +316,103 @@
       "fornecedorNome": "IFOOD CLUBOsascoBR",
       "vencimento": "2026-01-08",
       "valor": 798,
-      "status": "ABERTA",
+      "status": "PAGA",
       "origem": "MANUAL",
       "descricao": "IFOOD CLUBOsascoBR",
       "competencia": "2025-11-05",
       "contaId": "",
-      "id": 3
+      "id": 3,
+      "parcelaPaga": 1,
+      "dataPagamento": "2026-01-06",
+      "valorPago": 798,
+      "baixas": [
+        {
+          "id": "baixa-1767678965101-1eb8f92a7a8028",
+          "data": "2026-01-06",
+          "valor": 798,
+          "contaId": ""
+        }
+      ]
     },
     {
       "fornecedorId": "fornecedor-avulso",
       "fornecedorNome": "MERCADOLIVRE*7",
       "vencimento": "2025-12-08",
       "valor": 5932,
-      "status": "ABERTA",
+      "status": "PAGA",
       "origem": "MANUAL",
       "descricao": "MERCADOLIVRE*7 2/4",
       "competencia": "2025-10-20",
       "parcela": 2,
       "totalParcelas": 4,
-      "parcelaPaga": 1,
+      "parcelaPaga": 4,
       "contaId": "",
-      "id": 4
+      "id": 4,
+      "dataPagamento": "2026-01-06",
+      "valorPago": 5932,
+      "baixas": [
+        {
+          "id": "baixa-1767678969486-9d9401fa06ac6",
+          "data": "2026-01-06",
+          "valor": 5932,
+          "parcela": 2,
+          "contaId": ""
+        },
+        {
+          "id": "baixa-1767678972954-16c3372bdf1c9",
+          "data": "2026-01-06",
+          "valor": 5932,
+          "parcela": 3,
+          "contaId": ""
+        },
+        {
+          "id": "baixa-1767678978585-807a12165ac2d",
+          "data": "2026-01-06",
+          "valor": 5932,
+          "parcela": 4,
+          "contaId": ""
+        }
+      ]
     },
     {
       "fornecedorId": "fornecedor-avulso",
       "fornecedorNome": "MP*PHDDIGITALM",
       "vencimento": "2025-12-08",
       "valor": 22550,
-      "status": "ABERTA",
+      "status": "PAGA",
       "origem": "MANUAL",
       "descricao": "MP*PHDDIGITALM 2/4",
       "competencia": "2025-10-20",
       "parcela": 2,
       "totalParcelas": 4,
-      "parcelaPaga": 1,
+      "parcelaPaga": 4,
       "contaId": "",
-      "id": 5
+      "id": 5,
+      "dataPagamento": "2026-01-06",
+      "valorPago": 22550,
+      "baixas": [
+        {
+          "id": "baixa-1767678983359-234dd36be97a5",
+          "data": "2026-01-06",
+          "valor": 22550,
+          "parcela": 2,
+          "contaId": ""
+        },
+        {
+          "id": "baixa-1767678986188-166d8d6ab43b08",
+          "data": "2026-01-06",
+          "valor": 22550,
+          "parcela": 3,
+          "contaId": ""
+        },
+        {
+          "id": "baixa-1767678988645-6218f0ae71687",
+          "data": "2026-01-06",
+          "valor": 22550,
+          "parcela": 4,
+          "contaId": ""
+        }
+      ]
     },
     {
       "fornecedorId": "fornecedor-avulso",
@@ -176,7 +426,26 @@
       "parcela": 1,
       "totalParcelas": 4,
       "contaId": "",
-      "id": 6
+      "id": 6,
+      "parcelaPaga": 2,
+      "dataPagamento": "2026-01-06",
+      "valorPago": 5501,
+      "baixas": [
+        {
+          "id": "baixa-1767678991285-8eb549f5801c2",
+          "data": "2026-01-06",
+          "valor": 5501,
+          "parcela": 1,
+          "contaId": ""
+        },
+        {
+          "id": "baixa-1767678993979-2724d79712317",
+          "data": "2026-01-06",
+          "valor": 5501,
+          "parcela": 2,
+          "contaId": ""
+        }
+      ]
     },
     {
       "fornecedorId": "fornecedor-avulso",
@@ -350,8 +619,60 @@
       "id": 19
     }
   ],
-  "vendas": [],
-  "compras": [],
+  "vendas": [
+    {
+      "id": 1,
+      "clienteId": "1",
+      "clienteNome": "Prosolution",
+      "data": "2026-01-08",
+      "status": "FATURADA",
+      "itens": [
+        {
+          "produtoId": "1",
+          "descricao": "Teste",
+          "quantidade": 5,
+          "valorUnitario": 1200,
+          "total": 6000
+        }
+      ],
+      "subtotal": 6000,
+      "desconto": 0,
+      "frete": 0,
+      "impostos": 0,
+      "total": 6000,
+      "estoque": {
+        "gerarMovimento": true,
+        "depositoId": "dep_1"
+      }
+    }
+  ],
+  "compras": [
+    {
+      "id": 1,
+      "fornecedorId": "1",
+      "fornecedorNome": "Proprietario Casa",
+      "data": "2026-01-05",
+      "status": "RECEBIDA",
+      "itens": [
+        {
+          "produtoId": "1",
+          "descricao": "Teste",
+          "quantidade": 10,
+          "valorUnitario": 1000,
+          "total": 10000
+        }
+      ],
+      "subtotal": 10000,
+      "desconto": 0,
+      "frete": 0,
+      "impostos": 0,
+      "total": 10000,
+      "estoque": {
+        "gerarMovimento": true,
+        "depositoId": "dep_1"
+      }
+    }
+  ],
   "vendasAnalytics": {
     "totais": {
       "quantidade": 0,
@@ -377,6 +698,484 @@
   "apuracoes": [],
   "obrigacoes": [],
   "empresas": [],
-  "estoque": [],
+  "importBatches": [
+    {
+      "id": "batch_1767679937434",
+      "createdAt": "2026-01-06T06:12:17.434Z",
+      "sourceType": "CARD",
+      "fileName": "Fatura_Itau_20251201-205323_251201_205352.pdf",
+      "fileType": "PDF",
+      "provider": "ITAU",
+      "status": "DRAFT",
+      "summary": {
+        "total": -262968,
+        "credits": 0,
+        "debits": 262968
+      },
+      "cardId": "1",
+      "invoiceMonth": "2026-01"
+    },
+    {
+      "id": "batch_1767680086416",
+      "createdAt": "2026-01-06T06:14:46.416Z",
+      "sourceType": "CARD",
+      "fileName": "Fatura_Itau_20251201-205323_251201_205352.pdf",
+      "fileType": "PDF",
+      "provider": "ITAU",
+      "status": "DRAFT",
+      "summary": {
+        "total": -262968,
+        "credits": 0,
+        "debits": 262968
+      },
+      "cardId": "1",
+      "invoiceMonth": "2026-01"
+    },
+    {
+      "id": "batch_1767680135605",
+      "createdAt": "2026-01-06T06:15:35.605Z",
+      "sourceType": "CARD",
+      "fileName": "Fatura_Itau_20251201-205323_251201_205352.pdf",
+      "fileType": "PDF",
+      "provider": "ITAU",
+      "status": "CANCELED",
+      "summary": {
+        "total": -262968,
+        "credits": 0,
+        "debits": 262968
+      },
+      "cardId": "1",
+      "invoiceMonth": "2026-01",
+      "canceledAt": "2026-01-06T06:15:45.517Z"
+    }
+  ],
+  "importTransactions": [
+    {
+      "id": "imp_Fatura_Itau_20251201-205323_251201_205352.pdf_2025-11-06_bcch0p",
+      "date": "2025-11-06",
+      "description": "IFD*JULIANNIE DRUMMOND",
+      "amount": -10478,
+      "currency": "BRL",
+      "sourceType": "CARD",
+      "direction": "DEBIT",
+      "issuer": "ITAU",
+      "rawLine": "06/11 IFD*JULIANNIE DRUMMOND 104.78",
+      "hash": "c2fb6c7f45a29cb9ea8fe4fec22b0ab960aaf951",
+      "duplicateInSystem": false,
+      "importBatchId": "batch_1767680135605"
+    },
+    {
+      "id": "imp_Fatura_Itau_20251201-205323_251201_205352.pdf_2025-10-19_vffbqc",
+      "date": "2025-10-19",
+      "description": "DROGASMILRIO D",
+      "amount": -29327,
+      "currency": "BRL",
+      "sourceType": "CARD",
+      "direction": "DEBIT",
+      "issuer": "ITAU",
+      "installment": {
+        "current": 2,
+        "total": 6
+      },
+      "rawLine": "19/10 DROGASMILRIO D 02/06 293.27",
+      "hash": "d1d58b5a536a4aad06709a8a80fde0f86c4b08d5",
+      "duplicateInSystem": false,
+      "importBatchId": "batch_1767680135605"
+    },
+    {
+      "id": "imp_Fatura_Itau_20251201-205323_251201_205352.pdf_2025-11-05_5lzp9n",
+      "date": "2025-11-05",
+      "description": "IFOOD CLUBOsascoBR",
+      "amount": -798,
+      "currency": "BRL",
+      "sourceType": "CARD",
+      "direction": "DEBIT",
+      "issuer": "ITAU",
+      "rawLine": "05/11 IFOOD CLUBOsascoBR 7.98",
+      "hash": "3f01b107d1644527723e29eac93b524c96e80006",
+      "duplicateInSystem": false,
+      "importBatchId": "batch_1767680135605"
+    },
+    {
+      "id": "imp_Fatura_Itau_20251201-205323_251201_205352.pdf_2025-10-20_dxpxp7",
+      "date": "2025-10-20",
+      "description": "MERCADOLIVRE*7",
+      "amount": -5932,
+      "currency": "BRL",
+      "sourceType": "CARD",
+      "direction": "DEBIT",
+      "issuer": "ITAU",
+      "installment": {
+        "current": 3,
+        "total": 4
+      },
+      "rawLine": "20/10 MERCADOLIVRE*7 03/04 59.32",
+      "hash": "330f174fb53ed967b2e73b37f94f67bcdbd6982d",
+      "duplicateInSystem": false,
+      "importBatchId": "batch_1767680135605"
+    },
+    {
+      "id": "imp_Fatura_Itau_20251201-205323_251201_205352.pdf_2025-10-20_4jwg84",
+      "date": "2025-10-20",
+      "description": "MP*PHDDIGITALM",
+      "amount": -22550,
+      "currency": "BRL",
+      "sourceType": "CARD",
+      "direction": "DEBIT",
+      "issuer": "ITAU",
+      "installment": {
+        "current": 3,
+        "total": 4
+      },
+      "rawLine": "20/10 MP*PHDDIGITALM 03/04 225.5",
+      "hash": "76728fa1768414089332f9fec37f2c8ba743011e",
+      "duplicateInSystem": false,
+      "importBatchId": "batch_1767680135605"
+    },
+    {
+      "id": "imp_Fatura_Itau_20251201-205323_251201_205352.pdf_2025-10-20_gx6qba",
+      "date": "2025-10-20",
+      "description": "MERCADOLIVRE*7",
+      "amount": -5932,
+      "currency": "BRL",
+      "sourceType": "CARD",
+      "direction": "DEBIT",
+      "issuer": "ITAU",
+      "installment": {
+        "current": 2,
+        "total": 4
+      },
+      "rawLine": "20/10 MERCADOLIVRE*7 02/04 59.32",
+      "hash": "c374f695600193adb53502ada0e5feb06d091e8d",
+      "duplicateInSystem": false,
+      "importBatchId": "batch_1767680135605"
+    },
+    {
+      "id": "imp_Fatura_Itau_20251201-205323_251201_205352.pdf_2025-10-19_ypqbbj",
+      "date": "2025-10-19",
+      "description": "DROGASMILRIO D",
+      "amount": -29327,
+      "currency": "BRL",
+      "sourceType": "CARD",
+      "direction": "DEBIT",
+      "issuer": "ITAU",
+      "installment": {
+        "current": 3,
+        "total": 6
+      },
+      "rawLine": "19/10 DROGASMILRIO D 03/06 293.27",
+      "hash": "2d50d2d67cd13f32196f82fd3446550aa3cd27d0",
+      "duplicateInSystem": false,
+      "importBatchId": "batch_1767680135605"
+    },
+    {
+      "id": "imp_Fatura_Itau_20251201-205323_251201_205352.pdf_2025-10-20_d5o4kx",
+      "date": "2025-10-20",
+      "description": "MP*PHDDIGITALM",
+      "amount": -22550,
+      "currency": "BRL",
+      "sourceType": "CARD",
+      "direction": "DEBIT",
+      "issuer": "ITAU",
+      "installment": {
+        "current": 2,
+        "total": 4
+      },
+      "rawLine": "20/10 MP*PHDDIGITALM 02/04 225.5",
+      "hash": "4f88d73c65fc508e95680b342e61e3f1fb69df2f",
+      "duplicateInSystem": false,
+      "importBatchId": "batch_1767680135605"
+    },
+    {
+      "id": "imp_Fatura_Itau_20251201-205323_251201_205352.pdf_2025-11-05_3fyt32",
+      "date": "2025-11-05",
+      "description": "MERCADOLIVRE*M",
+      "amount": -5501,
+      "currency": "BRL",
+      "sourceType": "CARD",
+      "direction": "DEBIT",
+      "issuer": "ITAU",
+      "installment": {
+        "current": 1,
+        "total": 4
+      },
+      "rawLine": "05/11 MERCADOLIVRE*M 01/04 55.01",
+      "hash": "fd01c5d037c0eed42576cf3c47a98201bda9311f",
+      "duplicateInSystem": false,
+      "importBatchId": "batch_1767680135605"
+    },
+    {
+      "id": "imp_Fatura_Itau_20251201-205323_251201_205352.pdf_2025-10-20_mcl828",
+      "date": "2025-10-20",
+      "description": "EC *PHDDIGITAL",
+      "amount": -27979,
+      "currency": "BRL",
+      "sourceType": "CARD",
+      "direction": "DEBIT",
+      "issuer": "ITAU",
+      "installment": {
+        "current": 3,
+        "total": 4
+      },
+      "rawLine": "20/10 EC *PHDDIGITAL 03/04 279.79",
+      "hash": "22f3345007dd58ff864c086a0f113124c04dd3d3",
+      "duplicateInSystem": false,
+      "importBatchId": "batch_1767680135605"
+    },
+    {
+      "id": "imp_Fatura_Itau_20251201-205323_251201_205352.pdf_2025-10-20_eh72mf",
+      "date": "2025-10-20",
+      "description": "EC *PHDDIGITAL",
+      "amount": -27979,
+      "currency": "BRL",
+      "sourceType": "CARD",
+      "direction": "DEBIT",
+      "issuer": "ITAU",
+      "installment": {
+        "current": 2,
+        "total": 4
+      },
+      "rawLine": "20/10 EC *PHDDIGITAL 02/04 279.79",
+      "hash": "8fbbd4c3a4c66bf6e65fb5800aa7c384aa6a3ebc",
+      "duplicateInSystem": false,
+      "importBatchId": "batch_1767680135605"
+    },
+    {
+      "id": "imp_Fatura_Itau_20251201-205323_251201_205352.pdf_2025-10-26_69826k",
+      "date": "2025-10-26",
+      "description": "MERCADOLIVRE*J",
+      "amount": -8423,
+      "currency": "BRL",
+      "sourceType": "CARD",
+      "direction": "DEBIT",
+      "issuer": "ITAU",
+      "installment": {
+        "current": 3,
+        "total": 4
+      },
+      "rawLine": "26/10 MERCADOLIVRE*J 03/04 84.23",
+      "hash": "c8f4cd283daac8170159e5ba2ee41447740cd8ee",
+      "duplicateInSystem": false,
+      "importBatchId": "batch_1767680135605"
+    },
+    {
+      "id": "imp_Fatura_Itau_20251201-205323_251201_205352.pdf_2025-10-26_rio879",
+      "date": "2025-10-26",
+      "description": "MERCADOLIVRE*J",
+      "amount": -8423,
+      "currency": "BRL",
+      "sourceType": "CARD",
+      "direction": "DEBIT",
+      "issuer": "ITAU",
+      "installment": {
+        "current": 2,
+        "total": 4
+      },
+      "rawLine": "26/10 MERCADOLIVRE*J 02/04 84.23",
+      "hash": "271ecf4f52b723c3b1b4958ebfaeb962f4fd64b5",
+      "duplicateInSystem": false,
+      "importBatchId": "batch_1767680135605"
+    },
+    {
+      "id": "imp_Fatura_Itau_20251201-205323_251201_205352.pdf_2025-11-04_6pv2os",
+      "date": "2025-11-04",
+      "description": "IFD*MENDES E PIGLIASCOR",
+      "amount": -7788,
+      "currency": "BRL",
+      "sourceType": "CARD",
+      "direction": "DEBIT",
+      "issuer": "ITAU",
+      "rawLine": "04/11 IFD*MENDES E PIGLIASCOR 77.88",
+      "hash": "c2fbdb3f9946f2717e7695d7f8c46a5d05da3258",
+      "duplicateInSystem": false,
+      "importBatchId": "batch_1767680135605"
+    },
+    {
+      "id": "imp_Fatura_Itau_20251201-205323_251201_205352.pdf_2025-11-05_osh9mu",
+      "date": "2025-11-05",
+      "description": "MERCADOLIVRE*M",
+      "amount": -5499,
+      "currency": "BRL",
+      "sourceType": "CARD",
+      "direction": "DEBIT",
+      "issuer": "ITAU",
+      "installment": {
+        "current": 2,
+        "total": 4
+      },
+      "rawLine": "05/11 MERCADOLIVRE*M 02/04 54.99",
+      "hash": "83c7a5f909ab8e2adf134ad794f45aa574fffd5e",
+      "duplicateInSystem": false,
+      "importBatchId": "batch_1767680135605"
+    },
+    {
+      "id": "imp_Fatura_Itau_20251201-205323_251201_205352.pdf_2025-11-03_wo2el0",
+      "date": "2025-11-03",
+      "description": "MERCADOLIVRE*55402074GU",
+      "amount": -2757,
+      "currency": "BRL",
+      "sourceType": "CARD",
+      "direction": "DEBIT",
+      "issuer": "ITAU",
+      "rawLine": "03/11 MERCADOLIVRE*55402074GU 27.57",
+      "hash": "1fb2c36f72df17953f6e0035d414b893300ea35d",
+      "duplicateInSystem": false,
+      "importBatchId": "batch_1767680135605"
+    },
+    {
+      "id": "imp_Fatura_Itau_20251201-205323_251201_205352.pdf_2025-11-01_7777yq",
+      "date": "2025-11-01",
+      "description": "IFD*41.357.472 MICHEL S",
+      "amount": -3788,
+      "currency": "BRL",
+      "sourceType": "CARD",
+      "direction": "DEBIT",
+      "issuer": "ITAU",
+      "rawLine": "01/11 IFD*41.357.472 MICHEL S 37.88",
+      "hash": "bdaa11d0ec80086dc5248a70791d68820528f19a",
+      "duplicateInSystem": false,
+      "importBatchId": "batch_1767680135605"
+    },
+    {
+      "id": "imp_Fatura_Itau_20251201-205323_251201_205352.pdf_2025-10-30_ofu3iw",
+      "date": "2025-10-30",
+      "description": "IFD*FABIANE DE AGUIAR S",
+      "amount": -2524,
+      "currency": "BRL",
+      "sourceType": "CARD",
+      "direction": "DEBIT",
+      "issuer": "ITAU",
+      "rawLine": "30/10 IFD*FABIANE DE AGUIAR S 25.24",
+      "hash": "7a28c1ef8cbf5bf55087628dec13e91fefc79be2",
+      "duplicateInSystem": false,
+      "importBatchId": "batch_1767680135605"
+    },
+    {
+      "id": "imp_Fatura_Itau_20251201-205323_251201_205352.pdf_2025-10-29_mp8s1f",
+      "date": "2025-10-29",
+      "description": "IFD*JEYSON OLIVEIRA TUR",
+      "amount": -2981,
+      "currency": "BRL",
+      "sourceType": "CARD",
+      "direction": "DEBIT",
+      "issuer": "ITAU",
+      "rawLine": "29/10 IFD*JEYSON OLIVEIRA TUR 29.81",
+      "hash": "8c871903b343e7698993255ff00da83b330ace84",
+      "duplicateInSystem": false,
+      "importBatchId": "batch_1767680135605"
+    },
+    {
+      "id": "imp_Fatura_Itau_20251201-205323_251201_205352.pdf_2025-10-28_px8024",
+      "date": "2025-10-28",
+      "description": "IFD*29.500.172 RODRIGO",
+      "amount": -3479,
+      "currency": "BRL",
+      "sourceType": "CARD",
+      "direction": "DEBIT",
+      "issuer": "ITAU",
+      "rawLine": "28/10 IFD*29.500.172 RODRIGO 34.79",
+      "hash": "5b3721ae05203d919baf3d57002992dbe83e1fe4",
+      "duplicateInSystem": false,
+      "importBatchId": "batch_1767680135605"
+    },
+    {
+      "id": "imp_Fatura_Itau_20251201-205323_251201_205352.pdf_2025-10-25_8ji3ij",
+      "date": "2025-10-25",
+      "description": "EC *PHDDIGITAL",
+      "amount": -7126,
+      "currency": "BRL",
+      "sourceType": "CARD",
+      "direction": "DEBIT",
+      "issuer": "ITAU",
+      "installment": {
+        "current": 2,
+        "total": 2
+      },
+      "rawLine": "25/10 EC *PHDDIGITAL 02/02 71.26",
+      "hash": "3c07ba5a7b40c1b4e136544fb5f5f7e2948c8820",
+      "duplicateInSystem": false,
+      "importBatchId": "batch_1767680135605"
+    },
+    {
+      "id": "imp_Fatura_Itau_20251201-205323_251201_205352.pdf_2025-11-29_1kihpx",
+      "date": "2025-11-29",
+      "description": "MULTA",
+      "amount": -2480,
+      "currency": "BRL",
+      "sourceType": "CARD",
+      "direction": "DEBIT",
+      "issuer": "ITAU",
+      "rawLine": "29/11 MULTA 24.8",
+      "hash": "a3eafdb483478fb153f12cc50320dcc834743938",
+      "duplicateInSystem": false,
+      "importBatchId": "batch_1767680135605"
+    },
+    {
+      "id": "imp_Fatura_Itau_20251201-205323_251201_205352.pdf_2025-11-29_652nz0",
+      "date": "2025-11-29",
+      "description": "JUROS DE MORA",
+      "amount": -1240,
+      "currency": "BRL",
+      "sourceType": "CARD",
+      "direction": "DEBIT",
+      "issuer": "ITAU",
+      "rawLine": "29/11 JUROS DE MORA 12.4",
+      "hash": "2bf58e73abc6397f400455ffe49c5bbc9807f963",
+      "duplicateInSystem": false,
+      "importBatchId": "batch_1767680135605"
+    },
+    {
+      "id": "imp_Fatura_Itau_20251201-205323_251201_205352.pdf_2025-11-29_fp07qw",
+      "date": "2025-11-29",
+      "description": "ENCARGOS REFINANCIAMENT",
+      "amount": -18107,
+      "currency": "BRL",
+      "sourceType": "CARD",
+      "direction": "DEBIT",
+      "issuer": "ITAU",
+      "rawLine": "29/11 ENCARGOS REFINANCIAMENT 181.07",
+      "hash": "75a2c1aafa12cdaa5fde04e5d462a559823831b3",
+      "duplicateInSystem": false,
+      "importBatchId": "batch_1767680135605"
+    }
+  ],
+  "estoque": [
+    {
+      "produtoId": "1",
+      "depositoId": "dep_1",
+      "quantidade": 90,
+      "quantidadeReservada": 0,
+      "custoMedio": 1000,
+      "estoqueMinimo": 10,
+      "id": 1
+    },
+    {
+      "id": 3,
+      "produtoId": "1",
+      "depositoId": "dep_2",
+      "quantidade": 25,
+      "quantidadeReservada": 0,
+      "custoMedio": 1000,
+      "estoqueMinimo": 5
+    },
+    {
+      "id": 4,
+      "produtoId": "2",
+      "depositoId": "dep_1",
+      "quantidade": 15,
+      "quantidadeReservada": 0,
+      "custoMedio": 2500,
+      "estoqueMinimo": 3
+    },
+    {
+      "id": 5,
+      "produtoId": "2",
+      "depositoId": "dep_2",
+      "quantidade": 5,
+      "quantidadeReservada": 0,
+      "custoMedio": 2500,
+      "estoqueMinimo": 2
+    }
+  ],
   "usuarioPerfil": {}
 }

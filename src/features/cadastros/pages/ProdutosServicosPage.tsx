@@ -18,6 +18,7 @@ import {
   deleteProdutoServico,
   type ProdutoServicoResumo,
 } from "../services/cadastros.service";
+import { listFornecedores, type FornecedorResumo } from "../services/cadastros.service";
 import { formatBRL } from "../../../shared/utils/formater";
 import { EditIcon, TrashIcon } from "../../../components/ui/icon/AppIcons";
 import AppPopup from "../../../components/ui/popup/AppPopup";
@@ -42,6 +43,7 @@ const ProdutosServicosPage = () => {
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const { popupProps, openConfirm } = useConfirmPopup();
+  const [fornecedores, setFornecedores] = useState<FornecedorResumo[]>([]);
   const [formData, setFormData] = useState({
     descricao: "",
     tipo: "PRODUTO",
@@ -49,6 +51,8 @@ const ProdutosServicosPage = () => {
     codigo: "",
     unidade: "",
     valorUnitarioCents: 0,
+    fornecedorId: "",
+    localizacao: "",
     ncm: "",
     cfop: "",
     cnae: "",
@@ -76,6 +80,24 @@ const ProdutosServicosPage = () => {
     load();
   }, [page]);
 
+  useEffect(() => {
+    let isMounted = true;
+    const loadFornecedores = async () => {
+      try {
+        const response = await listFornecedores({ page: 1, pageSize: 200 });
+        if (!isMounted) return;
+        setFornecedores(response.data);
+      } catch {
+        if (!isMounted) return;
+        setFornecedores([]);
+      }
+    };
+    loadFornecedores();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const columns = useMemo(
     () => [
       {
@@ -92,6 +114,18 @@ const ProdutosServicosPage = () => {
         key: "unidade",
         header: "Unidade",
         render: (row: ProdutoServicoResumo) => row.unidade ?? "-",
+      },
+      {
+        key: "fornecedor",
+        header: "Fornecedor",
+        render: (row: ProdutoServicoResumo) =>
+          fornecedores.find((fornecedor) => fornecedor.id === row.fornecedorId)?.nome ??
+          "-",
+      },
+      {
+        key: "localizacao",
+        header: "Localizacao",
+        render: (row: ProdutoServicoResumo) => row.localizacao ?? "-",
       },
       {
         key: "valor",
@@ -128,6 +162,8 @@ const ProdutosServicosPage = () => {
                   codigo: row.codigo ?? "",
                   unidade: row.unidade ?? "",
                   valorUnitarioCents: row.valorUnitario ?? 0,
+                  fornecedorId: row.fornecedorId ?? "",
+                  localizacao: row.localizacao ?? "",
                   ncm: row.ncm ?? "",
                   cfop: row.cfop ?? "",
                   cnae: row.cnae ?? "",
@@ -175,7 +211,7 @@ const ProdutosServicosPage = () => {
         ),
       },
     ],
-    []
+    [fornecedores]
   );
 
   const resetForm = () => {
@@ -187,6 +223,8 @@ const ProdutosServicosPage = () => {
       codigo: "",
       unidade: "",
       valorUnitarioCents: 0,
+      fornecedorId: "",
+      localizacao: "",
       ncm: "",
       cfop: "",
       cnae: "",
@@ -222,6 +260,8 @@ const ProdutosServicosPage = () => {
         codigo: formData.codigo || undefined,
         unidade: formData.unidade,
         valorUnitario: formData.valorUnitarioCents,
+        fornecedorId: formData.fornecedorId || undefined,
+        localizacao: formData.localizacao || undefined,
         ncm: formData.ncm || undefined,
         cfop: formData.cfop || undefined,
         cnae: formData.cnae || undefined,
@@ -313,6 +353,25 @@ const ProdutosServicosPage = () => {
                   ...prev,
                   valorUnitarioCents: Number(raw || "0"),
                 }))
+              }
+            />
+            <AppSelectInput
+              title="Fornecedor"
+              value={formData.fornecedorId}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, fornecedorId: e.target.value }))
+              }
+              data={fornecedores.map((fornecedor) => ({
+                value: fornecedor.id,
+                label: fornecedor.nome,
+              }))}
+              placeholder={fornecedores.length ? "Selecione" : "Cadastre um fornecedor"}
+            />
+            <AppTextInput
+              title="Localizacao"
+              value={formData.localizacao}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, localizacao: e.target.value }))
               }
             />
             {formData.tipo === "PRODUTO" ? (

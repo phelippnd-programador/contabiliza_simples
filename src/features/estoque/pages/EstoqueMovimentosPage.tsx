@@ -8,17 +8,25 @@ import AppIconButton from "../../../components/ui/button/AppIconButton";
 import AppTextInput from "../../../components/ui/input/AppTextInput";
 import AppDateInput from "../../../components/ui/input/AppDateInput";
 import AppSelectInput from "../../../components/ui/input/AppSelectInput";
-import { EyeIcon } from "../../../components/ui/icon/AppIcons";
+import { EyeIcon, UndoIcon } from "../../../components/ui/icon/AppIcons";
 import {
   listEstoque,
+  createEstoqueItem,
   listMovimentos,
   createMovimento,
+  listDepositos,
+  reverterMovimento,
   type EstoqueResumo,
   type EstoqueMovimentoResumo,
   type EstoqueMovimentoTipo,
+  type EstoqueDepositoResumo,
 } from "../services/estoque.service";
-import { formatBRL, formatLocalDate } from "../../../shared/utils/formater";
+import { formatBRL, formatLocalDate, toLocalISODate } from "../../../shared/utils/formater";
 import { listVendas, listCompras, type VendaResumo, type CompraResumo } from "../../comercial/services/comercial.service";
+import { DEFAULT_ESTOQUE_POLICY, calcularQuantidadeDisponivel, getSignedQuantidade, validarSaldoNegativo } from "../utils/estoque.utils";
+import AppPopup from "../../../components/ui/popup/AppPopup";
+import useConfirmPopup from "../../../shared/hooks/useConfirmPopup";
+import { listFornecedores, type FornecedorResumo } from "../../cadastros/services/cadastros.service";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 
@@ -27,15 +35,20 @@ const EstoqueMovimentosPage = () => {
   const [movimentos, setMovimentos] = useState<EstoqueMovimentoResumo[]>([]);
   const [error, setError] = useState("");
   const [movimentoError, setMovimentoError] = useState("");
+  const [isLoadingItens, setIsLoadingItens] = useState(false);
+  const [isLoadingMovimentos, setIsLoadingMovimentos] = useState(false);
+  const { popupProps, openConfirm } = useConfirmPopup();
   const [fieldErrors, setFieldErrors] = useState<{
     itemId?: string;
     data?: string;
     quantidade?: string;
     custoUnitarioCents?: string;
     origemId?: string;
+    observacoes?: string;
   }>({});
   const [movimentoData, setMovimentoData] = useState({
     itemId: "",
+    depositoId: "",
     tipo: "ENTRADA" as EstoqueMovimentoTipo,
     data: "",
     quantidade: 0,
@@ -51,29 +64,80 @@ const EstoqueMovimentosPage = () => {
   );
   const [vendas, setVendas] = useState<VendaResumo[]>([]);
   const [compras, setCompras] = useState<CompraResumo[]>([]);
+  const [fornecedores, setFornecedores] = useState<FornecedorResumo[]>([]);
+  const [depositos, setDepositos] = useState<EstoqueDepositoResumo[]>([]);
   const [movimentoPage, setMovimentoPage] = useState(1);
   const [movimentoTotal, setMovimentoTotal] = useState(0);
+  const [transferError, setTransferError] = useState("");
+  const [transferData, setTransferData] = useState({
+    itemId: "",
+    origemDepositoId: "",
+    destinoDepositoId: "",
+    quantidade: 0,
+    data: "",
+    observacoes: "",
+  });
   const [filtros, setFiltros] = useState({
     dataInicio: "",
     dataFim: "",
     origem: "",
     lote: "",
     serie: "",
+    depositoId: "",
   });
 
   const loadItens = async () => {
     try {
+      setIsLoadingItens(true);
       setError("");
       const response = await listEstoque({ page: 1, pageSize: 200 });
       setItens(response.data);
     } catch {
       setItens([]);
       setError("Nao foi possivel carregar o estoque.");
+    } finally {
+      setIsLoadingItens(false);
     }
   };
 
   useEffect(() => {
     loadItens();
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadDepositos = async () => {
+      try {
+        const response = await listDepositos();
+        if (!isMounted) return;
+        setDepositos(response);
+      } catch {
+        if (!isMounted) return;
+        setDepositos([]);
+      }
+    };
+    loadDepositos();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadFornecedores = async () => {
+      try {
+        const response = await listFornecedores({ page: 1, pageSize: 200 });
+        if (!isMounted) return;
+        setFornecedores(response.data);
+      } catch {
+        if (!isMounted) return;
+        setFornecedores([]);
+      }
+    };
+    loadFornecedores();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -97,30 +161,40 @@ const EstoqueMovimentosPage = () => {
     };
   }, []);
 
-  useEffect(() => {
+  const loadMovimentos = async () => {
     const itemId = movimentoData.itemId;
-    if (!itemId) {
+    // if (!itemId) {
+    //   setMovimentos([]);
+    //   setMovimentoTotal(0);
+    //   return;
+    // }
+    try {
+      setIsLoadingMovimentos(true);
+      setMovimentoError("");
+      const response = await listMovimentos(itemId, {
+        page: movimentoPage,
+        pageSize: 8,
+        dataInicio: filtros.dataInicio || undefined,
+        dataFim: filtros.dataFim || undefined,
+        origem: filtros.origem ? (filtros.origem as "MANUAL" | "VENDA" | "COMPRA") : undefined,
+        lote: filtros.lote || undefined,
+        serie: filtros.serie || undefined,
+        depositoId: filtros.depositoId || undefined,
+      });
+      setMovimentos(response.data);
+      setMovimentoTotal(response.meta.total);
+    } catch {
       setMovimentos([]);
       setMovimentoTotal(0);
-      return;
+      setMovimentoError("Nao foi possivel carregar os movimentos.");
+    } finally {
+      setIsLoadingMovimentos(false);
     }
-    const loadMovimentos = async () => {
-      try {
-        setMovimentoError("");
-        const response = await listMovimentos(itemId, {
-          page: movimentoPage,
-          pageSize: 8,
-        });
-        setMovimentos(response.data);
-        setMovimentoTotal(response.meta.total);
-      } catch {
-        setMovimentos([]);
-        setMovimentoTotal(0);
-        setMovimentoError("Nao foi possivel carregar os movimentos.");
-      }
-    };
+  };
+
+  useEffect(() => {
     loadMovimentos();
-  }, [movimentoData.itemId, movimentoPage]);
+  }, [movimentoData.itemId, movimentoPage, filtros]);
 
   useEffect(() => {
     if (
@@ -128,7 +202,8 @@ const EstoqueMovimentosPage = () => {
       filtros.dataFim ||
       filtros.origem ||
       filtros.lote ||
-      filtros.serie
+      filtros.serie ||
+      filtros.depositoId
     ) {
       setMovimentoPage(1);
     }
@@ -191,25 +266,61 @@ const EstoqueMovimentosPage = () => {
     const selectedItem =
       itens.find((item) => (item.produtoId ?? item.id) === movimentoData.itemId) ??
       null;
+    const availableQuantity = selectedItem
+      ? calcularQuantidadeDisponivel(
+          selectedItem.quantidade,
+          selectedItem.quantidadeReservada
+        )
+      : undefined;
     if (
       (movimentoData.tipo === "SAIDA" ||
         (movimentoData.tipo === "AJUSTE" && ajusteDirecao === "SAIDA")) &&
-      selectedItem &&
-      movimentoData.quantidade > selectedItem.quantidade
+      typeof availableQuantity === "number" &&
+      movimentoData.quantidade > availableQuantity
     ) {
       setMovimentoError("Quantidade maior que o saldo atual.");
       setFieldErrors((prev) => ({
         ...prev,
-        quantidade: "Quantidade excede o saldo atual.",
+        quantidade: "Quantidade excede o saldo disponivel.",
       }));
       return;
+    }
+    if (typeof availableQuantity === "number") {
+      const signed = getSignedQuantidade(
+        movimentoData.tipo,
+        movimentoData.quantidade,
+        ajusteDirecao
+      );
+      const policy = DEFAULT_ESTOQUE_POLICY;
+      const negativeCheck = validarSaldoNegativo({
+        saldoAtual: availableQuantity,
+        movimento: signed,
+        policy,
+        observacoes: movimentoData.observacoes,
+      });
+      if (!negativeCheck.ok) {
+        if (negativeCheck.reason === "JUSTIFICATION_REQUIRED") {
+          setMovimentoError("Informe a justificativa para saldo negativo.");
+          setFieldErrors((prev) => ({
+            ...prev,
+            observacoes: "Justificativa obrigatoria.",
+          }));
+          return;
+        }
+        setMovimentoError("Quantidade maior que o saldo atual.");
+        setFieldErrors((prev) => ({
+          ...prev,
+          quantidade: "Quantidade excede o saldo atual.",
+        }));
+        return;
+      }
     }
     if (!API_BASE) {
       setMovimentoError("API nao configurada.");
       return;
     }
     try {
-      await createMovimento(movimentoData.itemId, {
+      const resultado = await createMovimento(movimentoData.itemId, {
         tipo: movimentoData.tipo,
         data: movimentoData.data,
         quantidade: effectiveQuantidade,
@@ -218,32 +329,175 @@ const EstoqueMovimentosPage = () => {
           (movimentoData.tipo === "AJUSTE" && ajusteDirecao === "ENTRADA")
             ? movimentoData.custoUnitarioCents
             : undefined,
+        depositoId: movimentoData.depositoId || undefined,
         lote: movimentoData.lote || undefined,
         serie: movimentoData.serie || undefined,
         origem: movimentoData.origem as "MANUAL" | "VENDA" | "COMPRA",
         origemId: movimentoData.origemId || undefined,
         observacoes: movimentoData.observacoes || undefined,
       });
+      if (
+        typeof resultado.custoMedio === "number" &&
+        selectedItem &&
+        typeof selectedItem.custoMedio === "number"
+      ) {
+        const diff = Math.abs(resultado.custoMedio - selectedItem.custoMedio);
+        if (diff > 0) {
+          setMovimentoError(
+            "Custo medio recalculado pelo sistema. Atualize a lista para conferir."
+          );
+        }
+      }
       setMovimentoData((prev) => ({
         ...prev,
         quantidade: 0,
         custoUnitarioCents: 0,
         lote: "",
         serie: "",
+        depositoId: prev.depositoId,
         origemId: "",
         observacoes: "",
       }));
       setAjusteDirecao("ENTRADA");
       setMovimentoPage(1);
       loadItens();
+      loadMovimentos();
     } catch {
       setMovimentoError("Nao foi possivel registrar o movimento.");
     }
   };
 
-  const selectedItem = itens.find(
-    (item) => (item.produtoId ?? item.id) === movimentoData.itemId
-  );
+  const handleTransferencia = async () => {
+    setTransferError("");
+    if (!transferData.itemId || !transferData.origemDepositoId || !transferData.destinoDepositoId) {
+      setTransferError("Informe item, deposito origem e destino.");
+      return;
+    }
+    if (transferData.origemDepositoId === transferData.destinoDepositoId) {
+      setTransferError("Selecione depositos diferentes.");
+      return;
+    }
+    if (transferData.quantidade <= 0) {
+      setTransferError("Informe a quantidade para transferir.");
+      return;
+    }
+    const origemItem = itens.find(
+      (item) =>
+        (item.produtoId ?? item.id) === transferData.itemId &&
+        item.depositoId === transferData.origemDepositoId
+    );
+    if (!origemItem) {
+      setTransferError("Item nao encontrado no deposito de origem.");
+      return;
+    }
+    const disponivel = calcularQuantidadeDisponivel(
+      origemItem.quantidade,
+      origemItem.quantidadeReservada
+    );
+    if (transferData.quantidade > disponivel) {
+      setTransferError("Quantidade excede o saldo disponivel.");
+      return;
+    }
+    const destinoDeposito = depositos.find(
+      (deposito) => deposito.id === transferData.destinoDepositoId
+    );
+    if (destinoDeposito && destinoDeposito.ativo === false) {
+      setTransferError("Deposito de destino inativo.");
+      return;
+    }
+    const custoUnitario = origemItem.custoMedio ?? 0;
+    if (!custoUnitario) {
+      setTransferError("Custo medio ausente. Informe o custo no estoque.");
+      return;
+    }
+    if (!API_BASE) {
+      setTransferError("API nao configurada.");
+      return;
+    }
+    try {
+      const dataMov = transferData.data || toLocalISODate(new Date());
+      const destinoItem =
+        itens.find(
+          (item) =>
+            (item.produtoId ?? item.id) === transferData.itemId &&
+            item.depositoId === transferData.destinoDepositoId
+        ) ?? null;
+      if (!destinoItem) {
+        await createEstoqueItem({
+          produtoId: origemItem.produtoId ?? origemItem.id,
+          depositoId: transferData.destinoDepositoId,
+          descricao: origemItem.descricao,
+          quantidade: 0,
+          custoMedio: origemItem.custoMedio,
+          estoqueMinimo: origemItem.estoqueMinimo,
+        });
+      }
+      await createMovimento(transferData.itemId, {
+        tipo: "SAIDA",
+        data: dataMov,
+        quantidade: transferData.quantidade,
+        custoUnitario,
+        depositoId: transferData.origemDepositoId,
+        origem: "MANUAL",
+        observacoes:
+          transferData.observacoes ||
+          `Transferencia para deposito ${transferData.destinoDepositoId}`,
+      });
+      await createMovimento(transferData.itemId, {
+        tipo: "ENTRADA",
+        data: dataMov,
+        quantidade: transferData.quantidade,
+        custoUnitario,
+        depositoId: transferData.destinoDepositoId,
+        origem: "MANUAL",
+        observacoes:
+          transferData.observacoes ||
+          `Transferencia do deposito ${transferData.origemDepositoId}`,
+      });
+      setTransferData({
+        itemId: "",
+        origemDepositoId: "",
+        destinoDepositoId: "",
+        quantidade: 0,
+        data: "",
+        observacoes: "",
+      });
+      loadItens();
+      loadMovimentos();
+    } catch {
+      setTransferError("Nao foi possivel registrar a transferencia.");
+    }
+  };
+
+  const selectedItem = itens.find((item) => {
+    const itemKey = String(item.produtoId ?? item.id);
+    if (itemKey !== movimentoData.itemId) return false;
+    if (!movimentoData.depositoId) return true;
+    return item.depositoId === movimentoData.depositoId;
+  });
+
+  const fornecedorLookup = useMemo(() => {
+    const map = new Map<string, string>();
+    fornecedores.forEach((fornecedor) => {
+      map.set(String(fornecedor.id), fornecedor.nome);
+    });
+    return map;
+  }, [fornecedores]);
+
+  const itemLookup = useMemo(() => {
+    const map = new Map<string, EstoqueResumo>();
+    itens.forEach((item) => {
+      const key = `${String(item.produtoId ?? item.id)}||${String(item.depositoId ?? "")}`;
+      map.set(key, item);
+    });
+    return map;
+  }, [itens]);
+  const quantidadeDisponivel = selectedItem
+    ? calcularQuantidadeDisponivel(
+        selectedItem.quantidade,
+        selectedItem.quantidadeReservada
+      )
+    : undefined;
   const previewSaldo =
     selectedItem && movimentoData.quantidade
       ? movimentoData.tipo === "SAIDA"
@@ -285,7 +539,42 @@ const EstoqueMovimentosPage = () => {
         header: "Data",
         render: (row: EstoqueMovimentoResumo) => formatLocalDate(row.data),
       },
+      {
+        key: "item",
+        header: "Item",
+        render: (row: EstoqueMovimentoResumo) => {
+          const key = `${String(row.itemId)}||${String(row.depositoId ?? "")}`;
+          const item = itemLookup.get(key) ?? itemLookup.get(`${String(row.itemId)}||`);
+          return item?.descricao || item?.item || row.itemId;
+        },
+      },
       { key: "tipo", header: "Tipo", render: (row: EstoqueMovimentoResumo) => row.tipo },
+      {
+        key: "deposito",
+        header: "Deposito",
+        render: (row: EstoqueMovimentoResumo) =>
+          depositos.find((deposito) => deposito.id === row.depositoId)?.nome ?? "-",
+      },
+      {
+        key: "fornecedor",
+        header: "Fornecedor",
+        render: (row: EstoqueMovimentoResumo) => {
+          const key = `${String(row.itemId)}||${String(row.depositoId ?? "")}`;
+          const item = itemLookup.get(key) ?? itemLookup.get(`${String(row.itemId)}||`);
+          const fornecedorId = item?.fornecedorId;
+          if (!fornecedorId) return "-";
+          return fornecedorLookup.get(String(fornecedorId)) ?? fornecedorId;
+        },
+      },
+      {
+        key: "localizacao",
+        header: "Localizacao",
+        render: (row: EstoqueMovimentoResumo) => {
+          const key = `${String(row.itemId)}||${String(row.depositoId ?? "")}`;
+          const item = itemLookup.get(key) ?? itemLookup.get(`${String(row.itemId)}||`);
+          return item?.localizacao ?? "-";
+        },
+      },
       {
         key: "quantidade",
         header: "Qtd",
@@ -313,8 +602,25 @@ const EstoqueMovimentosPage = () => {
       {
         key: "origem",
         header: "Origem",
+        render: (row: EstoqueMovimentoResumo) => row.origem ?? "-",
+      },
+      {
+        key: "origemId",
+        header: "Referencia",
+        render: (row: EstoqueMovimentoResumo) => row.origemId ?? "-",
+      },
+      {
+        key: "createdBy",
+        header: "Criado por",
         render: (row: EstoqueMovimentoResumo) =>
-          row.origem ? `${row.origem}${row.origemId ? ` (${row.origemId})` : ""}` : "-",
+          row.createdBy
+            ? `${row.createdBy}${row.createdAt ? ` em ${formatLocalDate(row.createdAt)}` : ""}`
+            : "-",
+      },
+      {
+        key: "dedupeKey",
+        header: "Chave",
+        render: (row: EstoqueMovimentoResumo) => row.dedupeKey ?? "-",
       },
       {
         key: "rastreio",
@@ -328,6 +634,8 @@ const EstoqueMovimentosPage = () => {
               onClick={() =>
                 setFiltros((prev) => ({
                   ...prev,
+                  dataFim:'',
+                  dataInicio:'',
                   lote: row.lote ?? "",
                   serie: row.serie ?? "",
                 }))
@@ -337,8 +645,40 @@ const EstoqueMovimentosPage = () => {
             "-"
           ),
       },
+      {
+        key: "acoes",
+        header: "Acoes",
+        align: "right" as const,
+        render: (row: EstoqueMovimentoResumo) => (
+          <div className="flex justify-end">
+            <AppIconButton
+              icon={<UndoIcon className="h-4 w-4" />}
+              label={`Estornar movimento ${row.id}`}
+              onClick={() =>
+                openConfirm(
+                  {
+                    title: "Estornar movimento",
+                    description: "Deseja gerar um estorno deste movimento?",
+                    confirmLabel: "Estornar",
+                  },
+                  async () => {
+                    try {
+                      await reverterMovimento(row.itemId, row);
+                      setMovimentoPage(1);
+                      loadItens();
+                      loadMovimentos();
+                    } catch {
+                      setMovimentoError("Nao foi possivel estornar o movimento.");
+                    }
+                  }
+                )
+              }
+            />
+          </div>
+        ),
+      },
     ],
-    []
+    [depositos, fornecedorLookup, itemLookup, openConfirm]
   );
 
   const origemOptions = useMemo(() => {
@@ -363,26 +703,6 @@ const EstoqueMovimentosPage = () => {
     return [];
   }, [compras, vendas, movimentoData.origem]);
 
-  const movimentosFiltrados = useMemo(() => {
-    if (
-      !filtros.dataInicio &&
-      !filtros.dataFim &&
-      !filtros.origem &&
-      !filtros.lote &&
-      !filtros.serie
-    ) {
-      return movimentos;
-    }
-    return movimentos.filter((item) => {
-      if (filtros.origem && item.origem !== filtros.origem) return false;
-      if (filtros.dataInicio && item.data < filtros.dataInicio) return false;
-      if (filtros.dataFim && item.data > filtros.dataFim) return false;
-      if (filtros.lote && item.lote !== filtros.lote) return false;
-      if (filtros.serie && item.serie !== filtros.serie) return false;
-      return true;
-    });
-  }, [filtros, movimentos]);
-
   const rastreioLotes = useMemo(() => {
     const map = new Map<
       string,
@@ -395,7 +715,7 @@ const EstoqueMovimentosPage = () => {
         ultimaData: string;
       }
     >();
-    movimentosFiltrados.forEach((mov) => {
+    movimentos.forEach((mov) => {
       if (!mov.lote && !mov.serie) return;
       const key = `${mov.lote ?? ""}||${mov.serie ?? ""}`;
       const signed =
@@ -424,18 +744,38 @@ const EstoqueMovimentosPage = () => {
     return Array.from(map.values()).sort((a, b) =>
       a.ultimaData < b.ultimaData ? 1 : -1
     );
-  }, [movimentosFiltrados]);
+  }, [movimentos]);
 
   const filtrosAtivos = Boolean(
     filtros.dataInicio ||
       filtros.dataFim ||
       filtros.origem ||
       filtros.lote ||
-      filtros.serie
+      filtros.serie ||
+      filtros.depositoId
   );
 
+  const chips = useMemo(() => {
+    const entries: Array<{ key: keyof typeof filtros; label: string; value: string }> = [];
+    if (filtros.dataInicio) entries.push({ key: "dataInicio", label: "Inicio", value: filtros.dataInicio });
+    if (filtros.dataFim) entries.push({ key: "dataFim", label: "Fim", value: filtros.dataFim });
+    if (filtros.origem) entries.push({ key: "origem", label: "Origem", value: filtros.origem });
+    if (filtros.lote) entries.push({ key: "lote", label: "Lote", value: filtros.lote });
+    if (filtros.serie) entries.push({ key: "serie", label: "Serie", value: filtros.serie });
+    if (filtros.depositoId) {
+      const deposito = depositos.find((dep) => dep.id === filtros.depositoId);
+      entries.push({
+        key: "depositoId",
+        label: "Deposito",
+        value: deposito?.nome ?? filtros.depositoId,
+      });
+    }
+    return entries;
+  }, [depositos, filtros]);
+
   return (
-    <div className="flex flex-col gap-6">
+    <>
+      <div className="flex flex-col gap-6">
       <div>
         <AppTitle text="Movimentos de estoque" />
         <AppSubTitle text="Entradas, saidas e ajustes com custo medio." />
@@ -446,15 +786,56 @@ const EstoqueMovimentosPage = () => {
           <AppSelectInput
             title="Item"
             value={movimentoData.itemId}
-            onChange={(e) =>
-              setMovimentoData((prev) => ({ ...prev, itemId: e.target.value }))
-            }
+            onChange={(e) => {
+              const value = e.target.value;
+              const matches = itens.filter(
+                (item) => String(item.produtoId ?? item.id) === value
+              );
+              setMovimentoData((prev) => ({
+                ...prev,
+                itemId: value,
+                depositoId:
+                  prev.depositoId ||
+                  (matches.length === 1 ? matches[0].depositoId ?? "" : ""),
+                quantidade: 0,
+                custoUnitarioCents: 0,
+                lote: "",
+                serie: "",
+                origemId: "",
+                observacoes: "",
+              }));
+            }}
             data={itens.map((item) => ({
-              value: item.produtoId ?? item.id,
-              label: item.descricao || item.item || item.id,
+              value: String(item.produtoId ?? item.id),
+              label:
+                `${item.descricao || item.item || item.id}` +
+                (item.depositoId
+                  ? ` (${depositos.find((dep) => dep.id === item.depositoId)?.nome ?? item.depositoId})`
+                  : "") +
+                (item.localizacao ? ` - ${item.localizacao}` : "") +
+                (item.fornecedorId
+                  ? ` / ${fornecedorLookup.get(String(item.fornecedorId)) ?? item.fornecedorId}`
+                  : ""),
             }))}
             placeholder="Selecione"
             error={fieldErrors.itemId}
+          />
+          <AppSelectInput
+            title="Deposito"
+            value={movimentoData.depositoId}
+            onChange={(e) =>
+              setMovimentoData((prev) => ({
+                ...prev,
+                depositoId: e.target.value,
+                origemId: "",
+                observacoes: "",
+              }))
+            }
+            data={depositos.map((deposito) => ({
+              value: deposito.id,
+              label: deposito.nome,
+            }))}
+            placeholder={depositos.length ? "Selecione" : "Cadastre um deposito"}
           />
           <AppSelectInput
             title="Tipo"
@@ -587,10 +968,17 @@ const EstoqueMovimentosPage = () => {
             onChange={(e) =>
               setMovimentoData((prev) => ({ ...prev, observacoes: e.target.value }))
             }
+            error={fieldErrors.observacoes}
           />
         </div>
+        {isLoadingItens ? (
+          <p className="mt-2 text-sm text-gray-500">Carregando itens...</p>
+        ) : null}
         <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-300">
           {selectedItem ? <span>Saldo atual: {selectedItem.quantidade}</span> : null}
+          {typeof quantidadeDisponivel === "number" ? (
+            <span>Disponivel: {quantidadeDisponivel}</span>
+          ) : null}
           {selectedItem ? <span>Custo medio atual: {custoMedioLabel}</span> : null}
           {typeof previewSaldo === "number" ? (
             <span>Saldo apos movimento: {previewSaldo}</span>
@@ -605,11 +993,128 @@ const EstoqueMovimentosPage = () => {
               Alerta: saldo abaixo do estoque minimo.
             </span>
           ) : null}
+          {typeof previewSaldo === "number" && previewSaldo < 0 ? (
+            <span className="text-red-600">
+              Saldo negativo. Informe justificativa nas observacoes.
+            </span>
+          ) : null}
+          {!DEFAULT_ESTOQUE_POLICY.allowNegative ? (
+            <span className="text-xs text-gray-500">
+              Politica: saldo negativo bloqueado.
+            </span>
+          ) : null}
+          <span className="text-xs text-gray-500">
+            Custo medio definitivo e calculado no backend.
+          </span>
         </div>
         {movimentoError ? <p className="mt-2 text-sm text-red-600">{movimentoError}</p> : null}
         <div className="mt-3">
           <AppButton type="button" className="w-auto px-6" onClick={handleMovimento}>
             Registrar movimento
+          </AppButton>
+        </div>
+      </Card>
+
+      <Card>
+        <AppSubTitle text="Transferencia entre depositos" />
+        <div className="mt-4 grid gap-4 md:grid-cols-3">
+          <AppSelectInput
+            title="Item"
+            value={transferData.itemId}
+            onChange={(e) => {
+              const value = e.target.value;
+              const matches = itens.filter(
+                (item) => String(item.produtoId ?? item.id) === value
+              );
+              setTransferData((prev) => ({
+                ...prev,
+                itemId: value,
+                origemDepositoId:
+                  prev.origemDepositoId ||
+                  (matches.length === 1 ? matches[0].depositoId ?? "" : ""),
+                quantidade: 0,
+                observacoes: "",
+              }));
+            }}
+            data={itens.map((item) => ({
+              value: String(item.produtoId ?? item.id),
+              label:
+                `${item.descricao || item.item || item.id}` +
+                (item.depositoId
+                  ? ` (${depositos.find((dep) => dep.id === item.depositoId)?.nome ?? item.depositoId})`
+                  : "") +
+                (item.localizacao ? ` - ${item.localizacao}` : "") +
+                (item.fornecedorId
+                  ? ` / ${fornecedorLookup.get(String(item.fornecedorId)) ?? item.fornecedorId}`
+                  : ""),
+            }))}
+            placeholder="Selecione"
+          />
+          <AppSelectInput
+            title="Deposito origem"
+            value={transferData.origemDepositoId}
+            onChange={(e) =>
+              setTransferData((prev) => ({
+                ...prev,
+                origemDepositoId: e.target.value,
+              }))
+            }
+            data={depositos.map((deposito) => ({
+              value: deposito.id,
+              label: deposito.nome,
+            }))}
+            placeholder="Selecione"
+          />
+          <AppSelectInput
+            title="Deposito destino"
+            value={transferData.destinoDepositoId}
+            onChange={(e) =>
+              setTransferData((prev) => ({
+                ...prev,
+                destinoDepositoId: e.target.value,
+              }))
+            }
+            data={depositos.map((deposito) => ({
+              value: deposito.id,
+              label: deposito.nome,
+            }))}
+            placeholder="Selecione"
+          />
+          <AppTextInput
+            title="Quantidade"
+            value={transferData.quantidade ? String(transferData.quantidade) : ""}
+            sanitizeRegex={/[0-9]/g}
+            onValueChange={(raw) =>
+              setTransferData((prev) => ({
+                ...prev,
+                quantidade: Number(raw || "0"),
+              }))
+            }
+          />
+          <AppDateInput
+            title="Data"
+            value={transferData.data}
+            onChange={(e) =>
+              setTransferData((prev) => ({ ...prev, data: e.target.value }))
+            }
+          />
+          <AppTextInput
+            title="Observacoes"
+            value={transferData.observacoes}
+            onChange={(e) =>
+              setTransferData((prev) => ({
+                ...prev,
+                observacoes: e.target.value,
+              }))
+            }
+          />
+        </div>
+        {transferError ? (
+          <p className="mt-2 text-sm text-red-600">{transferError}</p>
+        ) : null}
+        <div className="mt-3">
+          <AppButton type="button" className="w-auto px-6" onClick={handleTransferencia}>
+            Registrar transferencia
           </AppButton>
         </div>
       </Card>
@@ -630,6 +1135,20 @@ const EstoqueMovimentosPage = () => {
             onChange={(e) =>
               setFiltros((prev) => ({ ...prev, dataFim: e.target.value }))
             }
+          />
+          <AppSelectInput
+            title="Deposito"
+            value={filtros.depositoId}
+            onChange={(e) =>
+              setFiltros((prev) => ({ ...prev, depositoId: e.target.value }))
+            }
+            data={[
+              { value: "", label: "Todos" },
+              ...depositos.map((deposito) => ({
+                value: deposito.id,
+                label: deposito.nome,
+              })),
+            ]}
           />
           <AppSelectInput
             title="Origem"
@@ -662,37 +1181,59 @@ const EstoqueMovimentosPage = () => {
             <AppButton
               type="button"
               className="w-auto px-6"
-              onClick={() =>
-                setFiltros({
-                  dataInicio: "",
-                  dataFim: "",
-                  origem: "",
-                  lote: "",
-                  serie: "",
-                })
-              }
-              disabled={!filtrosAtivos}
-            >
+            onClick={() =>
+              setFiltros({
+                dataInicio: "",
+                dataFim: "",
+                origem: "",
+                lote: "",
+                serie: "",
+                depositoId: "",
+              })
+            }
+            disabled={!filtrosAtivos}
+          >
               Limpar filtros
             </AppButton>
           </div>
         </div>
+        {filtrosAtivos ? (
+          <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-gray-500">
+            {chips.map((chip) => (
+              <button
+                key={chip.key}
+                type="button"
+                className="rounded-full border border-gray-300 px-2 py-1 text-xs text-gray-600 hover:text-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:text-white"
+                onClick={() => setFiltros((prev) => ({ ...prev, [chip.key]: "" }))}
+              >
+                {chip.label}: {chip.value} ✕
+              </button>
+            ))}
+          </div>
+        ) : null}
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
+        {isLoadingMovimentos ? (
+          <p className="text-sm text-gray-500">Carregando movimentos...</p>
+        ) : null}
         <AppTable
-          data={movimentosFiltrados}
+          data={movimentos}
           rowKey={(row) => row.id}
-          emptyState={<AppListNotFound texto="Nenhum movimento registrado." />}
-          pagination={
-            filtrosAtivos
-              ? { enabled: false }
-              : {
-                  enabled: true,
-                  pageSize: 8,
-                  page: movimentoPage,
-                  total: movimentoTotal,
-                  onPageChange: setMovimentoPage,
-                }
+          emptyState={
+            <AppListNotFound
+              texto={
+                isLoadingMovimentos
+                  ? "Carregando movimentos..."
+                  : "Nenhum movimento registrado."
+              }
+            />
           }
+          pagination={{
+            enabled: true,
+            pageSize: 8,
+            page: movimentoPage,
+            total: movimentoTotal,
+            onPageChange: setMovimentoPage,
+          }}
           columns={movimentoColumns}
         />
       </Card>
@@ -736,12 +1277,14 @@ const EstoqueMovimentosPage = () => {
             {
               key: "ultimaData",
               header: "Ultimo movimento",
-              render: (row) => row.ultimaData,
+              render: (row) => formatLocalDate(row.ultimaData),
             },
           ]}
         />
       </Card>
-    </div>
+      </div>
+      <AppPopup {...popupProps} />
+    </>
   );
 };
 

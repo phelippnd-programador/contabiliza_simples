@@ -12,6 +12,8 @@ import {
   type EstoqueResumo,
   type EstoqueMovimentoTipo,
 } from "../services/estoque.service";
+import { toLocalISODate } from "../../../shared/utils/formater";
+import { listFornecedores, type FornecedorResumo } from "../../cadastros/services/cadastros.service";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 
@@ -81,7 +83,9 @@ const EstoqueImportacaoPage = () => {
   const [csvFileName, setCsvFileName] = useState("");
   const [importError, setImportError] = useState("");
   const [csvImporting, setCsvImporting] = useState(false);
+  const [isLoadingItens, setIsLoadingItens] = useState(false);
   const [mode, setMode] = useState<"MOVIMENTOS" | "INVENTARIO">("MOVIMENTOS");
+  const [fornecedores, setFornecedores] = useState<FornecedorResumo[]>([]);
   const [batchDate, setBatchDate] = useState("");
   const [batchRows, setBatchRows] = useState<
     Array<{
@@ -96,10 +100,13 @@ const EstoqueImportacaoPage = () => {
 
   const loadItens = async () => {
     try {
+      setIsLoadingItens(true);
       const response = await listEstoque({ page: 1, pageSize: 200 });
       setItens(response.data);
     } catch {
       setItens([]);
+    } finally {
+      setIsLoadingItens(false);
     }
   };
 
@@ -107,13 +114,37 @@ const EstoqueImportacaoPage = () => {
     loadItens();
   }, []);
 
+  useEffect(() => {
+    let isMounted = true;
+    const loadFornecedores = async () => {
+      try {
+        const response = await listFornecedores({ page: 1, pageSize: 200 });
+        if (!isMounted) return;
+        setFornecedores(response.data);
+      } catch {
+        if (!isMounted) return;
+        setFornecedores([]);
+      }
+    };
+    loadFornecedores();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const itemOptions = useMemo(
     () =>
       itens.map((item) => ({
         value: item.produtoId ?? item.id,
-        label: item.descricao || item.item || item.id,
+        label:
+          `${item.descricao || item.item || item.id}` +
+          (item.depositoId ? ` (${item.depositoId})` : "") +
+          (item.localizacao ? ` - ${item.localizacao}` : "") +
+          (item.fornecedorId
+            ? ` / ${fornecedores.find((f) => f.id === item.fornecedorId)?.nome ?? item.fornecedorId}`
+            : ""),
       })),
-    [itens]
+    [fornecedores, itens]
   );
 
   const resolveItem = (itemId: string, itemLabel: string) => {
@@ -124,10 +155,12 @@ const EstoqueImportacaoPage = () => {
       );
     }
     if (itemLabel) {
-      const needle = itemLabel.toLowerCase();
+      const normalize = (value: string) =>
+        value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+      const needle = normalize(itemLabel);
       return (
         itens.find((item) => {
-          const label = (item.descricao || item.item || "").toLowerCase();
+          const label = normalize(item.descricao || item.item || "");
           return label === needle;
         }) ?? null
       );
@@ -221,6 +254,8 @@ const EstoqueImportacaoPage = () => {
         return;
       }
       const saldoAtual = resolvedItem.quantidade ?? 0;
+      const saldoReservado = resolvedItem.quantidadeReservada ?? 0;
+      const saldoDisponivel = saldoAtual - saldoReservado;
       const delta = contada - saldoAtual;
       if (delta > 0 && (!custoUnitarioCents || custoUnitarioCents <= 0)) {
         errors.push(
@@ -228,7 +263,13 @@ const EstoqueImportacaoPage = () => {
         );
         return;
       }
-      const dataMov = data || new Date().toISOString().slice(0, 10);
+      if (delta < 0 && Math.abs(delta) > saldoDisponivel) {
+        errors.push(
+          `Linha ${index + 2}: ajuste negativo maior que o saldo atual.`
+        );
+        return;
+      }
+      const dataMov = data || toLocalISODate(new Date());
       rows.push({
         itemId: resolvedItem.id,
         itemLabel: resolvedItem.descricao || resolvedItem.item,
@@ -338,7 +379,7 @@ const EstoqueImportacaoPage = () => {
       setBatchError("Adicione ao menos um item.");
       return;
     }
-    const dataMov = batchDate || new Date().toISOString().slice(0, 10);
+    const dataMov = batchDate || toLocalISODate(new Date());
     const payloads: Array<{ itemId: string; quantidade: number; custo?: number }> =
       [];
     let hasError = false;
@@ -360,10 +401,20 @@ const EstoqueImportacaoPage = () => {
         hasError = true;
         return;
       }
-      const delta = row.quantidadeContada - (item.quantidade ?? 0);
+      const saldoAtual = item.quantidade ?? 0;
+      const saldoReservado = item.quantidadeReservada ?? 0;
+      const saldoDisponivel = saldoAtual - saldoReservado;
+      const delta = row.quantidadeContada - saldoAtual;
       if (delta > 0 && row.custoUnitarioCents <= 0) {
         setBatchError(
           `Linha ${index + 1}: custo unitario obrigatorio para ajuste positivo.`
+        );
+        hasError = true;
+        return;
+      }
+      if (delta < 0 && Math.abs(delta) > saldoDisponivel) {
+        setBatchError(
+          `Linha ${index + 1}: ajuste negativo maior que o saldo atual.`
         );
         hasError = true;
         return;
@@ -466,6 +517,9 @@ const EstoqueImportacaoPage = () => {
             <span className="text-sm text-gray-500">Arquivo: {csvFileName}</span>
           ) : null}
         </div>
+        {isLoadingItens ? (
+          <p className="mt-2 text-sm text-gray-500">Carregando itens...</p>
+        ) : null}
         {mode === "INVENTARIO" ? (
           <div className="mt-3 text-xs text-gray-500">
             No inventario, o sistema calcula o ajuste comparando a quantidade
@@ -490,7 +544,13 @@ const EstoqueImportacaoPage = () => {
           </div>
         ) : null}
         {csvRows.length === 0 && !csvErrors.length ? (
-          <AppListNotFound texto="Importe um CSV para validar os movimentos." />
+          <AppListNotFound
+            texto={
+              isLoadingItens
+                ? "Carregando itens..."
+                : "Importe um CSV para validar os movimentos."
+            }
+          />
         ) : null}
         {importError ? <p className="mt-2 text-sm text-red-600">{importError}</p> : null}
         <div className="mt-3">
@@ -514,10 +574,15 @@ const EstoqueImportacaoPage = () => {
             onChange={(e) => setBatchDate(e.target.value)}
           />
         </div>
+        {isLoadingItens ? (
+          <p className="mt-2 text-sm text-gray-500">Carregando itens...</p>
+        ) : null}
         <div className="mt-4 flex flex-col gap-4">
           {batchRows.map((row, index) => {
             const item = resolveItem(row.itemId, "");
             const saldoAtual = item?.quantidade ?? 0;
+            const saldoReservado = item?.quantidadeReservada ?? 0;
+            const saldoDisponivel = saldoAtual - saldoReservado;
             const delta = item ? row.quantidadeContada - saldoAtual : 0;
             return (
               <div
@@ -566,6 +631,7 @@ const EstoqueImportacaoPage = () => {
                 />
                 <div className="text-xs text-gray-500">
                   <div>Saldo atual: {saldoAtual}</div>
+                  <div>Disponivel: {saldoDisponivel}</div>
                   <div>Ajuste: {delta}</div>
                 </div>
                 <div className="flex items-end">

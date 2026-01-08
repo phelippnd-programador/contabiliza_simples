@@ -26,6 +26,7 @@ import AppPopup from "../../../components/ui/popup/AppPopup";
 import useConfirmPopup from "../../../shared/hooks/useConfirmPopup";
 import { usePlan } from "../../../shared/context/PlanContext";
 import { getPlanConfig } from "../../../app/plan/planConfig";
+import { registrarBaixa } from "../utils/baixas";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 
@@ -306,11 +307,28 @@ const ContasPagarPage = () => {
                       setError("");
                       const status =
                         proximaParcela === totalParcelas ? "PAGA" : "ABERTA";
+                      const dataPagamento = new Date().toISOString().slice(0, 10);
+                      const nextBaixas = await registrarBaixa({
+                        tipo: "PAGAR",
+                        referenciaId: row.id,
+                        descricao: row.descricao || row.fornecedorNome || "Pagamento",
+                        baixas: row.baixas,
+                        baixa: {
+                          data: dataPagamento,
+                          valor: row.valor,
+                          parcela: totalParcelas > 1 ? proximaParcela : undefined,
+                          formaPagamento: row.formaPagamento,
+                          contaId: row.contaId,
+                          categoriaId: row.categoriaId,
+                          observacoes: row.observacoes,
+                        },
+                      });
                       await patchContaPagar(row.id, {
                         parcelaPaga: proximaParcela,
                         status,
-                        dataPagamento: new Date().toISOString().slice(0, 10),
+                        dataPagamento,
                         valorPago: row.valor,
+                        baixas: nextBaixas,
                       });
                       load();
                     } catch {
@@ -443,6 +461,17 @@ const ContasPagarPage = () => {
       return;
     }
     try {
+      const currentItem = editingId
+        ? itens.find((item) => item.id === editingId)
+        : undefined;
+      const valorPagoCents =
+        formData.valorPagoCents > 0 ? formData.valorPagoCents : valorLiquidoCents;
+      const shouldRegistrarBaixa =
+        formData.status === "PAGA" &&
+        Boolean(formData.dataPagamento) &&
+        valorPagoCents > 0;
+      const baixaParcela =
+        formData.totalParcelas > 1 ? formData.parcelaPaga || undefined : undefined;
       const payload = {
         fornecedorId: formData.fornecedorId,
         fornecedorNome: fornecedorMap.get(formData.fornecedorId),
@@ -460,17 +489,58 @@ const ContasPagarPage = () => {
         desconto: formData.descontoCents || undefined,
         juros: formData.jurosCents || undefined,
         multa: formData.multaCents || undefined,
-        valorPago: formData.valorPagoCents || undefined,
+        valorPago: valorPagoCents || undefined,
         dataPagamento: formData.dataPagamento || undefined,
         formaPagamento: formData.formaPagamento || undefined,
         contaId: formData.contaId || undefined,
         categoriaId: formData.categoriaId || undefined,
         observacoes: formData.observacoes || undefined,
+        baixas: currentItem?.baixas,
       };
       if (editingId) {
-        await updateContaPagar(editingId, payload);
+        const baixasAtualizadas = shouldRegistrarBaixa
+          ? await registrarBaixa({
+              tipo: "PAGAR",
+              referenciaId: editingId,
+              descricao: payload.descricao || "Pagamento",
+              baixas: currentItem?.baixas,
+              baixa: {
+                data: formData.dataPagamento,
+                valor: valorPagoCents,
+                parcela: baixaParcela,
+                formaPagamento: formData.formaPagamento || undefined,
+                contaId: formData.contaId || undefined,
+                categoriaId: formData.categoriaId || undefined,
+                observacoes: formData.observacoes || undefined,
+              },
+            })
+          : currentItem?.baixas;
+        await updateContaPagar(editingId, {
+          ...payload,
+          baixas: baixasAtualizadas,
+        });
       } else {
-        await createContaPagar(payload);
+        const created = await createContaPagar(payload);
+        if (shouldRegistrarBaixa) {
+          const baixasAtualizadas = await registrarBaixa({
+            tipo: "PAGAR",
+            referenciaId: created.id,
+            descricao: payload.descricao || "Pagamento",
+            baixas: created.baixas,
+            baixa: {
+              data: formData.dataPagamento,
+              valor: valorPagoCents,
+              parcela: baixaParcela,
+              formaPagamento: formData.formaPagamento || undefined,
+              contaId: formData.contaId || undefined,
+              categoriaId: formData.categoriaId || undefined,
+              observacoes: formData.observacoes || undefined,
+            },
+          });
+          await patchContaPagar(created.id, {
+            baixas: baixasAtualizadas,
+          });
+        }
       }
       resetForm();
       setFormOpen(false);

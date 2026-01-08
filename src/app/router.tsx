@@ -273,7 +273,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "estoque",
-        element: withPlanGuard(["CONTADOR", "EMPRESA"], "estoque", <EstoquePage />),
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "estoque", <EstoquePage /> ),
       },
       {
         path: "estoque/movimentos",

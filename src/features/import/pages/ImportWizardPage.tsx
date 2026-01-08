@@ -15,17 +15,35 @@ import { getBestParser } from "../parsers/registry";
 import { parseItauInvoiceHeader } from "../parsers/itauCreditPdfParser";
 import { buildTransactionHash } from "../utils/hash";
 import { extractPdfTextWithMeta, isPdfScanned } from "../utils/pdf";
-import { listMovimentos, saveMovimento } from "../../financeiro/services/movimentos.service";
-import { TipoMovimentoCaixa } from "../../financeiro/types";
+import {
+  deleteMovimento,
+  listMovimentos,
+  saveMovimento,
+} from "../../financeiro/services/movimentos.service";
+import {
+  TipoMovimentoCaixa,
+  TipoReferenciaMovimentoCaixa,
+} from "../../financeiro/types";
 import { listContas } from "../../financeiro/services/contas.service";
 import {
   createContaPagar,
+  deleteContaPagar,
   listContasPagar,
   type ContaPagarResumo,
 } from "../../financeiro/services/contas-pagar.service";
 import { listCartoes, type CartaoResumo } from "../../financeiro/services/cartoes.service";
 import { usePlan } from "../../../shared/context/PlanContext";
 import { getPlanConfig } from "../../../app/plan/planConfig";
+import {
+  createImportBatch,
+  listImportBatches,
+  updateImportBatch,
+} from "../services/import-batches.service";
+import {
+  listImportTransactionsByBatch,
+  saveImportTransactions,
+  updateImportTransaction,
+} from "../services/import-transactions.service";
 
 type ImportSummary = {
   total: number;
@@ -60,6 +78,7 @@ const ImportWizardPage = () => {
   const [fileType, setFileType] = useState<ImportFileType | null>(null);
   const [transactions, setTransactions] = useState<ImportTransaction[]>([]);
   const [batch, setBatch] = useState<ImportBatch | null>(null);
+  const [latestBatch, setLatestBatch] = useState<ImportBatch | null>(null);
   const [invoiceHeader, setInvoiceHeader] = useState<InvoiceHeader | null>(null);
   const [sourceType, setSourceType] = useState<ImportSourceType>("BANK");
   const [invoiceMonth, setInvoiceMonth] = useState("");
@@ -79,6 +98,16 @@ const ImportWizardPage = () => {
   const [pdfStats, setPdfStats] = useState("");
   const [movimentoHashes, setMovimentoHashes] = useState<Set<string>>(new Set());
   const [contaPagarHashes, setContaPagarHashes] = useState<Set<string>>(new Set());
+  const [rollbackLoading, setRollbackLoading] = useState(false);
+
+  const loadLatestBatch = async () => {
+    try {
+      const batches = await listImportBatches();
+      setLatestBatch(batches[0] ?? null);
+    } catch {
+      setLatestBatch(null);
+    }
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -96,6 +125,10 @@ const ImportWizardPage = () => {
     return () => {
       isMounted = false;
     };
+  }, []);
+
+  useEffect(() => {
+    loadLatestBatch();
   }, []);
 
   useEffect(() => {
@@ -354,16 +387,27 @@ const ImportWizardPage = () => {
     }
     const withDuplicates = await applyDuplicateFlags(parsed);
     const batchId = `batch_${Date.now()}`;
-    setBatch({
+    const savedBatch = await createImportBatch({
       id: batchId,
       createdAt: new Date().toISOString(),
+      sourceType,
       fileName: file.name,
       fileType,
       provider: parser.id === "itau_credit_pdf" ? "ITAU" : undefined,
       status: "DRAFT",
       summary: buildSummary(withDuplicates),
+      accountId: accountId || undefined,
+      cardId: cardId || undefined,
+      invoiceMonth: invoiceMonth || undefined,
     });
-    setTransactions(withDuplicates);
+    const withBatch = withDuplicates.map((item) => ({
+      ...item,
+      importBatchId: savedBatch.id,
+    }));
+    await saveImportTransactions(savedBatch.id, withBatch);
+    setBatch(savedBatch);
+    setTransactions(withBatch);
+    await loadLatestBatch();
     setStep("REVIEW");
   };
 
@@ -378,6 +422,7 @@ const ImportWizardPage = () => {
       const invoiceDueDate = selectedCard
         ? buildInvoiceDueDate(invoiceMonth, selectedCard.vencimentoDia)
         : "";
+      const updatedTransactions: ImportTransaction[] = [];
       for (const item of transactions) {
         const descricaoConta = buildContaPagarDescricao(item);
         const hashToCheck = await buildTransactionHash(
@@ -386,6 +431,7 @@ const ImportWizardPage = () => {
           descricaoConta
         );
         if (hashToCheck && currentHashes.has(hashToCheck)) {
+          updatedTransactions.push(item);
           continue;
         }
         if (sourceType === "CARD") {
@@ -402,7 +448,7 @@ const ImportWizardPage = () => {
             setError("Informe o mes da fatura para calcular o vencimento.");
             return;
           }
-          await createContaPagar({
+          const conta = await createContaPagar({
             fornecedorId: "fornecedor-avulso",
             fornecedorNome: item.description,
             vencimento: dueDate,
@@ -419,21 +465,53 @@ const ImportWizardPage = () => {
                 : undefined,
             contaId: item.accountId ?? "",
           });
+          await updateImportTransaction(item.id, {
+            contaPagarId: conta.id,
+            reconciledAt: new Date().toISOString(),
+          });
+          updatedTransactions.push({
+            ...item,
+            contaPagarId: conta.id,
+            reconciledAt: new Date().toISOString(),
+          });
           continue;
         }
         const tipo =
           item.amount >= 0 ? TipoMovimentoCaixa.ENTRADA : TipoMovimentoCaixa.SAIDA;
-        await saveMovimento({
+        const movimento = await saveMovimento({
           data: item.date,
           contaId: item.accountId ?? "",
           tipo,
           valor: Math.abs(item.amount),
           descricao: item.description,
+          referencia: {
+            tipo:
+              item.amount >= 0
+                ? TipoReferenciaMovimentoCaixa.RECEITA
+                : TipoReferenciaMovimentoCaixa.DESPESA,
+            id: item.importBatchId ?? "",
+          },
+        });
+        await updateImportTransaction(item.id, {
+          movimentoId: movimento.id,
+          reconciledAt: new Date().toISOString(),
+        });
+        updatedTransactions.push({
+          ...item,
+          movimentoId: movimento.id,
+          reconciledAt: new Date().toISOString(),
         });
       }
-      setBatch((prev) =>
-        prev ? { ...prev, status: "CONFIRMED", summary } : prev
-      );
+      if (batch) {
+        const confirmed = await updateImportBatch(batch.id, {
+          status: "CONFIRMED",
+          summary,
+          confirmedAt: new Date().toISOString(),
+        });
+        setBatch(confirmed);
+      }
+      setTransactions(updatedTransactions.length ? updatedTransactions : transactions);
+      await loadLatestBatch();
       setStep("UPLOAD");
       setTransactions([]);
       setFile(null);
@@ -444,13 +522,43 @@ const ImportWizardPage = () => {
   };
 
   const handleCancel = () => {
-    setBatch((prev) =>
-      prev ? { ...prev, status: "CANCELED" } : prev
-    );
+    if (batch) {
+      updateImportBatch(batch.id, {
+        status: "CANCELED",
+        canceledAt: new Date().toISOString(),
+      })
+        .then(setBatch)
+        .finally(loadLatestBatch);
+    }
     setStep("UPLOAD");
     setTransactions([]);
     setFile(null);
     setFileType(null);
+  };
+
+  const handleRollback = async () => {
+    if (!latestBatch || latestBatch.status !== "CONFIRMED") return;
+    try {
+      setRollbackLoading(true);
+      const items = await listImportTransactionsByBatch(latestBatch.id);
+      for (const item of items) {
+        if (item.movimentoId) {
+          await deleteMovimento(item.movimentoId);
+        }
+        if (item.contaPagarId) {
+          await deleteContaPagar(item.contaPagarId);
+        }
+      }
+      await updateImportBatch(latestBatch.id, {
+        status: "CANCELED",
+        canceledAt: new Date().toISOString(),
+      });
+      await loadLatestBatch();
+    } catch {
+      setError("Nao foi possivel desfazer a importacao.");
+    } finally {
+      setRollbackLoading(false);
+    }
   };
 
   return (
@@ -461,6 +569,31 @@ const ImportWizardPage = () => {
       </div>
 
       <Card>
+        {step === "UPLOAD" && latestBatch ? (
+          <div className="mb-6 rounded-lg border border-gray-200 p-3 text-sm text-gray-700 dark:border-slate-700 dark:text-gray-200">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <p className="text-xs uppercase text-gray-400">Ultimo lote</p>
+                <p className="font-semibold">
+                  {latestBatch.fileName} ({latestBatch.fileType})
+                </p>
+                <p className="text-xs text-gray-400">
+                  Status: {latestBatch.status}
+                </p>
+              </div>
+              {latestBatch.status === "CONFIRMED" ? (
+                <AppButton
+                  type="button"
+                  className="w-auto"
+                  onClick={handleRollback}
+                  disabled={rollbackLoading}
+                >
+                  {rollbackLoading ? "Desfazendo..." : "Desfazer importacao"}
+                </AppButton>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
         {step === "UPLOAD" ? (
           <UploadStep
             file={file}
@@ -532,7 +665,17 @@ const ImportWizardPage = () => {
               transactions={transactions}
               error={error}
               onChange={(next) => {
-                applyDuplicateFlags(next).then(setTransactions);
+                applyDuplicateFlags(next).then(async (nextWithFlags) => {
+                  setTransactions(nextWithFlags);
+                  if (batch) {
+                    await saveImportTransactions(batch.id, nextWithFlags);
+                    const updated = await updateImportBatch(batch.id, {
+                      summary: buildSummary(nextWithFlags),
+                    });
+                    setBatch(updated);
+                    await loadLatestBatch();
+                  }
+                });
               }}
               onBack={() => setStep("UPLOAD")}
               onConfirm={handleConfirm}

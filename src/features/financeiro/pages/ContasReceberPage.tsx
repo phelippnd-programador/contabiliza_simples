@@ -25,6 +25,7 @@ import AppPopup from "../../../components/ui/popup/AppPopup";
 import useConfirmPopup from "../../../shared/hooks/useConfirmPopup";
 import { usePlan } from "../../../shared/context/PlanContext";
 import { getPlanConfig } from "../../../app/plan/planConfig";
+import { registrarBaixa } from "../utils/baixas";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 
@@ -341,6 +342,17 @@ const ContasReceberPage = () => {
       return;
     }
     try {
+      const currentItem = editingId
+        ? itens.find((item) => item.id === editingId)
+        : undefined;
+      const valorRecebidoCents =
+        formData.valorRecebidoCents > 0
+          ? formData.valorRecebidoCents
+          : valorLiquidoCents;
+      const shouldRegistrarBaixa =
+        formData.status === "RECEBIDA" &&
+        Boolean(formData.dataRecebimento) &&
+        valorRecebidoCents > 0;
       const payload = {
         clienteId: formData.clienteId,
         clienteNome: clienteMap.get(formData.clienteId),
@@ -357,17 +369,57 @@ const ContasReceberPage = () => {
         desconto: formData.descontoCents || undefined,
         juros: formData.jurosCents || undefined,
         multa: formData.multaCents || undefined,
-        valorRecebido: formData.valorRecebidoCents || undefined,
+        valorRecebido: valorRecebidoCents || undefined,
         dataRecebimento: formData.dataRecebimento || undefined,
         formaPagamento: formData.formaPagamento || undefined,
         contaId: formData.contaId || undefined,
         categoriaId: formData.categoriaId || undefined,
         observacoes: formData.observacoes || undefined,
+        baixas: currentItem?.baixas,
       };
       if (editingId) {
-        await updateContaReceber(editingId, payload);
+        const baixasAtualizadas = shouldRegistrarBaixa
+          ? await registrarBaixa({
+              tipo: "RECEBER",
+              referenciaId: editingId,
+              descricao: payload.descricao || "Recebimento",
+              baixas: currentItem?.baixas,
+              baixa: {
+                data: formData.dataRecebimento,
+                valor: valorRecebidoCents,
+                formaPagamento: formData.formaPagamento || undefined,
+                contaId: formData.contaId || undefined,
+                categoriaId: formData.categoriaId || undefined,
+                observacoes: formData.observacoes || undefined,
+              },
+            })
+          : currentItem?.baixas;
+        await updateContaReceber(editingId, {
+          ...payload,
+          baixas: baixasAtualizadas,
+        });
       } else {
-        await createContaReceber(payload);
+        const created = await createContaReceber(payload);
+        if (shouldRegistrarBaixa) {
+          const baixasAtualizadas = await registrarBaixa({
+            tipo: "RECEBER",
+            referenciaId: created.id,
+            descricao: payload.descricao || "Recebimento",
+            baixas: created.baixas,
+            baixa: {
+              data: formData.dataRecebimento,
+              valor: valorRecebidoCents,
+              formaPagamento: formData.formaPagamento || undefined,
+              contaId: formData.contaId || undefined,
+              categoriaId: formData.categoriaId || undefined,
+              observacoes: formData.observacoes || undefined,
+            },
+          });
+          await updateContaReceber(created.id, {
+            ...payload,
+            baixas: baixasAtualizadas,
+          });
+        }
       }
       resetForm();
       setFormOpen(false);

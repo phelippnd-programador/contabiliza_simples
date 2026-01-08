@@ -16,7 +16,7 @@ import { listMovimentos } from "../services/movimentos.service";
 import { listContasPagar, type ContaPagarResumo } from "../services/contas-pagar.service";
 import { listContasReceber, type ContaReceberResumo } from "../services/contas-receber.service";
 import { TipoMovimentoCaixa, type MovimentoCaixa } from "../types";
-import { formatLocalDate } from "../../../shared/utils/formater";
+import { formatLocalDate, toLocalISODate } from "../../../shared/utils/formater";
 
 type ProjecaoItem = {
   id: string;
@@ -31,7 +31,7 @@ type ProjecaoItem = {
   origem?: string;
 };
 
-const toDateString = (date: Date) => date.toISOString().slice(0, 10);
+const toDateString = (date: Date) => toLocalISODate(date);
 
 const addDays = (date: Date, days: number) => {
   const next = new Date(date);
@@ -44,7 +44,12 @@ const formatCurrency = (value: number) =>
 
 const parseDate = (value?: string) => {
   if (!value) return null;
-  const date = new Date(`${value}T00:00:00`);
+  const [yearRaw, monthRaw, dayRaw] = value.split("-");
+  const year = Number(yearRaw);
+  const month = Number(monthRaw);
+  const day = Number(dayRaw);
+  if (!year || !month || !day) return null;
+  const date = new Date(year, month - 1, day);
   return Number.isNaN(date.getTime()) ? null : date;
 };
 
@@ -54,8 +59,7 @@ const addMonths = (date: Date, months: number) => {
   return next;
 };
 
-const formatDateInput = (date: Date) =>
-  date.toISOString().slice(0, 10);
+const formatDateInput = (date: Date) => toLocalISODate(date);
 
 const ProjecaoPage = () => {
   const [movimentos, setMovimentos] = useState<MovimentoCaixa[]>([]);
