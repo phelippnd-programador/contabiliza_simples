@@ -8,10 +8,18 @@ import type {
 } from "../services/estoque.service";
 import mockDb from "../../../../mock/db.json";
 
+const produtosMap = new Map<string, any>(
+  (Array.isArray(mockDb.produtosServicos) ? mockDb.produtosServicos : []).map(
+    (p) => [String(p.id), p]
+  )
+);
+
 const normalizeEstoqueEntry = (entry: any): EstoqueResumo => ({
   id: String(entry.id),
   produtoId: entry.produtoId ? String(entry.produtoId) : undefined,
-  descricao: entry.descricao,
+  descricao:
+    entry.descricao ??
+    produtosMap.get(String(entry.produtoId ?? entry.id))?.descricao,
   item: entry.item,
   quantidade: entry.quantidade,
   custoMedio: entry.custoMedio,
