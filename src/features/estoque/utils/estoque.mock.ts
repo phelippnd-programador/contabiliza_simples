@@ -18,21 +18,49 @@ const normalizeEstoqueEntry = (entry: any): EstoqueResumo => ({
   estoqueMinimo: entry.estoqueMinimo,
 });
 
-const normalizeMovimentoEntry = (entry: any): EstoqueMovimentoResumo => ({
-  id: String(entry.id),
-  itemId: entry.itemId ? String(entry.itemId) : entry.produtoId ? String(entry.produtoId) : "manual",
-  tipo: entry.tipo,
-  quantidade: entry.quantidade,
-  custoUnitario: entry.custoUnitario,
-  custoMedio: entry.custoMedio,
-  saldo: entry.saldo,
-  data: entry.data,
-  lote: entry.lote,
-  serie: entry.serie,
-  origem: entry.origem,
-  origemId: entry.origemId,
-  observacoes: entry.observacoes,
-});
+const getSaldoInicial = () => {
+  const raw = Array.isArray(mockDb.estoque) ? mockDb.estoque : [];
+  return raw.reduce<Record<string, number>>((acc, entry) => {
+    const key = String(entry.produtoId ?? entry.id);
+    acc[key] = entry.quantidade ?? 0;
+    return acc;
+  }, {});
+};
+
+const normalizeMovimentoEntry = (
+  entry: any,
+  saldoMap: Record<string, number>
+): EstoqueMovimentoResumo => {
+  const itemId = entry.itemId
+    ? String(entry.itemId)
+    : entry.produtoId
+    ? String(entry.produtoId)
+    : "manual";
+  const quantidade = entry.quantidade ?? 0;
+  const signed =
+    entry.tipo === "SAIDA"
+      ? -Math.abs(quantidade)
+      : Math.abs(quantidade);
+  const previousSaldo = saldoMap[itemId] ?? 0;
+  const newSaldo = previousSaldo + signed;
+  saldoMap[itemId] = newSaldo;
+
+  return {
+    id: String(entry.id),
+    itemId,
+    tipo: entry.tipo,
+    quantidade,
+    custoUnitario: entry.custoUnitario,
+    custoMedio: entry.custoMedio,
+    saldo: newSaldo,
+    data: entry.data,
+    lote: entry.lote,
+    serie: entry.serie,
+    origem: entry.origem,
+    origemId: entry.origemId,
+    observacoes: entry.observacoes,
+  };
+};
 
 const paginate = <T>(items: T[], page: number, pageSize: number): ApiListResponse<T> => {
   const start = (page - 1) * pageSize;
@@ -71,7 +99,10 @@ export function getLocalMovimentosData(
   params: ListMovimentosParams
 ): ApiListResponse<EstoqueMovimentoResumo> {
   const raw = Array.isArray(mockDb.estoqueMovimentos) ? mockDb.estoqueMovimentos : [];
-  const normalized = raw.map(normalizeMovimentoEntry);
+  const saldoMap = getSaldoInicial();
+  const normalized = raw
+    .map((entry) => normalizeMovimentoEntry(entry, saldoMap))
+    .sort((a, b) => b.data.localeCompare(a.data));
   const filtered = normalized.filter((mov) => {
     if (itemId && mov.itemId && mov.itemId !== itemId) return false;
     if (params.lote && mov.lote !== params.lote) return false;
