@@ -6,7 +6,7 @@ import type {
   EstoqueMovimentoResumo,
   ListMovimentosParams,
 } from "../services/estoque.service";
-import mockDb from "../../../mock/db.json";
+import mockDb from "../../../../mock/db.json";
 
 const normalizeEstoqueEntry = (entry: any): EstoqueResumo => ({
   id: String(entry.id),
