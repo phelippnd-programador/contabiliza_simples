@@ -20,6 +20,12 @@ export const EyeIcon = (props: IconProps) => (
   </svg>
 );
 
+export const UndoIcon = (props: IconProps) => (
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
+    <path d="M7.5 7.5H3v-4.5a1 1 0 0 1 2 0v2.086A9 9 0 1 1 12 21a1 1 0 1 1 0-2 7 7 0 1 0-5.5-11.5Z" />
+  </svg>
+);
+
 export const SettingsIcon = (props: IconProps) => (
   <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
     <path d="M11 2h2l.5 2.5a7.5 7.5 0 0 1 2 .83l2.32-1.34 1 1.73-2.1 1.8c.2.54.35 1.1.43 1.68L22 10v2l-2.85.3a7.7 7.7 0 0 1-.43 1.68l2.1 1.8-1 1.73-2.32-1.34a7.5 7.5 0 0 1-2 .83L13 22h-2l-.5-2.5a7.5 7.5 0 0 1-2-.83l-2.32 1.34-1-1.73 2.1-1.8a7.7 7.7 0 0 1-.43-1.68L2 12v-2l2.85-.3c.08-.58.23-1.14.43-1.68l-2.1-1.8 1-1.73 2.32 1.34c.62-.37 1.29-.65 2-.83L11 2Zm1 6a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z" />

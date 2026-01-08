@@ -123,6 +123,7 @@ export type ComercialFinanceiro = {
 
 export type ComercialEstoque = {
   gerarMovimento?: boolean;
+  depositoId?: string;
 };
 
 export async function getVendasAnalytics(

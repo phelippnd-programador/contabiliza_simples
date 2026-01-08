@@ -16,6 +16,11 @@ import {
   type CompraResumo,
 } from "../services/comercial.service";
 import {
+  createMovimento,
+  listDepositos,
+  type EstoqueDepositoResumo,
+} from "../../estoque/services/estoque.service";
+import {
   listFornecedores,
   listProdutosServicos,
   type FornecedorResumo,
@@ -24,7 +29,6 @@ import {
 import { listContas } from "../../financeiro/services/contas.service";
 import { listCategorias } from "../../financeiro/services/categorias.service";
 import { createContaPagar } from "../../financeiro/services/contas-pagar.service";
-import { createMovimento } from "../../estoque/services/estoque.service";
 import { formatBRL, formatLocalDate } from "../../../shared/utils/formater";
 import { EditIcon, TrashIcon } from "../../../components/ui/icon/AppIcons";
 import AppPopup from "../../../components/ui/popup/AppPopup";
@@ -79,9 +83,11 @@ const ComprasPage = () => {
   const [formError, setFormError] = useState("");
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingStatus, setEditingStatus] = useState<string | null>(null);
   const { popupProps, openConfirm } = useConfirmPopup();
   const [fornecedores, setFornecedores] = useState<FornecedorResumo[]>([]);
   const [catalogo, setCatalogo] = useState<ProdutoServicoResumo[]>([]);
+  const [depositos, setDepositos] = useState<EstoqueDepositoResumo[]>([]);
   const [contas, setContas] = useState<Array<{ value: string; label: string }>>(
     []
   );
@@ -106,6 +112,7 @@ const ComprasPage = () => {
     },
     estoque: {
       gerarMovimento: "SIM",
+      depositoId: "",
     },
   });
   const [page, setPage] = useState(1);
@@ -131,13 +138,19 @@ const ComprasPage = () => {
   useEffect(() => {
     let isMounted = true;
     const loadLookups = async () => {
-      const [fornecedoresResult, catalogoResult, contasResult, categoriasResult] =
-        await Promise.allSettled([
-          listFornecedores({ page: 1, pageSize: 200 }),
-          listProdutosServicos({ page: 1, pageSize: 200 }),
-          listContas(),
-          listCategorias(),
-        ]);
+      const [
+        fornecedoresResult,
+        catalogoResult,
+        contasResult,
+        categoriasResult,
+        depositosResult,
+      ] = await Promise.allSettled([
+        listFornecedores({ page: 1, pageSize: 200 }),
+        listProdutosServicos({ page: 1, pageSize: 200 }),
+        listContas(),
+        listCategorias(),
+        listDepositos(),
+      ]);
       if (!isMounted) return;
       setFornecedores(
         fornecedoresResult.status === "fulfilled" ? fornecedoresResult.value.data : []
@@ -165,6 +178,9 @@ const ComprasPage = () => {
       } else {
         setCategorias([]);
       }
+      setDepositos(
+        depositosResult.status === "fulfilled" ? depositosResult.value : []
+      );
     };
     loadLookups();
     return () => {
@@ -227,6 +243,7 @@ const ComprasPage = () => {
               label={`Editar compra ${row.id}`}
               onClick={() => {
                 setEditingId(row.id);
+                setEditingStatus(row.status ?? "ABERTA");
                 setFormData({
                   fornecedorId: row.fornecedorId ?? row.fornecedor ?? "",
                   data: row.data,
@@ -245,6 +262,7 @@ const ComprasPage = () => {
                   },
                   estoque: {
                     gerarMovimento: row.estoque?.gerarMovimento ? "SIM" : "NAO",
+                    depositoId: row.estoque?.depositoId ?? "",
                   },
                 });
                 setFormError("");
@@ -288,6 +306,7 @@ const ComprasPage = () => {
 
   const resetForm = () => {
     setEditingId(null);
+    setEditingStatus(null);
     setFormData({
       fornecedorId: "",
       data: "",
@@ -306,6 +325,7 @@ const ComprasPage = () => {
       },
       estoque: {
         gerarMovimento: "SIM",
+        depositoId: "",
       },
     });
   };
@@ -324,7 +344,7 @@ const ComprasPage = () => {
   };
 
   const handleSelectProduto = (index: number, produtoId: string) => {
-    const produto = catalogo.find((item) => item.id === produtoId);
+    const produto = catalogo.find((item) => String(item.id) === produtoId);
     if (!produto) {
       updateItem(index, { produtoId, descricao: "" });
       return;
@@ -403,6 +423,7 @@ const ComprasPage = () => {
       },
       estoque: {
         gerarMovimento: formData.estoque.gerarMovimento === "SIM",
+        depositoId: formData.estoque.depositoId || undefined,
       },
     };
 
@@ -446,6 +467,7 @@ const ComprasPage = () => {
                   data: formData.data,
                   quantidade: item.quantidade,
                   custoUnitario: item.valorUnitario,
+                  depositoId: formData.estoque.depositoId || undefined,
                   origem: "COMPRA",
                   origemId: compraId,
                   observacoes: `Compra ${compraId}`,
@@ -740,6 +762,21 @@ const ComprasPage = () => {
                 }))
               }
               data={yesNoOptions}
+            />
+            <AppSelectInput
+              title="Deposito"
+              value={formData.estoque.depositoId}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  estoque: { ...prev.estoque, depositoId: e.target.value },
+                }))
+              }
+              data={depositos.map((deposito) => ({
+                value: deposito.id,
+                label: deposito.nome,
+              }))}
+              placeholder={depositos.length ? "Selecione" : "Cadastre um deposito"}
             />
           </div>
 

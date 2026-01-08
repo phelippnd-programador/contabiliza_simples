@@ -57,9 +57,22 @@
       "codigo": "SKU_0001",
       "unidade": "10",
       "valorUnitario": 1000,
+      "fornecedorId": "1",
+      "localizacao": "Rua A / Prateleira 1",
       "ncm": "8419.89.91",
       "cfop": "111111",
       "id": 1
+    },
+    {
+      "descricao": "Servico de suporte",
+      "tipo": "SERVICO",
+      "status": "ATIVO",
+      "codigo": "SKU_0002",
+      "unidade": "UN",
+      "valorUnitario": 2500,
+      "fornecedorId": "1",
+      "localizacao": "Sala 2",
+      "id": 2
     }
   ],
   "contas": [
@@ -107,6 +120,126 @@
     }
   ],
   "movimentos": [],
+  "estoqueMovimentos": [
+    {
+      "id": 1,
+      "itemId": "1",
+      "depositoId": "dep_1",
+      "tipo": "ENTRADA",
+      "data": "2026-01-05",
+      "quantidade": 100,
+      "custoUnitario": 1000,
+      "custoMedio": 1000,
+      "saldo": 100,
+      "lote": "LOTE_001",
+      "origem": "MANUAL",
+      "origemId": null,
+      "observacoes": "Carga inicial",
+      "createdAt": "2026-01-05T10:00:00.000Z",
+      "createdBy": "Sistema",
+      "dedupeKey": "MANUAL:1:2026-01-05:ENTRADA:100"
+    },
+    {
+      "id": 2,
+      "itemId": "1",
+      "depositoId": "dep_1",
+      "tipo": "SAIDA",
+      "data": "2026-01-07",
+      "quantidade": 10,
+      "custoUnitario": 1000,
+      "custoMedio": 1000,
+      "saldo": 90,
+      "lote": "LOTE_001",
+      "serie": "002",
+      "origem": "MANUAL",
+      "origemId": null,
+      "observacoes": "Ajuste de saldo",
+      "createdAt": "2026-01-07T10:00:00.000Z",
+      "createdBy": "Sistema",
+      "dedupeKey": "MANUAL:1:2026-01-07:SAIDA:10"
+    },
+    {
+      "itemId": "1",
+      "depositoId": "dep_1",
+      "tipo": "ENTRADA",
+      "data": "2026-01-05",
+      "quantidade": 10,
+      "custoUnitario": 1000,
+      "custoMedio": 1000,
+      "saldo": 100,
+      "origem": "COMPRA",
+      "origemId": "1",
+      "observacoes": "Compra 1",
+      "createdAt": "2026-01-05T12:00:00.000Z",
+      "createdBy": "Sistema",
+      "dedupeKey": "COMPRA:1:2026-01-05:ENTRADA:10",
+      "id": 3
+    },
+    {
+      "itemId": "1",
+      "depositoId": "dep_1",
+      "tipo": "SAIDA",
+      "data": "2026-01-08",
+      "quantidade": 5,
+      "custoUnitario": 1000,
+      "custoMedio": 1000,
+      "saldo": 95,
+      "origem": "VENDA",
+      "origemId": "1",
+      "observacoes": "Venda 1",
+      "createdAt": "2026-01-08T12:00:00.000Z",
+      "createdBy": "Sistema",
+      "dedupeKey": "VENDA:1:2026-01-08:SAIDA:5",
+      "id": 4
+    },
+    {
+      "itemId": "1",
+      "depositoId": "dep_1",
+      "tipo": "SAIDA",
+      "data": "2026-01-09",
+      "quantidade": 5,
+      "custoUnitario": 1000,
+      "custoMedio": 1000,
+      "saldo": 90,
+      "origem": "MANUAL",
+      "origemId": "TRANSFERENCIA",
+      "observacoes": "Transferencia para dep_2",
+      "createdAt": "2026-01-09T12:00:00.000Z",
+      "createdBy": "Sistema",
+      "dedupeKey": "TRANSFERENCIA:dep_1:dep_2:2026-01-09:5",
+      "id": 5
+    },
+    {
+      "itemId": "1",
+      "depositoId": "dep_2",
+      "tipo": "ENTRADA",
+      "data": "2026-01-09",
+      "quantidade": 5,
+      "custoUnitario": 1000,
+      "custoMedio": 1000,
+      "saldo": 30,
+      "origem": "MANUAL",
+      "origemId": "TRANSFERENCIA",
+      "observacoes": "Transferencia de dep_1",
+      "createdAt": "2026-01-09T12:00:00.000Z",
+      "createdBy": "Sistema",
+      "dedupeKey": "TRANSFERENCIA:dep_1:dep_2:2026-01-09:5:IN",
+      "id": 6
+    }
+  ],
+  "estoqueDepositos": [
+    {
+      "id": "dep_1",
+      "nome": "Principal",
+      "ativo": true
+    },
+    {
+      "id": "dep_2",
+      "nome": "Secundario",
+      "ativo": true,
+      "observacoes": "Deposito auxiliar"
+    }
+  ],
   "cartoes": [
     {
       "nome": "Henrique",
@@ -486,8 +619,60 @@
       "id": 19
     }
   ],
-  "vendas": [],
-  "compras": [],
+  "vendas": [
+    {
+      "id": 1,
+      "clienteId": "1",
+      "clienteNome": "Prosolution",
+      "data": "2026-01-08",
+      "status": "FATURADA",
+      "itens": [
+        {
+          "produtoId": "1",
+          "descricao": "Teste",
+          "quantidade": 5,
+          "valorUnitario": 1200,
+          "total": 6000
+        }
+      ],
+      "subtotal": 6000,
+      "desconto": 0,
+      "frete": 0,
+      "impostos": 0,
+      "total": 6000,
+      "estoque": {
+        "gerarMovimento": true,
+        "depositoId": "dep_1"
+      }
+    }
+  ],
+  "compras": [
+    {
+      "id": 1,
+      "fornecedorId": "1",
+      "fornecedorNome": "Proprietario Casa",
+      "data": "2026-01-05",
+      "status": "RECEBIDA",
+      "itens": [
+        {
+          "produtoId": "1",
+          "descricao": "Teste",
+          "quantidade": 10,
+          "valorUnitario": 1000,
+          "total": 10000
+        }
+      ],
+      "subtotal": 10000,
+      "desconto": 0,
+      "frete": 0,
+      "impostos": 0,
+      "total": 10000,
+      "estoque": {
+        "gerarMovimento": true,
+        "depositoId": "dep_1"
+      }
+    }
+  ],
   "vendasAnalytics": {
     "totais": {
       "quantidade": 0,
@@ -957,10 +1142,39 @@
   "estoque": [
     {
       "produtoId": "1",
-      "quantidade": 100,
-      "custoMedio": 20000,
+      "depositoId": "dep_1",
+      "quantidade": 90,
+      "quantidadeReservada": 0,
+      "custoMedio": 1000,
       "estoqueMinimo": 10,
       "id": 1
+    },
+    {
+      "id": 3,
+      "produtoId": "1",
+      "depositoId": "dep_2",
+      "quantidade": 25,
+      "quantidadeReservada": 0,
+      "custoMedio": 1000,
+      "estoqueMinimo": 5
+    },
+    {
+      "id": 4,
+      "produtoId": "2",
+      "depositoId": "dep_1",
+      "quantidade": 15,
+      "quantidadeReservada": 0,
+      "custoMedio": 2500,
+      "estoqueMinimo": 3
+    },
+    {
+      "id": 5,
+      "produtoId": "2",
+      "depositoId": "dep_2",
+      "quantidade": 5,
+      "quantidadeReservada": 0,
+      "custoMedio": 2500,
+      "estoqueMinimo": 2
     }
   ],
   "usuarioPerfil": {}

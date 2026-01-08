@@ -3,15 +3,27 @@ import type {
   EstoqueMovimentoTipo,
   ListMovimentosParams,
 } from "../services/estoque.service";
+import {
+  DEFAULT_ESTOQUE_POLICY,
+  getSignedQuantidade,
+  validarSaldoNegativo,
+} from "./estoque.utils";
 
 export type MovimentacaoContext = {
   selectedItemQuantity?: number;
   ajusteDirecao?: "ENTRADA" | "SAIDA";
+  allowNegative?: boolean;
+  requireJustificativa?: boolean;
 };
 
 export type MovimentacaoValidationResult = {
   valid: boolean;
-  errors: Partial<Record<keyof Omit<EstoqueMovimentoPayload, "observacoes"> | "itemId", string>>;
+  errors: Partial<
+    Record<
+      keyof Omit<EstoqueMovimentoPayload, "observacoes"> | "itemId" | "observacoes",
+      string
+    >
+  >;
 };
 
 export const validateMovimentacao = (
@@ -40,8 +52,28 @@ export const validateMovimentacao = (
     errors.custoUnitario = "Informe o custo unitário para entrada/ajuste.";
   }
   if (tipoSaida && selectedItemQuantity !== undefined) {
-    if (payload.quantidade > selectedItemQuantity) {
-      errors.quantidade = "Quantidade excede o saldo atual.";
+    const movementSigned = getSignedQuantidade(
+      payload.tipo,
+      payload.quantidade,
+      ajusteDirecao
+    );
+    const policy = {
+      ...DEFAULT_ESTOQUE_POLICY,
+      allowNegative: Boolean(context.allowNegative),
+      requireJustificativa: context.requireJustificativa ?? DEFAULT_ESTOQUE_POLICY.requireJustificativa,
+    };
+    const negativeCheck = validarSaldoNegativo({
+      saldoAtual: selectedItemQuantity,
+      movimento: movementSigned,
+      policy,
+      observacoes: payload.observacoes,
+    });
+    if (!negativeCheck.ok) {
+      if (negativeCheck.reason === "JUSTIFICATION_REQUIRED") {
+        errors.observacoes = "Informe a justificativa para saldo negativo.";
+      } else {
+        errors.quantidade = "Quantidade excede o saldo atual.";
+      }
     }
   }
 

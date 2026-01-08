@@ -61,6 +61,8 @@ export type ProdutoServicoResumo = {
   codigo?: string;
   unidade?: string;
   valorUnitario?: number;
+  fornecedorId?: string;
+  localizacao?: string;
   ncm?: string;
   cfop?: string;
   cnae?: string;
@@ -122,6 +124,8 @@ export type ProdutoServicoPayload = {
   codigo?: string;
   unidade?: string;
   valorUnitario?: number;
+  fornecedorId?: string;
+  localizacao?: string;
   ncm?: string;
   cfop?: string;
   cnae?: string;
@@ -312,7 +316,7 @@ export async function listProdutosServicos(
   const page = params.page ?? 1;
   const pageSize = params.pageSize ?? 10;
   if (!API_BASE) {
-    return { data: [], meta: { page, pageSize, total: 0 } };
+    throw new Error("API_NOT_CONFIGURED");
   }
   const query = new URLSearchParams();
   query.set("page", String(page));

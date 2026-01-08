@@ -38,6 +38,27 @@ describe("validateMovimentacao", () => {
     expect(result.errors.quantidade).toMatch(/saldo/);
   });
 
+  test("requires justificativa to allow negative saldo", () => {
+    const result = validateMovimentacao(
+      { ...basePayload, tipo: "SAIDA", quantidade: 8 },
+      { selectedItemQuantity: 5, allowNegative: true }
+    );
+    expect(result.errors.observacoes).toBeDefined();
+  });
+
+  test("accepts negative saldo with justificativa", () => {
+    const result = validateMovimentacao(
+      {
+        ...basePayload,
+        tipo: "SAIDA",
+        quantidade: 8,
+        observacoes: "Saldo negativo aprovado",
+      },
+      { selectedItemQuantity: 5, allowNegative: true }
+    );
+    expect(result.valid).toBe(true);
+  });
+
   test("requires origemId when origem != manual", () => {
     const result = validateMovimentacao(
       { ...basePayload, origem: "VENDA", origemId: "" },

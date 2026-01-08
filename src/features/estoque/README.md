@@ -1,73 +1,40 @@
-# Módulo de Estoque
+# Modulo de Estoque
 
 ## Endpoints
 
 ### `GET /estoque`
-Lista o inventário com paginação.
+Lista o inventario com paginacao.
 
-- **Query params**:
-  - `page` (padrão `1`)
-  - `pageSize` (padrão `10`)
-  - `q` (busca por descrição/item)
-
-- **Resposta**:
-  ```json
-  {
-    "data": [
-      {
-        "id": "1",
-        "produtoId": "SKU_0001",
-        "descricao": "Teste",
-        "item": null,
-        "quantidade": 100,
-        "custoMedio": 20000,
-        "estoqueMinimo": 10
-      }
-    ],
-    "meta": {
-      "page": 1,
-      "pageSize": 10,
-      "total": 1
-    }
-  }
-  ```
+- Query params:
+  - `page` (padrao `1`)
+  - `pageSize` (padrao `10`)
+  - `q` (busca por descricao/item)
 
 ### `GET /estoque/:id`
-Retorna o item detalhado (mesmos campos do inventário). Utilizado para visualizar o saldo atual no formulário de movimentos.
+Retorna o item detalhado (mesmos campos do inventario).
 
 ### `POST /estoque/:id/movimentos`
-Registra entrada, saída ou ajuste.
-
-- **Payload**:
-  ```json
-  {
-    "tipo": "ENTRADA",
-    "quantidade": 10,
-    "data": "2026-01-10",
-    "custoUnitario": 1000,
-    "lote": "LOTE_005",
-    "serie": "005",
-    "origem": "MANUAL",
-    "origemId": null,
-    "observacoes": "Teste"
-  }
-  ```
+Registra entrada, saida ou ajuste.
 
 ### `GET /estoque/:id/movimentos`
 Retorna os movimentos por item.
 
 ### `GET /estoque/movimentos`
-Se nenhum `itemId` é passado, retorna o histórico completo filtrável pelo query string:
+Retorna o historico completo filtravel.
 
-- `data_gte`, `data_lte`, `origem`, `lote`, `serie`
+### `GET /estoque/depositos`
+Lista depositos.
 
-## Mock local (mock/ routes e db)
+### `POST /estoque/depositos`
+Cria deposito.
 
-O mock usa `mock/db.json` como base de dados. As funções em `src/features/estoque/utils/estoque.mock.ts` simulam o mesmo contrato e expõem:
+### `PUT /estoque/depositos/:id`
+Atualiza deposito.
 
-- leitura paginada (`page`, `pageSize`)
-- filtros de texto (`q`) e meta (`total`)
-- filtros de movimentos (data, origem, lote, série)
-- cada movimento possui: `id`, `itemId`, `tipo`, `quantidade`, `custoUnitario`, `data`, `lote`, `serie`, `saldo`, `origem`
+### `DELETE /estoque/depositos/:id`
+Remove deposito.
 
-Use-as para testar sem backend e garantir que o contrato HTTP não mudou.
+## Mock local (json-server)
+
+O mock usa `mock/db.json` como base de dados com json-server (ver `mock/server.cjs`).
+Para simular filtros/paginacao, utilize os query params descritos acima.

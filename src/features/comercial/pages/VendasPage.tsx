@@ -15,6 +15,7 @@ import {
   deleteVenda,
   type VendaResumo,
 } from "../services/comercial.service";
+import { listDepositos, type EstoqueDepositoResumo } from "../../estoque/services/estoque.service";
 import {
   listClientes,
   listProdutosServicos,
@@ -24,7 +25,11 @@ import {
 import { listContas } from "../../financeiro/services/contas.service";
 import { listCategorias } from "../../financeiro/services/categorias.service";
 import { createContaReceber } from "../../financeiro/services/contas-receber.service";
-import { createMovimento } from "../../estoque/services/estoque.service";
+import {
+  gerarMovimentosParaVenda,
+  reservarEstoqueParaVenda,
+  liberarReservaVenda,
+} from "../../estoque/utils/comercialMovimentos";
 import { formatBRL, formatLocalDate } from "../../../shared/utils/formater";
 import { EditIcon, TrashIcon } from "../../../components/ui/icon/AppIcons";
 import AppPopup from "../../../components/ui/popup/AppPopup";
@@ -79,9 +84,11 @@ const VendasPage = () => {
   const [formError, setFormError] = useState("");
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingStatus, setEditingStatus] = useState<string | null>(null);
   const { popupProps, openConfirm } = useConfirmPopup();
   const [clientes, setClientes] = useState<ClienteResumo[]>([]);
   const [catalogo, setCatalogo] = useState<ProdutoServicoResumo[]>([]);
+  const [depositos, setDepositos] = useState<EstoqueDepositoResumo[]>([]);
   const [contas, setContas] = useState<Array<{ value: string; label: string }>>(
     []
   );
@@ -106,6 +113,7 @@ const VendasPage = () => {
     },
     estoque: {
       gerarMovimento: "SIM",
+      depositoId: "",
     },
   });
   const [page, setPage] = useState(1);
@@ -131,13 +139,19 @@ const VendasPage = () => {
   useEffect(() => {
     let isMounted = true;
     const loadLookups = async () => {
-      const [clientesResult, catalogoResult, contasResult, categoriasResult] =
-        await Promise.allSettled([
-          listClientes({ page: 1, pageSize: 200 }),
-          listProdutosServicos({ page: 1, pageSize: 200 }),
-          listContas(),
-          listCategorias(),
-        ]);
+      const [
+        clientesResult,
+        catalogoResult,
+        contasResult,
+        categoriasResult,
+        depositosResult,
+      ] = await Promise.allSettled([
+        listClientes({ page: 1, pageSize: 200 }),
+        listProdutosServicos({ page: 1, pageSize: 200 }),
+        listContas(),
+        listCategorias(),
+        listDepositos(),
+      ]);
       if (!isMounted) return;
       setClientes(
         clientesResult.status === "fulfilled" ? clientesResult.value.data : []
@@ -165,6 +179,9 @@ const VendasPage = () => {
       } else {
         setCategorias([]);
       }
+      setDepositos(
+        depositosResult.status === "fulfilled" ? depositosResult.value : []
+      );
     };
     loadLookups();
     return () => {
@@ -227,6 +244,7 @@ const VendasPage = () => {
               label={`Editar venda ${row.id}`}
               onClick={() => {
                 setEditingId(row.id);
+                setEditingStatus(row.status ?? "ABERTA");
                 setFormData({
                   clienteId: row.clienteId ?? row.cliente ?? "",
                   data: row.data,
@@ -245,6 +263,7 @@ const VendasPage = () => {
                   },
                   estoque: {
                     gerarMovimento: row.estoque?.gerarMovimento ? "SIM" : "NAO",
+                    depositoId: row.estoque?.depositoId ?? "",
                   },
                 });
                 setFormError("");
@@ -288,6 +307,7 @@ const VendasPage = () => {
 
   const resetForm = () => {
     setEditingId(null);
+    setEditingStatus(null);
     setFormData({
       clienteId: "",
       data: "",
@@ -306,6 +326,7 @@ const VendasPage = () => {
       },
       estoque: {
         gerarMovimento: "SIM",
+        depositoId: "",
       },
     });
   };
@@ -324,7 +345,7 @@ const VendasPage = () => {
   };
 
   const handleSelectProduto = (index: number, produtoId: string) => {
-    const produto = catalogo.find((item) => item.id === produtoId);
+    const produto = catalogo.find((item) => String(item.id) === produtoId);
     if (!produto) {
       updateItem(index, { produtoId, descricao: "" });
       return;
@@ -403,6 +424,7 @@ const VendasPage = () => {
       },
       estoque: {
         gerarMovimento: formData.estoque.gerarMovimento === "SIM",
+        depositoId: formData.estoque.depositoId || undefined,
       },
     };
 
@@ -412,6 +434,16 @@ const VendasPage = () => {
         ? await updateVenda(editingId, payload)
         : await createVenda(payload);
       const vendaId = editingId || saved.id;
+
+      const itensComProduto = formData.itens.filter((item) => item.produtoId);
+      const shouldMovimentar = formData.estoque.gerarMovimento === "SIM";
+      const nextStatus = formData.status;
+      const prevStatus = editingStatus ?? "";
+      const isAprovada = nextStatus === "APROVADA";
+      const wasAprovada = prevStatus === "APROVADA";
+      const isFaturada = nextStatus === "FATURADA";
+      const wasFaturada = prevStatus === "FATURADA";
+      const isCancelada = nextStatus === "CANCELADA";
 
       if (!editingId && formData.financeiro.gerarConta === "SIM") {
         try {
@@ -435,26 +467,75 @@ const VendasPage = () => {
         }
       }
 
-      if (!editingId && formData.estoque.gerarMovimento === "SIM") {
-        try {
-          await Promise.all(
-            formData.itens
-              .filter((item) => item.produtoId)
-              .map((item) =>
-                createMovimento(item.produtoId as string, {
-                  tipo: "SAIDA",
-                  data: formData.data,
-                  quantidade: item.quantidade,
-                  origem: "VENDA",
-                  origemId: vendaId,
-                  observacoes: `Venda ${vendaId}`,
-                })
-              )
-          );
-        } catch {
-          postError =
-            postError ||
-            "Venda salva, mas nao foi possivel movimentar o estoque.";
+      if (!editingId && shouldMovimentar) {
+        if (isAprovada) {
+          try {
+            await reservarEstoqueParaVenda({
+              itens: itensComProduto,
+              depositoId: formData.estoque.depositoId || undefined,
+            });
+          } catch {
+            postError = postError || "Venda salva, mas nao foi possivel reservar o estoque.";
+          }
+        }
+        if (isFaturada) {
+          try {
+            await gerarMovimentosParaVenda({
+              itens: itensComProduto,
+              data: formData.data,
+              vendaId,
+              movimentoTipo: "SAIDA",
+              depositoId: formData.estoque.depositoId || undefined,
+            });
+          } catch {
+            postError =
+              postError ||
+              "Venda salva, mas nao foi possivel movimentar o estoque.";
+          }
+        }
+      } else if (editingId && shouldMovimentar) {
+        if (isAprovada && !wasAprovada) {
+          try {
+            await reservarEstoqueParaVenda({
+              itens: itensComProduto,
+              depositoId: formData.estoque.depositoId || undefined,
+            });
+          } catch {
+            postError = postError || "Nao foi possivel reservar o estoque.";
+          }
+        }
+        if (isCancelada && wasAprovada) {
+          try {
+            await liberarReservaVenda({
+              itens: itensComProduto,
+              depositoId: formData.estoque.depositoId || undefined,
+            });
+          } catch {
+            postError = postError || "Nao foi possivel liberar a reserva.";
+          }
+        }
+        if (isFaturada && !wasFaturada) {
+          try {
+            await gerarMovimentosParaVenda({
+              itens: itensComProduto,
+              data: formData.data,
+              vendaId,
+              movimentoTipo: "SAIDA",
+              depositoId: formData.estoque.depositoId || undefined,
+            });
+          } catch {
+            postError = postError || "Movimento nao gerado apos atualizar venda.";
+          }
+          if (wasAprovada) {
+            try {
+              await liberarReservaVenda({
+                itens: itensComProduto,
+                depositoId: formData.estoque.depositoId || undefined,
+              });
+            } catch {
+              postError = postError || "Nao foi possivel liberar a reserva.";
+            }
+          }
         }
       }
 
@@ -739,6 +820,21 @@ const VendasPage = () => {
                 }))
               }
               data={yesNoOptions}
+            />
+            <AppSelectInput
+              title="Deposito"
+              value={formData.estoque.depositoId}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  estoque: { ...prev.estoque, depositoId: e.target.value },
+                }))
+              }
+              data={depositos.map((deposito) => ({
+                value: deposito.id,
+                label: deposito.nome,
+              }))}
+              placeholder={depositos.length ? "Selecione" : "Cadastre um deposito"}
             />
           </div>
 
