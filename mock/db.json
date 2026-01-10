@@ -433,6 +433,26 @@
       "centroCustoId": "1",
       "faturaCompetencia": "2026-01",
       "id": 24
+    },
+    {
+      "cartaoId": "1",
+      "data": "2026-10-20",
+      "descricao": "MERCA DO LIVRE*7",
+      "valor": 5932,
+      "parcela": 3,
+      "totalParcelas": 4,
+      "faturaCompetencia": "2026-11",
+      "id": 25
+    },
+    {
+      "cartaoId": "1",
+      "data": "2026-10-26",
+      "descricao": "MERCA DO LIVRE*J",
+      "valor": 8423,
+      "parcela": 4,
+      "totalParcelas": 4,
+      "faturaCompetencia": "2026-11",
+      "id": 26
     }
   ],
   "cartoesFaturas": [
@@ -1367,6 +1387,22 @@
       "competencia": "2026-12",
       "data": "2026-01-10T06:18:17.121Z",
       "id": 106
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 25,
+      "competencia": "2026-11",
+      "data": "2026-01-10T07:18:00.313Z",
+      "id": 107
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 26,
+      "competencia": "2026-11",
+      "data": "2026-01-10T07:18:00.439Z",
+      "id": 108
     }
   ],
   "financeiroOrcamentos": [],
@@ -1710,8 +1746,67 @@
   "apuracoes": [],
   "obrigacoes": [],
   "empresas": [],
-  "importBatches": [],
-  "importTransactions": [],
+  "importBatches": [
+    {
+      "id": "batch_1768029453300",
+      "createdAt": "2026-01-10T07:17:33.300Z",
+      "sourceType": "CARD",
+      "fileName": "Fatura_Itau_20260109-213439_260109_213525.pdf",
+      "fileType": "PDF",
+      "provider": "ITAU",
+      "status": "CONFIRMED",
+      "summary": {
+        "total": -14355,
+        "credits": 0,
+        "debits": 14355
+      },
+      "cardId": "1",
+      "invoiceMonth": "2026-01",
+      "confirmedAt": "2026-01-10T07:18:00.502Z"
+    }
+  ],
+  "importTransactions": [
+    {
+      "id": "imp_Fatura_Itau_20260109-213439_260109_213525.pdf_2026-10-20_af88bk",
+      "date": "2026-10-20",
+      "description": "MERCA DO LIVRE*7",
+      "amount": -5932,
+      "currency": "BRL",
+      "sourceType": "CARD",
+      "direction": "DEBIT",
+      "issuer": "ITAU",
+      "installment": {
+        "current": 3,
+        "total": 4
+      },
+      "rawLine": "20/10 MERCA DO LIVRE*7 03/04 59.32",
+      "hash": "19425d14bfeab48f9a35f6b93776982d03c60862",
+      "duplicateInSystem": false,
+      "importBatchId": "batch_1768029453300",
+      "cartaoLancamentoId": 25,
+      "reconciledAt": "2026-01-10T07:18:00.344Z"
+    },
+    {
+      "id": "imp_Fatura_Itau_20260109-213439_260109_213525.pdf_2026-10-26_r8sr4z",
+      "date": "2026-10-26",
+      "description": "MERCA DO LIVRE*J",
+      "amount": -8423,
+      "currency": "BRL",
+      "sourceType": "CARD",
+      "direction": "DEBIT",
+      "issuer": "ITAU",
+      "installment": {
+        "current": 4,
+        "total": 4
+      },
+      "rawLine": "26/10 MERCA DO LIVRE*J 04/04 84.23",
+      "hash": "b5b8b64bce088d4a12882587c1e331f22ed17f03",
+      "duplicateInSystem": false,
+      "importBatchId": "batch_1768029453300",
+      "cartaoLancamentoId": 26,
+      "reconciledAt": "2026-01-10T07:18:00.469Z"
+    }
+  ],
   "estoque": [],
   "usuarioPerfil": {}
 }
