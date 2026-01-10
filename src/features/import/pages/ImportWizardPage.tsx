@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import AppTitle, { AppSubTitle } from "../../../components/ui/text/AppTitle";
 import Card from "../../../components/ui/card/Card";
+import AppButton from "../../../components/ui/button/AppButton";
 import UploadStep from "../components/UploadStep";
 import ReviewStep from "../components/ReviewStep";
 import type {
@@ -25,13 +26,13 @@ import {
   TipoReferenciaMovimentoCaixa,
 } from "../../financeiro/types";
 import { listContas } from "../../financeiro/services/contas.service";
-import {
-  createContaPagar,
-  deleteContaPagar,
-  listContasPagar,
-  type ContaPagarResumo,
-} from "../../financeiro/services/contas-pagar.service";
+import { deleteContaPagar } from "../../financeiro/services/contas-pagar.service";
 import { listCartoes, type CartaoResumo } from "../../financeiro/services/cartoes.service";
+import {
+  createCartaoLancamento,
+  deleteCartaoLancamento,
+  listCartaoLancamentos,
+} from "../../financeiro/services/cartao-lancamentos.service";
 import { usePlan } from "../../../shared/context/PlanContext";
 import { getPlanConfig } from "../../../app/plan/planConfig";
 import {
@@ -44,6 +45,14 @@ import {
   saveImportTransactions,
   updateImportTransaction,
 } from "../services/import-transactions.service";
+
+type ImportWizardPageProps = {
+  embedded?: boolean;
+  defaultSourceType?: ImportSourceType;
+  defaultCardId?: string;
+  lockSourceType?: boolean;
+  lockCardSelect?: boolean;
+};
 
 type ImportSummary = {
   total: number;
@@ -70,7 +79,13 @@ const buildSummary = (transactions: ImportTransaction[]): ImportSummary => {
   return { total, credits, debits };
 };
 
-const ImportWizardPage = () => {
+const ImportWizardPage = ({
+  embedded = false,
+  defaultSourceType,
+  defaultCardId,
+  lockSourceType = false,
+  lockCardSelect = false,
+}: ImportWizardPageProps) => {
   const { plan } = usePlan();
   const { labels } = getPlanConfig(plan);
   const [step, setStep] = useState<"UPLOAD" | "REVIEW">("UPLOAD");
@@ -80,13 +95,15 @@ const ImportWizardPage = () => {
   const [batch, setBatch] = useState<ImportBatch | null>(null);
   const [latestBatch, setLatestBatch] = useState<ImportBatch | null>(null);
   const [invoiceHeader, setInvoiceHeader] = useState<InvoiceHeader | null>(null);
-  const [sourceType, setSourceType] = useState<ImportSourceType>("BANK");
+  const [sourceType, setSourceType] = useState<ImportSourceType>(
+    defaultSourceType ?? "BANK"
+  );
   const [invoiceMonth, setInvoiceMonth] = useState("");
   const [accountId, setAccountId] = useState("");
   const [accounts, setAccounts] = useState<Array<{ value: string; label: string }>>(
     []
   );
-  const [cardId, setCardId] = useState("");
+  const [cardId, setCardId] = useState(defaultCardId ?? "");
   const [cards, setCards] = useState<CartaoResumo[]>([]);
   const [cardOptions, setCardOptions] = useState<
     Array<{ value: string; label: string }>
@@ -97,7 +114,9 @@ const ImportWizardPage = () => {
   const [pdfError, setPdfError] = useState("");
   const [pdfStats, setPdfStats] = useState("");
   const [movimentoHashes, setMovimentoHashes] = useState<Set<string>>(new Set());
-  const [contaPagarHashes, setContaPagarHashes] = useState<Set<string>>(new Set());
+  const [cartaoLancamentoHashes, setCartaoLancamentoHashes] = useState<Set<string>>(
+    new Set()
+  );
   const [rollbackLoading, setRollbackLoading] = useState(false);
 
   const loadLatestBatch = async () => {
@@ -180,95 +199,82 @@ const ImportWizardPage = () => {
   }, []);
 
   useEffect(() => {
+    if (!defaultCardId) return;
+    setCardId((prev) => prev || defaultCardId);
+  }, [defaultCardId]);
+
+  useEffect(() => {
     let isMounted = true;
-    const buildDescricao = (conta: ContaPagarResumo) => {
-      const base = conta.descricao ?? conta.fornecedorNome ?? conta.fornecedor ?? "";
-      if (conta.parcela && conta.totalParcelas) {
-        const token = `${conta.parcela}/${conta.totalParcelas}`;
-        if (base.includes(token)) return base;
-        return `${base} ${token}`.trim();
-      }
-      return base;
-    };
-    const loadContasPagar = async () => {
+    const loadCartaoLancamentos = async () => {
       try {
-        const pageSize = 200;
-        let page = 1;
-        let all: ContaPagarResumo[] = [];
-        while (true) {
-          const response = await listContasPagar({ page, pageSize });
-          all = all.concat(response.data ?? []);
-          if (response.data.length < pageSize) break;
-          if (response.meta?.total && all.length >= response.meta.total) break;
-          page += 1;
-          if (page > 20) break;
+        const hashes: string[] = [];
+        for (const cartao of cards) {
+          const items = await listCartaoLancamentos(String(cartao.id));
+          for (const item of items) {
+            const parcelaLabel =
+              item.parcela && item.totalParcelas ? ` ${item.parcela}/${item.totalParcelas}` : "";
+            const descricao = `${item.descricao}${parcelaLabel}`.trim();
+            const hash = await buildTransactionHash(
+              item.data,
+              Math.abs(item.valor),
+              descricao
+            );
+            hashes.push(hash);
+          }
         }
-        const hashes = await Promise.all(
-          all.map((conta) =>
-            buildTransactionHash(conta.vencimento, conta.valor, buildDescricao(conta))
-          )
-        );
         if (!isMounted) return;
-        setContaPagarHashes(new Set(hashes));
+        setCartaoLancamentoHashes(new Set(hashes));
       } catch {
         if (!isMounted) return;
-        setContaPagarHashes(new Set());
+        setCartaoLancamentoHashes(new Set());
       }
     };
-    loadContasPagar();
+    if (!cards.length) return () => {
+      isMounted = false;
+    };
+    loadCartaoLancamentos();
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [cards]);
+
+  const selectedCardLabel = useMemo(() => {
+    if (!cardId) return "";
+    const card = cards.find((item) => String(item.id) === cardId);
+    return card ? `${card.nome} (dia ${card.vencimentoDia})` : "";
+  }, [cardId, cards]);
 
   const summary = useMemo(() => buildSummary(transactions), [transactions]);
-  const buildContaPagarDescricao = (item: ImportTransaction) => {
+  const buildCartaoDescricao = (item: ImportTransaction) => {
     const parcelaLabel = item.installment
       ? ` ${item.installment.current}/${item.installment.total}`
       : "";
     return `${item.description}${parcelaLabel}`.trim();
   };
 
-  const buildInvoiceDueDate = (month: string, dueDay: number) => {
-    if (!month || !dueDay) return "";
-    const [yearRaw, monthRaw] = month.split("-");
-    const year = Number(yearRaw);
-    const monthNumber = Number(monthRaw);
-    if (!year || !monthNumber) return "";
-    const maxDay = new Date(year, monthNumber, 0).getDate();
-    const day = Math.min(Math.max(dueDay, 1), maxDay);
-    return `${year}-${String(monthNumber).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-  };
-
-  const buildFirstInstallmentDueDate = (
-    purchaseDate: string,
+  const computeCartaoCompetencia = (
+    date: string,
     fechamentoDia: number,
-    vencimentoDia: number
+    corteDia?: number
   ) => {
-    const date = new Date(`${purchaseDate}T00:00:00`);
-    if (Number.isNaN(date.getTime())) return "";
-    const purchaseDay = date.getDate();
-    const purchaseMonth = date.getMonth() + 1;
-    const purchaseYear = date.getFullYear();
-    const offset = purchaseDay <= fechamentoDia ? 1 : 2;
-    let dueMonth = purchaseMonth + offset;
-    let dueYear = purchaseYear;
-    while (dueMonth > 12) {
-      dueMonth -= 12;
-      dueYear += 1;
+    if (!date) return "";
+    const base = new Date(`${date}T00:00:00`);
+    if (Number.isNaN(base.getTime())) return "";
+    const competenciaDate = new Date(base);
+    const diaCorte = corteDia || fechamentoDia;
+    if (diaCorte && base.getDate() > diaCorte) {
+      competenciaDate.setMonth(competenciaDate.getMonth() + 1);
     }
-    const maxDay = new Date(dueYear, dueMonth, 0).getDate();
-    const day = Math.min(Math.max(vencimentoDia, 1), maxDay);
-    return `${dueYear}-${String(dueMonth).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    return competenciaDate.toISOString().slice(0, 7);
   };
 
   const applyDuplicateFlags = async (next: ImportTransaction[]) => {
     const currentHashes =
-      sourceType === "CARD" ? contaPagarHashes : movimentoHashes;
+      sourceType === "CARD" ? cartaoLancamentoHashes : movimentoHashes;
     const hashed = await Promise.all(
       next.map(async (item) => {
         const description =
-          sourceType === "CARD" ? buildContaPagarDescricao(item) : item.description;
+          sourceType === "CARD" ? buildCartaoDescricao(item) : item.description;
         const amount = sourceType === "CARD" ? Math.abs(item.amount) : item.amount;
         return {
           ...item,
@@ -306,8 +312,8 @@ const ImportWizardPage = () => {
       setError("Selecione a conta para importar.");
       return;
     }
-    if (sourceType === "CARD" && (!cardId || !invoiceMonth)) {
-      setError("Selecione o cartao e o mes da fatura.");
+    if (sourceType === "CARD" && !cardId) {
+      setError("Selecione o cartao para importar.");
       return;
     }
     if (sourceType === "CARD") {
@@ -415,20 +421,17 @@ const ImportWizardPage = () => {
     if (!transactions.length) return;
     try {
       const currentHashes =
-        sourceType === "CARD" ? contaPagarHashes : movimentoHashes;
+        sourceType === "CARD" ? cartaoLancamentoHashes : movimentoHashes;
       const selectedCard = cards.find(
         (cartao) => String(cartao.id) === cardId
       );
-      const invoiceDueDate = selectedCard
-        ? buildInvoiceDueDate(invoiceMonth, selectedCard.vencimentoDia)
-        : "";
       const updatedTransactions: ImportTransaction[] = [];
       for (const item of transactions) {
-        const descricaoConta = buildContaPagarDescricao(item);
+        const descricaoCartao = buildCartaoDescricao(item);
         const hashToCheck = await buildTransactionHash(
           item.date,
           Math.abs(item.amount),
-          descricaoConta
+          descricaoCartao
         );
         if (hashToCheck && currentHashes.has(hashToCheck)) {
           updatedTransactions.push(item);
@@ -436,42 +439,33 @@ const ImportWizardPage = () => {
         }
         if (sourceType === "CARD") {
           if (item.amount >= 0) continue;
-          const baseDueDate = selectedCard
-            ? buildFirstInstallmentDueDate(
+          const competencia = selectedCard
+            ? computeCartaoCompetencia(
                 item.date,
                 selectedCard.fechamentoDia,
-                selectedCard.vencimentoDia
+                selectedCard.corteDia
               )
-            : "";
-          const dueDate = baseDueDate || invoiceDueDate;
-          if (!dueDate) {
-            setError("Informe o mes da fatura para calcular o vencimento.");
+            : invoiceMonth;
+          if (!competencia) {
+            setError("Informe o mes da fatura para calcular a competencia.");
             return;
           }
-          const conta = await createContaPagar({
-            fornecedorId: "fornecedor-avulso",
-            fornecedorNome: item.description,
-            vencimento: dueDate,
+          const lancamento = await createCartaoLancamento({
+            cartaoId: cardId,
+            data: item.date,
+            descricao: item.description,
             valor: Math.abs(item.amount),
-            status: "ABERTA",
-            origem: "MANUAL",
-            descricao: descricaoConta,
-            competencia: item.date,
             parcela: item.installment?.current,
             totalParcelas: item.installment?.total,
-            parcelaPaga:
-              item.installment?.current && item.installment.current > 1
-                ? item.installment.current - 1
-                : undefined,
-            contaId: item.accountId ?? "",
+            faturaCompetencia: competencia,
           });
           await updateImportTransaction(item.id, {
-            contaPagarId: conta.id,
+            cartaoLancamentoId: lancamento.id,
             reconciledAt: new Date().toISOString(),
           });
           updatedTransactions.push({
             ...item,
-            contaPagarId: conta.id,
+            cartaoLancamentoId: lancamento.id,
             reconciledAt: new Date().toISOString(),
           });
           continue;
@@ -548,6 +542,9 @@ const ImportWizardPage = () => {
         if (item.contaPagarId) {
           await deleteContaPagar(item.contaPagarId);
         }
+        if (item.cartaoLancamentoId) {
+          await deleteCartaoLancamento(item.cartaoLancamentoId);
+        }
       }
       await updateImportBatch(latestBatch.id, {
         status: "CANCELED",
@@ -562,13 +559,20 @@ const ImportWizardPage = () => {
   };
 
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <AppTitle text={labels.integracoes.importTitle} />
-        <AppSubTitle text={labels.integracoes.importSubtitle} />
-      </div>
+    <div className={embedded ? "flex flex-col gap-4" : "flex flex-col gap-6"}>
+      {!embedded ? (
+        <div>
+          <AppTitle text={labels.integracoes.importTitle} />
+          <AppSubTitle text={labels.integracoes.importSubtitle} />
+        </div>
+      ) : null}
 
       <Card>
+        {embedded && selectedCardLabel ? (
+          <div className="mb-4 rounded-lg border border-slate-200/70 bg-white/80 p-3 text-sm text-slate-700 shadow-sm dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-200">
+            Importando para: <span className="font-semibold">{selectedCardLabel}</span>
+          </div>
+        ) : null}
         {step === "UPLOAD" && latestBatch ? (
           <div className="mb-6 rounded-lg border border-gray-200 p-3 text-sm text-gray-700 dark:border-slate-700 dark:text-gray-200">
             <div className="flex flex-wrap items-center justify-between gap-4">
@@ -607,13 +611,16 @@ const ImportWizardPage = () => {
             error={error}
             onFileChange={handleFileChange}
             onSourceTypeChange={(value) => {
+              if (lockSourceType) return;
               setSourceType(value);
               if (value !== "BANK") {
                 setAccountId("");
               }
               if (value !== "CARD") {
                 setInvoiceMonth("");
-                setCardId("");
+                if (!defaultCardId) {
+                  setCardId("");
+                }
               }
             }}
             onInvoiceMonthChange={setInvoiceMonth}
@@ -626,6 +633,10 @@ const ImportWizardPage = () => {
             pdfStats={pdfStats}
             title="Upload do arquivo"
             subtitle="CSV e OFX tem suporte completo. PDF exige revisao."
+            disableSourceType={lockSourceType}
+            disableCardSelect={lockCardSelect}
+            hideSourceType={embedded}
+            hideCardSelect={embedded}
           />
         ) : (
           <>

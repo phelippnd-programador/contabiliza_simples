@@ -1,6 +1,8 @@
 import { apiFetch } from "../../../shared/services/apiClient";
 import type { ApiListResponse } from "../../../shared/types/api-types";
 import type { BaixaTitulo } from "../types";
+import { assertCompetenciaAberta } from "./fechamento.service";
+import { registrarAuditoria } from "./auditoria.service";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 
@@ -28,6 +30,7 @@ export type ContaReceberResumo = {
   formaPagamento?: string;
   contaId?: string;
   categoriaId?: string;
+  centroCustoId?: string;
   observacoes?: string;
   recorrente?: boolean;
   baixas?: BaixaTitulo[];
@@ -55,6 +58,7 @@ export type ContaReceberPayload = {
   formaPagamento?: string;
   contaId?: string;
   categoriaId?: string;
+  centroCustoId?: string;
   observacoes?: string;
   recorrente?: boolean;
   baixas?: BaixaTitulo[];
@@ -88,7 +92,7 @@ export async function listContasReceber(
   const page = params.page ?? 1;
   const pageSize = params.pageSize ?? 10;
   if (!API_BASE) {
-    return { data: [], meta: { page, pageSize, total: 0 } };
+    throw new Error("API_NOT_CONFIGURED");
   }
   const query = new URLSearchParams();
   query.set("page", String(page));
@@ -111,6 +115,8 @@ export async function createContaReceber(
   if (!API_BASE) {
     throw new Error("API_NOT_CONFIGURED");
   }
+  const competencia = payload.competencia ?? payload.vencimento?.slice(0, 7);
+  await assertCompetenciaAberta(competencia);
   const res = await apiFetch("/financeiro/contas-receber", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -119,7 +125,14 @@ export async function createContaReceber(
   if (!res.ok) {
     throw new Error("CREATE_CONTA_RECEBER_FAILED");
   }
-  return (await res.json()) as ContaReceberResumo;
+  const created = (await res.json()) as ContaReceberResumo;
+  await registrarAuditoria({
+    acao: "CRIAR",
+    entidade: "CONTA_RECEBER",
+    entidadeId: created.id,
+    competencia: competencia ?? created.competencia,
+  });
+  return created;
 }
 
 export async function updateContaReceber(
@@ -129,6 +142,12 @@ export async function updateContaReceber(
   if (!API_BASE) {
     throw new Error("API_NOT_CONFIGURED");
   }
+  let competencia = payload.competencia ?? payload.vencimento?.slice(0, 7);
+  if (!competencia) {
+    const current = await getContaReceber(id);
+    competencia = current?.competencia ?? current?.vencimento?.slice(0, 7);
+  }
+  await assertCompetenciaAberta(competencia);
   const res = await apiFetch(`/financeiro/contas-receber/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
@@ -137,17 +156,33 @@ export async function updateContaReceber(
   if (!res.ok) {
     throw new Error("UPDATE_CONTA_RECEBER_FAILED");
   }
-  return (await res.json()) as ContaReceberResumo;
+  const updated = (await res.json()) as ContaReceberResumo;
+  await registrarAuditoria({
+    acao: "ATUALIZAR",
+    entidade: "CONTA_RECEBER",
+    entidadeId: updated.id,
+    competencia: competencia ?? updated.competencia,
+  });
+  return updated;
 }
 
 export async function deleteContaReceber(id: string): Promise<void> {
   if (!API_BASE) {
     throw new Error("API_NOT_CONFIGURED");
   }
+  const current = await getContaReceber(id);
+  const competencia = current?.competencia ?? current?.vencimento?.slice(0, 7);
+  await assertCompetenciaAberta(competencia);
   const res = await apiFetch(`/financeiro/contas-receber/${id}`, {
     method: "DELETE",
   });
   if (!res.ok) {
     throw new Error("DELETE_CONTA_RECEBER_FAILED");
   }
+  await registrarAuditoria({
+    acao: "EXCLUIR",
+    entidade: "CONTA_RECEBER",
+    entidadeId: id,
+    competencia,
+  });
 }

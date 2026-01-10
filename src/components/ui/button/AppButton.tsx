@@ -16,7 +16,16 @@ const AppButton = ({
         <button
             {...props}
             disabled={disabled || loading}
-            className={"w-full h-11 rounded-lg border border-gray-200 active:shadow-sm active:bg-gray-50 px-4 text-sm hover:border-blue-500 dark:border-slate-700 dark:text-gray-100 dark:hover:border-blue-400 dark:active:bg-slate-800 " + (className ?? "")}
+            className={[
+                "w-full h-11 rounded-xl px-4 text-sm font-medium",
+                "border border-slate-200/70 bg-white/90 text-slate-800",
+                "shadow-sm transition-all hover:-translate-y-[1px] hover:border-slate-300 hover:shadow-md",
+                "active:translate-y-0 active:shadow-sm",
+                "disabled:cursor-not-allowed disabled:opacity-50",
+                "dark:border-slate-700/70 dark:bg-slate-900/80 dark:text-slate-100",
+                "dark:hover:border-slate-600 dark:hover:bg-slate-900",
+                className ?? "",
+            ].join(" ")}
         // className={[
         //     "w-full",
         //     "h-11 px-6 rounded-lg",

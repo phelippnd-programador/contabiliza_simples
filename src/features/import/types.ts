@@ -45,6 +45,7 @@ export type ImportTransaction = {
   importBatchId?: string;
   movimentoId?: string;
   contaPagarId?: string;
+  cartaoLancamentoId?: string;
   reconciledAt?: string;
   raw?: string;
   hash?: string;

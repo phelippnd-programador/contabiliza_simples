@@ -84,15 +84,17 @@ const CategoriasFinanceirasPage = () => {
   };
 
   return (
-    <div className="flex w-full flex-col items-center justify-center p-5">
-      <AppTitle text="Categorias financeiras" />
-      <AppSubTitle text="Cadastre categorias de entrada e saida." />
+    <div className="flex w-full flex-col gap-6">
+      <div className="space-y-1">
+        <AppTitle text="Categorias financeiras" />
+        <AppSubTitle text="Cadastre categorias de entrada e saida." />
+      </div>
 
       <Card>
         <AppSubTitle text="Cadastro de categorias" />
-        <small>
+        <p className="text-sm text-slate-500 dark:text-slate-400">
           Preencha os dados basicos da categoria. Campos com * sao obrigatorios.
-        </small>
+        </p>
 
         <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
           <AppTextInput
@@ -141,7 +143,7 @@ const CategoriasFinanceirasPage = () => {
                 key: "nome",
                 header: "Categoria",
                 render: (categoria) => (
-                  <span className="font-medium text-gray-900">
+                  <span className="font-medium text-slate-900 dark:text-slate-100">
                     {categoria.nome}
                   </span>
                 ),

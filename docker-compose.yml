@@ -1,0 +1,19 @@
+services:
+  app:
+    image: contabiliza-simples:local
+    build:
+      context: .
+      args:
+        VITE_API_BASE_URL: http://mock:3001
+    ports:
+      - "5173:5173"
+    depends_on:
+      - mock
+
+  mock:
+    image: contabiliza-simples:local
+    command: npm run mock
+    environment:
+      MOCK_PORT: "3001"
+    ports:
+      - "3001:3001"

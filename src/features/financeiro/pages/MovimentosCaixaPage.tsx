@@ -12,6 +12,7 @@ import AppTable from "../../../components/ui/table/AppTable";
 import AppListNotFound from "../../../components/ui/AppListNotFound";
 import { listContas } from "../services/contas.service";
 import { listCategorias } from "../services/categorias.service";
+import { listCentrosCusto } from "../../rh/services/rh.service";
 import {
   deleteMovimento,
   listMovimentos,
@@ -19,6 +20,7 @@ import {
 } from "../services/movimentos.service";
 import {
   TipoMovimentoCaixa,
+  TipoReferenciaMovimentoCaixa,
   type CategoriaMovimento,
   type ContaBancaria,
   type MovimentoCaixa,
@@ -27,6 +29,7 @@ import { formatBRL, formatLocalDate } from "../../../shared/utils/formater";
 import { EditIcon, TrashIcon } from "../../../components/ui/icon/AppIcons";
 import AppPopup from "../../../components/ui/popup/AppPopup";
 import useConfirmPopup from "../../../shared/hooks/useConfirmPopup";
+import type { CentroCusto } from "../../rh/types/rh.types";
 
 
 const tipoMovimentoOptions = [
@@ -43,11 +46,13 @@ const emptyForm: Omit<MovimentoCaixa, "id"> = {
   competencia: "",
   cnae: "",
   categoriaId: "",
+  centroCustoId: "",
 };
 
 const MovimentosCaixaPage = () => {
   const [contas, setContas] = useState<ContaBancaria[]>([]);
   const [categorias, setCategorias] = useState<CategoriaMovimento[]>([]);
+  const [centrosCusto, setCentrosCusto] = useState<CentroCusto[]>([]);
   const [movimentos, setMovimentos] = useState<MovimentoCaixa[]>([]);
   const [form, setForm] = useState({ id: "", ...emptyForm });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -59,13 +64,15 @@ const MovimentosCaixaPage = () => {
   useEffect(() => {
     let isMounted = true;
     const load = async () => {
-      const [contasData, categoriasData] = await Promise.all([
+      const [contasData, categoriasData, centrosResult] = await Promise.all([
         listContas(),
         listCategorias(),
+        listCentrosCusto({ page: 1, pageSize: 200 }),
       ]);
       if (!isMounted) return;
       setContas(contasData);
       setCategorias(categoriasData);
+      setCentrosCusto(centrosResult.data);
       await refresh();
     };
     load();
@@ -100,6 +107,15 @@ const MovimentosCaixaPage = () => {
     [categorias]
   );
 
+  const centroCustoOptions = useMemo(
+    () =>
+      centrosCusto.map((centro) => ({
+        value: centro.id,
+        label: centro.nome,
+      })),
+    [centrosCusto]
+  );
+
   const handleSave = async () => {
     const nextErrors: Record<string, string> = {};
     if (!form.data) nextErrors.data = "Informe a data";
@@ -110,20 +126,28 @@ const MovimentosCaixaPage = () => {
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length) return;
 
-    await saveMovimento({
-      id: form.id || undefined,
-      data: form.data,
-      contaId: form.contaId,
-      tipo: form.tipo,
-      valor: Number(form.valor),
-      descricao: form.descricao || undefined,
-      competencia: form.competencia || undefined,
-      cnae: form.cnae || undefined,
-      categoriaId: form.categoriaId,
-    });
-    setErrors({});
-    setForm({ id: "", ...emptyForm });
-    await refresh();
+    try {
+      await saveMovimento({
+        id: form.id || undefined,
+        data: form.data,
+        contaId: form.contaId,
+        tipo: form.tipo,
+        valor: Number(form.valor),
+        descricao: form.descricao || undefined,
+        competencia: form.competencia || undefined,
+        cnae: form.cnae || undefined,
+        categoriaId: form.categoriaId,
+        centroCustoId: form.centroCustoId || undefined,
+      });
+      setErrors({});
+      setForm({ id: "", ...emptyForm });
+      await refresh();
+    } catch (err) {
+      if (err instanceof Error && err.message === "COMPETENCIA_FECHADA") {
+        setErrors((prev) => ({ ...prev, competencia: "Competencia fechada." }));
+        return;
+      }
+    }
   };
 
   const handleEdit = (movimento: MovimentoCaixa) => {
@@ -137,6 +161,7 @@ const MovimentosCaixaPage = () => {
       competencia: movimento.competencia ?? "",
       cnae: movimento.cnae ?? "",
       categoriaId: movimento.categoriaId ?? "",
+      centroCustoId: movimento.centroCustoId ?? "",
     });
     setErrors({});
   };
@@ -150,11 +175,17 @@ const MovimentosCaixaPage = () => {
         tone: "danger",
       },
       async () => {
-        await deleteMovimento(movimento.id);
-        if (form.id === movimento.id) {
-          setForm({ id: "", ...emptyForm });
+        try {
+          await deleteMovimento(movimento.id);
+          if (form.id === movimento.id) {
+            setForm({ id: "", ...emptyForm });
+          }
+          await refresh();
+        } catch (err) {
+          if (err instanceof Error && err.message === "COMPETENCIA_FECHADA") {
+            setErrors((prev) => ({ ...prev, competencia: "Competencia fechada." }));
+          }
         }
-        await refresh();
       }
     );
   };
@@ -165,13 +196,17 @@ const MovimentosCaixaPage = () => {
   };
 
   return (
-    <div className="flex w-full flex-col items-center justify-center p-5">
-      <AppTitle text="Lancamento de caixa" />
-      <AppSubTitle text="Registre entradas e saidas do financeiro." />
+    <div className="flex w-full flex-col gap-6">
+      <div className="space-y-1">
+        <AppTitle text="Lancamento de caixa" />
+        <AppSubTitle text="Registre entradas e saidas do financeiro." />
+      </div>
 
       <Card>
         <AppSubTitle text="Novo movimento" />
-        <small>Preencha os dados basicos do movimento de caixa.</small>
+        <p className="text-sm text-slate-500 dark:text-slate-400">
+          Preencha os dados basicos do movimento de caixa.
+        </p>
 
         <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
           <AppDateInput
@@ -258,6 +293,16 @@ const MovimentosCaixaPage = () => {
             }
           />
 
+          <AppSelectInput
+            title="Centro de custo"
+            value={form.centroCustoId ?? ""}
+            onChange={(e) =>
+              setForm((prev) => ({ ...prev, centroCustoId: e.target.value }))
+            }
+            data={centroCustoOptions}
+            placeholder="Selecione"
+          />
+
           <AppDateInput
             title="Competencia"
             type="month"
@@ -265,6 +310,7 @@ const MovimentosCaixaPage = () => {
             onChange={(e) =>
               setForm((prev) => ({ ...prev, competencia: e.target.value }))
             }
+            error={errors.competencia}
           />
 
           <CnaePicker
@@ -332,6 +378,30 @@ const MovimentosCaixaPage = () => {
                   categoriaOptions.find(
                     (categoria) => categoria.value === movimento.categoriaId
                   )?.label ?? "Categoria removida",
+              },
+              {
+                key: "centroCusto",
+                header: "Centro de custo",
+                render: (movimento) =>
+                  centroCustoOptions.find(
+                    (centro) => centro.value === movimento.centroCustoId
+                  )?.label ?? "-",
+              },
+              {
+                key: "referencia",
+                header: "Origem",
+                render: (movimento) => {
+                  if (!movimento.referencia) return "-";
+                  const tipo =
+                    movimento.referencia.tipo === TipoReferenciaMovimentoCaixa.RECEITA
+                      ? "Receber"
+                      : movimento.referencia.tipo === TipoReferenciaMovimentoCaixa.DESPESA
+                      ? "Pagar"
+                      : movimento.referencia.tipo === TipoReferenciaMovimentoCaixa.CARTAO_FATURA
+                      ? "Cartao"
+                      : movimento.referencia.tipo;
+                  return `${tipo} #${movimento.referencia.id}`;
+                },
               },
               {
                 key: "acoes",

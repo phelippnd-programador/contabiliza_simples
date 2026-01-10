@@ -19,7 +19,7 @@ interface AppSelectInputProps
 
 const AppOption = ({ value, label }: ItemSelect) => {
   return (
-    <option className="text-sm text-gray-800 dark:bg-slate-900 dark:text-gray-100" value={value}>
+    <option className="text-sm text-slate-800 dark:bg-slate-900 dark:text-slate-100" value={value}>
       {label}
     </option>
   );
@@ -56,21 +56,21 @@ const AppSelectInput = ({
           value={isControlled ? value : undefined}
           defaultValue={!isControlled ? (defaultValue ?? "") : undefined}
           className={[
-            "h-11 w-full rounded-lg",
+            "h-11 w-full rounded-xl",
             "px-3 pr-10",
-            "border-2",
-            "bg-white text-sm",
+            "border",
+            "bg-white/80 text-sm shadow-sm",
             "appearance-none",
             error
               ? "border-red-300 focus:border-red-500 focus:ring-2 focus:ring-red-200"
-              : "border-gray-200 hover:border-blue-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-200",
-            "text-gray-900 dark:bg-slate-900 dark:text-gray-100 dark:border-slate-700 dark:focus:ring-blue-900/40",
+              : "border-slate-200/70 hover:border-slate-300 focus:border-sky-300 focus:ring-2 focus:ring-sky-200",
+            "text-slate-900 dark:bg-slate-900/80 dark:text-slate-100 dark:border-slate-700 dark:focus:ring-sky-900/40",
             "outline-none transition",
             className ?? "",
           ].join(" ")}
         >
           {placeholder ? (
-            <option value="" disabled className="text-gray-400">
+            <option value="" disabled className="text-slate-400">
               {placeholder}
             </option>
           ) : (
@@ -83,7 +83,7 @@ const AppSelectInput = ({
         </select>
 
         <svg
-          className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-gray-500"
+          className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-slate-500"
           viewBox="0 0 20 20"
           fill="currentColor"
           aria-hidden="true"

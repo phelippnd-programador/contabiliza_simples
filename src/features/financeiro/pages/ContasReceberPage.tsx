@@ -18,6 +18,7 @@ import {
 import { listContas } from "../services/contas.service";
 import { listCategorias } from "../services/categorias.service";
 import { listClientes, type ClienteResumo } from "../../cadastros/services/cadastros.service";
+import { listCentrosCusto } from "../../rh/services/rh.service";
 import { formatBRL, formatLocalDate } from "../../../shared/utils/formater";
 import { TipoMovimentoCaixa } from "../types";
 import { EditIcon, TrashIcon } from "../../../components/ui/icon/AppIcons";
@@ -25,9 +26,19 @@ import AppPopup from "../../../components/ui/popup/AppPopup";
 import useConfirmPopup from "../../../shared/hooks/useConfirmPopup";
 import { usePlan } from "../../../shared/context/PlanContext";
 import { getPlanConfig } from "../../../app/plan/planConfig";
-import { registrarBaixa } from "../utils/baixas";
+import { registrarBaixa, removerMovimentosDeBaixas } from "../utils/baixas";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
+const RECORRENCIA_MESES = 12;
+
+const addMonths = (date: Date, months: number) => {
+  const next = new Date(date);
+  next.setMonth(next.getMonth() + months);
+  return next;
+};
+
+const formatDateInput = (date: Date) => date.toISOString().slice(0, 10);
+const formatCompetencia = (date: Date) => date.toISOString().slice(0, 7);
 
 const statusOptions = [
   { value: "ABERTA", label: "Aberta" },
@@ -60,6 +71,9 @@ const ContasReceberPage = () => {
   const [categorias, setCategorias] = useState<
     Array<{ value: string; label: string }>
   >([]);
+  const [centrosCusto, setCentrosCusto] = useState<
+    Array<{ value: string; label: string }>
+  >([]);
   const [formData, setFormData] = useState({
     clienteId: "",
     descricao: "",
@@ -78,6 +92,7 @@ const ContasReceberPage = () => {
     formaPagamento: "",
     contaId: "",
     categoriaId: "",
+    centroCustoId: "",
     observacoes: "",
     status: "ABERTA",
   });
@@ -104,11 +119,13 @@ const ContasReceberPage = () => {
   useEffect(() => {
     let isMounted = true;
     const loadLookups = async () => {
-      const [contasResult, categoriasResult, clientesResult] = await Promise.allSettled([
-        listContas(),
-        listCategorias({ tipo: TipoMovimentoCaixa.ENTRADA }),
-        listClientes({ page: 1, pageSize: 200 }),
-      ]);
+      const [contasResult, categoriasResult, clientesResult, centrosResult] =
+        await Promise.allSettled([
+          listContas(),
+          listCategorias({ tipo: TipoMovimentoCaixa.ENTRADA }),
+          listClientes({ page: 1, pageSize: 200 }),
+          listCentrosCusto({ page: 1, pageSize: 200 }),
+        ]);
       if (!isMounted) return;
       if (contasResult.status === "fulfilled") {
         setContas(
@@ -136,6 +153,16 @@ const ContasReceberPage = () => {
         setClientes(clientesResult.value.data);
       } else {
         setClientes([]);
+      }
+      if (centrosResult.status === "fulfilled") {
+        setCentrosCusto(
+          centrosResult.value.data.map((centro) => ({
+            value: centro.id,
+            label: centro.nome,
+          }))
+        );
+      } else {
+        setCentrosCusto([]);
       }
     };
     loadLookups();
@@ -215,6 +242,13 @@ const ContasReceberPage = () => {
           }),
       },
       {
+        key: "centroCusto",
+        header: "Centro de custo",
+        render: (row: ContaReceberResumo) =>
+          centrosCusto.find((centro) => centro.value === row.centroCustoId)
+            ?.label ?? "-",
+      },
+      {
         key: "status",
         header: contaLabels.table.status,
         render: (row: ContaReceberResumo) => row.status ?? "-",
@@ -248,6 +282,7 @@ const ContasReceberPage = () => {
                   formaPagamento: row.formaPagamento ?? "",
                   contaId: row.contaId ?? "",
                   categoriaId: row.categoriaId ?? "",
+                  centroCustoId: row.centroCustoId ?? "",
                   observacoes: row.observacoes ?? "",
                   status: row.status ?? "ABERTA",
                 });
@@ -274,6 +309,7 @@ const ContasReceberPage = () => {
                     }
                     try {
                       setError("");
+                      await removerMovimentosDeBaixas(row.baixas);
                       await deleteContaReceber(row.id);
                       load();
                     } catch {
@@ -287,7 +323,7 @@ const ContasReceberPage = () => {
         ),
       },
     ],
-    [clienteMap, contaLabels]
+    [clienteMap, contaLabels, centrosCusto]
   );
 
   const resetForm = () => {
@@ -310,6 +346,7 @@ const ContasReceberPage = () => {
       formaPagamento: "",
       contaId: "",
       categoriaId: "",
+      centroCustoId: "",
       observacoes: "",
       status: "ABERTA",
     });
@@ -374,6 +411,7 @@ const ContasReceberPage = () => {
         formaPagamento: formData.formaPagamento || undefined,
         contaId: formData.contaId || undefined,
         categoriaId: formData.categoriaId || undefined,
+        centroCustoId: formData.centroCustoId || undefined,
         observacoes: formData.observacoes || undefined,
         baixas: currentItem?.baixas,
       };
@@ -390,6 +428,7 @@ const ContasReceberPage = () => {
                 formaPagamento: formData.formaPagamento || undefined,
                 contaId: formData.contaId || undefined,
                 categoriaId: formData.categoriaId || undefined,
+                centroCustoId: formData.centroCustoId || undefined,
                 observacoes: formData.observacoes || undefined,
               },
             })
@@ -412,6 +451,7 @@ const ContasReceberPage = () => {
               formaPagamento: formData.formaPagamento || undefined,
               contaId: formData.contaId || undefined,
               categoriaId: formData.categoriaId || undefined,
+              centroCustoId: formData.centroCustoId || undefined,
               observacoes: formData.observacoes || undefined,
             },
           });
@@ -420,11 +460,33 @@ const ContasReceberPage = () => {
             baixas: baixasAtualizadas,
           });
         }
+        if (formData.recorrente && formData.vencimento) {
+          const baseDate = new Date(`${formData.vencimento}T00:00:00`);
+          for (let i = 1; i < RECORRENCIA_MESES; i += 1) {
+            const nextDate = addMonths(baseDate, i);
+            await createContaReceber({
+              ...payload,
+              vencimento: formatDateInput(nextDate),
+              competencia: formData.competencia
+                ? formatCompetencia(nextDate)
+                : payload.competencia,
+              status: "ABERTA",
+              recorrente: true,
+              parcela: undefined,
+              totalParcelas: undefined,
+              baixas: undefined,
+            });
+          }
+        }
       }
       resetForm();
       setFormOpen(false);
       load();
-    } catch {
+    } catch (err) {
+      if (err instanceof Error && err.message === "COMPETENCIA_FECHADA") {
+        setFormError("Competencia fechada. Nao e possivel salvar.");
+        return;
+      }
       setFormError("Nao foi possivel salvar a conta.");
     }
   };
@@ -451,6 +513,10 @@ const ContasReceberPage = () => {
 
       {formOpen ? (
         <Card>
+          <AppSubTitle text="Cadastro de contas a receber" />
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Defina valores, parcelas e conciliacoes de recebimento.
+          </p>
           <div className="grid gap-4 md:grid-cols-3">
             <AppSelectInput
               required
@@ -659,6 +725,18 @@ const ContasReceberPage = () => {
               data={categorias}
               placeholder="Selecione"
             />
+            <AppSelectInput
+              title="Centro de custo"
+              value={formData.centroCustoId}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  centroCustoId: e.target.value,
+                }))
+              }
+              data={centrosCusto}
+              placeholder="Selecione"
+            />
             <AppTextInput
               title={contaLabels.fields.observacoes}
               value={formData.observacoes}
@@ -667,8 +745,8 @@ const ContasReceberPage = () => {
               }
             />
           </div>
-          {formError ? <p className="text-sm text-red-600">{formError}</p> : null}
-          <div className="flex gap-3">
+          {formError ? <p className="mt-3 text-sm text-red-600">{formError}</p> : null}
+          <div className="mt-4 flex flex-wrap gap-3">
             <AppButton type="button" className="w-auto px-6" onClick={handleSubmit}>
               {editingId ? "Atualizar" : "Salvar"}
             </AppButton>
@@ -687,7 +765,7 @@ const ContasReceberPage = () => {
       ) : null}
 
       <Card tone="amber">
-        <p className="text-sm text-gray-700 dark:text-gray-200">
+        <p className="text-sm text-slate-600 dark:text-slate-200">
           {contaLabels.apiHint}
         </p>
       </Card>

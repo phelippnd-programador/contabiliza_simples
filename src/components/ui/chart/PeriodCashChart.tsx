@@ -43,8 +43,8 @@ const PeriodCashChart = ({ title, data }: PeriodCashChartProps) => {
 
   if (!data.length) {
     return (
-      <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+      <div className="rounded-2xl border border-slate-200/70 bg-white/80 p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900/80">
+        <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-600 dark:text-slate-300">
           {title}
         </h3>
         <div className="mt-3">
@@ -55,9 +55,9 @@ const PeriodCashChart = ({ title, data }: PeriodCashChartProps) => {
   }
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+    <div className="rounded-2xl border border-slate-200/70 bg-white/80 p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900/80">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+        <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-600 dark:text-slate-300">
           {title}
         </h3>
       </div>

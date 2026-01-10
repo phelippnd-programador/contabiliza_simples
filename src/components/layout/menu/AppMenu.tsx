@@ -89,8 +89,8 @@ const AppMenu = ({ title = "Menu", subtitle, menu, className }: AppMenuProps) =>
         <div
           key={item.id}
           className={cx(
-            "flex items-center gap-3 rounded-xl py-2 text-sm text-gray-400",
-            "dark:text-gray-500",
+            "flex items-center gap-3 rounded-xl py-2 text-sm text-slate-400",
+            "dark:text-slate-500",
             basePadding
           )}
         >
@@ -108,15 +108,15 @@ const AppMenu = ({ title = "Menu", subtitle, menu, className }: AppMenuProps) =>
           onMouseEnter={() => collapsed && setHoverGroup(item.id)}
           onMouseLeave={() => collapsed && setHoverGroup(null)}
         >
-          <button
-            type="button"
-            onClick={() => (!collapsed ? toggleGroup(item.id) : undefined)}
-            className={cx(
-              "flex w-full items-center gap-3 rounded-xl py-2 text-sm",
-              "text-gray-700 hover:bg-gray-100",
-              "dark:text-gray-200 dark:hover:bg-slate-800",
-              basePadding
-            )}
+        <button
+          type="button"
+          onClick={() => (!collapsed ? toggleGroup(item.id) : undefined)}
+          className={cx(
+            "flex w-full items-center gap-3 rounded-xl py-2 text-sm",
+            "text-slate-700 hover:bg-slate-100/70",
+            "dark:text-slate-200 dark:hover:bg-slate-800/70",
+            basePadding
+          )}
             aria-expanded={collapsed ? false : isOpen}
             title={hideLabel ? item.label : undefined}
           >
@@ -125,8 +125,8 @@ const AppMenu = ({ title = "Menu", subtitle, menu, className }: AppMenuProps) =>
             {!hideLabel ? (
               <svg
                 className={cx(
-                  "h-4 w-4 text-gray-400 transition",
-                  "dark:text-gray-500",
+                  "h-4 w-4 text-slate-400 transition",
+                  "dark:text-slate-500",
                   isOpen && "rotate-180"
                 )}
                 viewBox="0 0 20 20"
@@ -143,8 +143,8 @@ const AppMenu = ({ title = "Menu", subtitle, menu, className }: AppMenuProps) =>
           </button>
 
           {collapsed && hoverGroup === item.id ? (
-            <div className="absolute left-full top-0 z-40 ml-3 w-48 rounded-xl border border-gray-200 bg-white p-2 shadow-lg dark:border-slate-700 dark:bg-slate-900">
-              <div className="px-2 pb-2 text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500">
+            <div className="absolute left-full top-0 z-40 ml-3 w-52 rounded-2xl border border-slate-200/70 bg-white/95 p-2 shadow-2xl backdrop-blur dark:border-slate-700 dark:bg-slate-900/95">
+              <div className="px-3 pb-2 text-[11px] uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">
                 {item.label}
               </div>
               {item.children?.map((child) => renderItem(child, level + 1, true))}
@@ -168,8 +168,8 @@ const AppMenu = ({ title = "Menu", subtitle, menu, className }: AppMenuProps) =>
           onClick={item.onClick}
           className={cx(
             "flex w-full items-center gap-3 rounded-xl py-2 text-sm",
-            "text-gray-700 hover:bg-gray-100",
-            "dark:text-gray-200 dark:hover:bg-slate-800",
+            "text-slate-700 hover:bg-slate-100/70",
+            "dark:text-slate-200 dark:hover:bg-slate-800/70",
             basePadding
           )}
           title={collapsed ? item.label : undefined}
@@ -190,8 +190,8 @@ const AppMenu = ({ title = "Menu", subtitle, menu, className }: AppMenuProps) =>
             "flex items-center gap-3 rounded-xl py-2 text-sm",
             basePadding,
             isActive
-              ? "bg-gray-900 text-white dark:bg-slate-800"
-              : "text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-slate-800"
+              ? "bg-slate-900 text-white shadow-sm dark:bg-slate-800"
+              : "text-slate-700 hover:bg-slate-100/70 dark:text-slate-200 dark:hover:bg-slate-800/70"
           )
         }
         title={hideLabel ? item.label : undefined}
@@ -205,15 +205,15 @@ const AppMenu = ({ title = "Menu", subtitle, menu, className }: AppMenuProps) =>
   return (
     <aside
       className={cx(
-        "sticky top-0 flex h-screen flex-col border-r border-gray-200 bg-white",
-        "dark:border-slate-800 dark:bg-slate-950",
+        "sticky top-0 flex h-screen flex-col border-r border-slate-200/70 bg-white/80 backdrop-blur",
+        "dark:border-slate-800/70 dark:bg-slate-950/80",
         collapsed ? "w-20" : "w-72",
         className
       )}
     >
-      <div className="flex items-center justify-between border-b border-gray-200 px-4 py-4 dark:border-slate-800">
+      <div className="flex items-center justify-between border-b border-slate-200/70 px-4 py-4 dark:border-slate-800/70">
         <div className="flex items-center gap-3">
-          <div className="h-11 w-11 overflow-hidden rounded-2xl bg-gray-100 text-gray-700 dark:bg-slate-800 dark:text-gray-200">
+          <div className="h-11 w-11 overflow-hidden rounded-2xl bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
             {profilePhoto ? (
               <img
                 src={profilePhoto}
@@ -228,10 +228,10 @@ const AppMenu = ({ title = "Menu", subtitle, menu, className }: AppMenuProps) =>
           </div>
           {!collapsed ? (
             <div>
-              <div className="text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500">
+              <div className="text-xs uppercase tracking-wide text-slate-400 dark:text-slate-500">
                 {profileRole}
               </div>
-              <div className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+              <div className="text-sm font-semibold text-slate-800 dark:text-slate-100">
                 {profileName}
               </div>
             </div>
@@ -243,8 +243,8 @@ const AppMenu = ({ title = "Menu", subtitle, menu, className }: AppMenuProps) =>
           onClick={() => setCollapsed((prev) => !prev)}
           className={cx(
             "inline-flex h-8 w-8 items-center justify-center rounded-full",
-            "border border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-700",
-            "dark:border-slate-700 dark:text-gray-300 dark:hover:border-slate-500"
+            "border border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-700",
+            "dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-500"
           )}
         >
           <svg
@@ -262,18 +262,18 @@ const AppMenu = ({ title = "Menu", subtitle, menu, className }: AppMenuProps) =>
         </button>
       </div>
 
-      <div className="px-4 pt-4 text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500">
+      <div className="px-4 pt-4 text-xs uppercase tracking-wide text-slate-400 dark:text-slate-500">
         {title}
       </div>
       {subtitle && !collapsed ? (
-        <div className="px-4 pt-1 text-xs text-gray-500 dark:text-gray-400">{subtitle}</div>
+        <div className="px-4 pt-1 text-xs text-slate-500 dark:text-slate-400">{subtitle}</div>
       ) : null}
 
       <nav className="mt-4 flex-1 space-y-1 overflow-auto px-2 pb-4">
         {menu.map((item) => renderItem(item, 0))}
       </nav>
 
-      <div className="border-t border-gray-200 p-3 text-xs text-gray-400 dark:border-slate-800 dark:text-gray-500">
+      <div className="border-t border-slate-200/70 p-3 text-xs text-slate-400 dark:border-slate-800/70 dark:text-slate-500">
         {!collapsed ? "SETTINGS" : ""}
       </div>
     </aside>

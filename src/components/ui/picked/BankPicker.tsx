@@ -11,6 +11,8 @@ type Props = {
   onChangeNome?: (nome: string | null) => void;
   placeholder?: string;
   helperText?: string;
+  tooltip?: string;
+  tooltipPosition?: "top" | "right" | "bottom" | "left";
   error?: string;
   disabled?: boolean;
   minCharsToSearch?: number;
@@ -26,6 +28,8 @@ export function BankPicker({
   onChangeNome,
   placeholder = "Digite o nome do banco ou codigo (ex: 341, Itau)",
   helperText = "Digite e selecione na lista.",
+  tooltip,
+  tooltipPosition,
   error,
   disabled,
   minCharsToSearch = 1,
@@ -49,6 +53,8 @@ export function BankPicker({
       helperText={helperText}
       error={error}
       disabled={disabled}
+      tooltip={tooltip}
+      tooltipPosition={tooltipPosition}
       minCharsToSearch={minCharsToSearch}
       debounceMs={debounceMs}
       onSearch={searchBanks}
@@ -66,7 +72,7 @@ export function BankPicker({
             {item.code != null ? `${item.code} - ${item.name}` : item.name}
           </div>
           {item.fullName ? (
-            <div className="text-xs text-gray-600">{item.fullName}</div>
+            <div className="text-xs text-slate-500">{item.fullName}</div>
           ) : null}
         </>
       )}

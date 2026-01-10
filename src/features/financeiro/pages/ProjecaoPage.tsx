@@ -335,6 +335,9 @@ const ProjecaoPage = () => {
 
       <Card>
         <AppSubTitle text="Periodo de analise" />
+        <p className="text-sm text-slate-500 dark:text-slate-400">
+          Escolha o intervalo para calcular entradas e saidas futuras.
+        </p>
         <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
           <AppDateInput
             title="Inicio"
@@ -384,7 +387,7 @@ const ProjecaoPage = () => {
           title="Saldo atual"
           value={formatCurrency(saldoAposPagar)}
           helper="Saldo base + receber - contas pagas no periodo"
-          tone={saldoAposPagar < 0 ? "red" : "blue"}
+          tone={saldoAposPagar < 0 ? "amber" : "blue"}
         />
         <DashboardStatCard
           title="Saldo projetado"

@@ -1,13 +1,6 @@
 import { apiFetch } from "../../../shared/services/apiClient";
 import type { ApiListResponse } from "../../../shared/types/api-types";
 import type { ContaBancaria, TipoConta, TipoMovimentoCaixa } from "../types";
-import {
-  deleteConta as deleteContaStorage,
-  getConta as getContaStorage,
-  listContas as listContasStorage,
-  saveConta as saveContaStorage,
-} from "../storage/contas";
-
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 
 export type ListContasParams = {
@@ -22,7 +15,7 @@ export async function listContas(
   params: ListContasParams = {}
 ): Promise<ContaBancaria[]> {
   if (!API_BASE) {
-    return listContasStorage();
+    throw new Error("API_NOT_CONFIGURED");
   }
   const query = new URLSearchParams();
   if (params.page) query.set("page", String(params.page));
@@ -43,7 +36,7 @@ export async function getConta(
   id: string
 ): Promise<ContaBancaria | undefined> {
   if (!API_BASE) {
-    return getContaStorage(id);
+    throw new Error("API_NOT_CONFIGURED");
   }
   const res = await apiFetch(`/financeiro/contas/${id}`);
   if (!res.ok) {
@@ -56,7 +49,7 @@ export async function saveConta(
   data: Omit<ContaBancaria, "id"> & { id?: string }
 ): Promise<ContaBancaria> {
   if (!API_BASE) {
-    return saveContaStorage(data);
+    throw new Error("API_NOT_CONFIGURED");
   }
   const method = data.id ? "PUT" : "POST";
   const path = data.id ? `/financeiro/contas/${data.id}` : "/financeiro/contas";
@@ -73,8 +66,7 @@ export async function saveConta(
 
 export async function deleteConta(id: string): Promise<void> {
   if (!API_BASE) {
-    deleteContaStorage(id);
-    return;
+    throw new Error("API_NOT_CONFIGURED");
   }
   const res = await apiFetch(`/financeiro/contas/${id}`, { method: "DELETE" });
   if (!res.ok) {

@@ -10,9 +10,9 @@ const AppLayout = () => {
   }, []);
 
   return (
-    <div className="min-h-screen flex bg-slate-100 text-gray-900 dark:bg-slate-900 dark:text-gray-100">
+    <div className="min-h-screen flex bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 text-slate-900 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 dark:text-slate-100">
       <AppHeader />
-      <main className="flex-1 overflow-auto px-8 py-6">
+      <main className="flex-1 overflow-auto px-8 py-8">
         <Outlet />
       </main>
     </div>

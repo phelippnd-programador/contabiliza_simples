@@ -1,4 +1,5 @@
 import React, { forwardRef, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { AppLabel } from "../text/AppTitle";
 import AppTooltip from "../AppTooltip";
 
@@ -28,8 +29,9 @@ const AppDateInput = forwardRef<HTMLInputElement, AppDateInputProps>(
     const toDateString = (date: Date) => date.toISOString().slice(0, 10);
     const containerRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
+    const popupRef = useRef<HTMLDivElement>(null);
     const [open, setOpen] = useState(false);
-    const [popoverStyle, setPopoverStyle] = useState<React.CSSProperties>({});
+    const [popupStyle, setPopupStyle] = useState<React.CSSProperties | null>(null);
     const type = props.type ?? "date";
     const isMonthPicker = type === "month";
     const value = (props.value ?? "") as string;
@@ -64,43 +66,14 @@ const AppDateInput = forwardRef<HTMLInputElement, AppDateInputProps>(
 
     useEffect(() => {
       function handleClickOutside(e: MouseEvent) {
-        if (!containerRef.current) return;
-        if (!containerRef.current.contains(e.target as Node)) {
-          setOpen(false);
-        }
+        const target = e.target as Node;
+        if (containerRef.current?.contains(target)) return;
+        if (popupRef.current?.contains(target)) return;
+        setOpen(false);
       }
       document.addEventListener("mousedown", handleClickOutside);
       return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
-
-    useEffect(() => {
-      if (!open) return;
-      const updatePosition = () => {
-        const inputEl = inputRef.current;
-        if (!inputEl) return;
-        const rect = inputEl.getBoundingClientRect();
-        const maxWidth = 320;
-        const width = Math.min(rect.width, maxWidth);
-        const left = Math.max(
-          8,
-          Math.min(rect.left, window.innerWidth - width - 8)
-        );
-        const top = rect.bottom + 8;
-        setPopoverStyle({
-          position: "fixed",
-          top,
-          left,
-          width,
-        });
-      };
-      updatePosition();
-      window.addEventListener("scroll", updatePosition, true);
-      window.addEventListener("resize", updatePosition);
-      return () => {
-        window.removeEventListener("scroll", updatePosition, true);
-        window.removeEventListener("resize", updatePosition);
-      };
-    }, [open]);
 
     const monthLabel = useMemo(
       () =>
@@ -197,6 +170,44 @@ const AppDateInput = forwardRef<HTMLInputElement, AppDateInputProps>(
       setViewDate(new Date(year + 1, month, 1));
     };
 
+    const updatePopupPosition = () => {
+      if (!inputRef.current) return;
+      const rect = inputRef.current.getBoundingClientRect();
+      const maxWidth = 320;
+      const width = Math.min(maxWidth, rect.width);
+      const padding = 8;
+      const estimatedHeight = isMonthPicker ? 240 : 340;
+      const fitsBottom = rect.bottom + padding + estimatedHeight <= window.innerHeight;
+      const top = fitsBottom
+        ? rect.bottom + padding
+        : Math.max(padding, rect.top - padding - estimatedHeight);
+      const left = Math.min(
+        Math.max(padding, rect.left),
+        window.innerWidth - width - padding
+      );
+
+      setPopupStyle({
+        position: "fixed",
+        top,
+        left,
+        width,
+        zIndex: 9999,
+      });
+    };
+
+    useEffect(() => {
+      if (!open) return;
+      updatePopupPosition();
+      const handleScroll = () => updatePopupPosition();
+      const handleResize = () => updatePopupPosition();
+      window.addEventListener("scroll", handleScroll, true);
+      window.addEventListener("resize", handleResize);
+      return () => {
+        window.removeEventListener("scroll", handleScroll, true);
+        window.removeEventListener("resize", handleResize);
+      };
+    }, [open, isMonthPicker]);
+
     return (
       <div ref={containerRef} className="relative flex w-full flex-col gap-1">
         <div className="flex items-center gap-2">
@@ -210,50 +221,59 @@ const AppDateInput = forwardRef<HTMLInputElement, AppDateInputProps>(
         <div className="relative">
           <input
             ref={(node) => {
+              inputRef.current = node;
               if (typeof ref === "function") ref(node);
               else if (ref) ref.current = node;
-              inputRef.current = node;
             }}
             {...props}
             type="text"
             readOnly={props.readOnly}
             placeholder={props.placeholder ?? (isMonthPicker ? "YYYY-MM" : "YYYY-MM-DD")}
             className={[
-              props.disabled ? "bg-gray-100 cursor-not-allowed" : "",
-              "h-11 w-full rounded-lg px-3 pr-10 text-sm border-2",
+              props.disabled ? "bg-slate-100/80 cursor-not-allowed" : "bg-white/80",
+              "h-11 w-full rounded-xl px-3 pr-10 text-sm border",
               error
                 ? "border-red-300 focus:border-red-500 focus:ring-2 focus:ring-red-200"
-                : "border-gray-200 hover:border-blue-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-200",
-              "bg-white text-gray-900 dark:bg-slate-900 dark:text-gray-100 dark:border-slate-700 dark:focus:ring-blue-900/40",
+                : "border-slate-200/70 hover:border-slate-300 focus:border-sky-300 focus:ring-2 focus:ring-sky-200",
+              "text-slate-900 shadow-sm transition",
+              "dark:bg-slate-900/80 dark:text-slate-100 dark:border-slate-700 dark:focus:ring-sky-900/40",
               "outline-none transition",
               "appearance-none",
               className ?? "",
             ].join(" ")}
             onFocus={(e) => {
               props.onFocus?.(e);
-              if (!props.disabled) setOpen(true);
+              if (!props.disabled) {
+                setOpen(true);
+                updatePopupPosition();
+              }
             }}
             onClick={(e) => {
               props.onClick?.(e);
-              if (!props.disabled) setOpen(true);
+              if (!props.disabled) {
+                setOpen(true);
+                updatePopupPosition();
+              }
             }}
           />
-          <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">
+          <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500">
             <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
               <path d="M7 2a1 1 0 0 1 1 1v1h8V3a1 1 0 1 1 2 0v1h1a2 2 0 0 1 2 2v3H2V6a2 2 0 0 1 2-2h1V3a1 1 0 0 1 1-1Zm15 9v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-9h20ZM6 14h4v4H6v-4Zm6 0h6v2h-6v-2Z" />
             </svg>
           </span>
         </div>
 
-        {open && !props.disabled ? (
-          <div
-          className="z-[60] rounded-md border border-gray-200 bg-white p-3 shadow-xl dark:border-slate-700 dark:bg-slate-900"
-            style={popoverStyle}
-          >
+        {open && !props.disabled && popupStyle
+          ? createPortal(
+              <div
+                ref={popupRef}
+                style={popupStyle}
+                className="rounded-2xl border border-slate-200/70 bg-white/95 p-4 shadow-2xl backdrop-blur dark:border-slate-700 dark:bg-slate-900/95"
+              >
             <div className="flex items-center justify-between">
               <button
                 type="button"
-                className="rounded-full p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-slate-800 dark:hover:text-gray-200"
+                className="rounded-full p-1 text-slate-500 hover:bg-slate-100/80 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
                 onClick={isMonthPicker ? goPrevYear : goPrev}
                 aria-label="Anterior"
               >
@@ -261,12 +281,12 @@ const AppDateInput = forwardRef<HTMLInputElement, AppDateInputProps>(
                   <path d="M12.78 15.22a.75.75 0 0 1-1.06 0l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 1 1 1.06 1.06L9.06 10l3.72 3.72a.75.75 0 0 1 0 1.06Z" />
                 </svg>
               </button>
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
+              <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">
                 {monthLabel}
               </span>
               <button
                 type="button"
-                className="rounded-full p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-slate-800 dark:hover:text-gray-200"
+                className="rounded-full p-1 text-slate-500 hover:bg-slate-100/80 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
                 onClick={isMonthPicker ? goNextYear : goNext}
                 aria-label="Proximo"
               >
@@ -282,7 +302,7 @@ const AppDateInput = forwardRef<HTMLInputElement, AppDateInputProps>(
                   <button
                     key={label}
                     type="button"
-                    className="rounded-md border border-gray-200 px-2 py-2 text-xs text-gray-700 hover:border-blue-400 hover:bg-blue-50 dark:border-slate-700 dark:text-gray-200 dark:hover:bg-slate-800"
+                    className="rounded-xl border border-slate-200/70 px-2 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-600 shadow-sm transition hover:border-slate-300 hover:bg-slate-100/70 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
                     onClick={() => selectMonth(index)}
                   >
                     {label}
@@ -291,7 +311,7 @@ const AppDateInput = forwardRef<HTMLInputElement, AppDateInputProps>(
               </div>
             ) : (
               <>
-                <div className="mt-3 grid grid-cols-7 gap-1 text-[11px] text-gray-500 dark:text-gray-400">
+                <div className="mt-3 grid grid-cols-7 gap-1 text-[11px] text-slate-500 dark:text-slate-400">
                   {weekLabels.map((label) => (
                     <span key={label} className="text-center">
                       {label}
@@ -306,10 +326,10 @@ const AppDateInput = forwardRef<HTMLInputElement, AppDateInputProps>(
                       disabled={!item.inMonth}
                       onClick={() => selectDate(item.day)}
                       className={[
-                        "h-8 rounded-md text-xs",
+                        "h-9 rounded-xl text-xs transition",
                         item.inMonth
-                          ? "text-gray-700 hover:bg-blue-50 hover:text-blue-700 dark:text-gray-200 dark:hover:bg-slate-800"
-                          : "text-gray-300 dark:text-gray-600",
+                          ? "text-slate-700 hover:bg-sky-50 hover:text-sky-700 dark:text-slate-200 dark:hover:bg-slate-800"
+                          : "text-slate-300 dark:text-slate-600",
                       ].join(" ")}
                     >
                       {item.day || ""}
@@ -318,12 +338,12 @@ const AppDateInput = forwardRef<HTMLInputElement, AppDateInputProps>(
                 </div>
               </>
             )}
-            <div className="mt-3 flex items-center justify-between border-t border-gray-100 pt-2 text-xs text-gray-500 dark:border-slate-800 dark:text-gray-400">
+            <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-2 text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400">
               <span>{new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</span>
               <div className="flex items-center gap-3">
                 <button
                   type="button"
-                  className="text-blue-600 hover:text-blue-700"
+                  className="text-sky-600 hover:text-sky-700"
                   onClick={() => {
                     const now = new Date();
                     if (isMonthPicker) {
@@ -339,7 +359,7 @@ const AppDateInput = forwardRef<HTMLInputElement, AppDateInputProps>(
                 </button>
                 <button
                   type="button"
-                  className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-200"
+                  className="text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-200"
                   onClick={() => {
                     emitChange("");
                     setOpen(false);
@@ -349,13 +369,15 @@ const AppDateInput = forwardRef<HTMLInputElement, AppDateInputProps>(
                 </button>
               </div>
             </div>
-          </div>
-        ) : null}
+              </div>,
+              document.body
+            )
+          : null}
 
         {error ? (
           <span className="text-xs text-red-600">{error}</span>
         ) : (
-          helperText && <span className="text-xs text-gray-500 dark:text-gray-400">{helperText}</span>
+          helperText && <span className="text-xs text-slate-500 dark:text-slate-400">{helperText}</span>
         )}
       </div>
     );

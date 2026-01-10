@@ -1,678 +1,1398 @@
 {
   "clientes": [
     {
-      "nome": "Prosolution",
-      "documento": "11111111111111",
+      "id": 1,
+      "nome": "Cliente Demo",
+      "documento": "12345678000199",
       "tipoPessoa": "PJ",
-      "inscricaoEstadual": "111111111111111111",
+      "inscricaoEstadual": "123456789",
       "indicadorIE": "CONTRIBUINTE",
       "endereco": {
-        "cep": "23030310",
-        "logradouro": "Estrada do Marmeleiro",
-        "bairro": "Guaratiba",
+        "cep": "01001000",
+        "logradouro": "Praca da Se",
+        "numero": "100",
+        "bairro": "Se",
+        "cidade": "Sao Paulo",
+        "uf": "SP",
+        "codigoMunicipioIbge": "3550308",
+        "pais": "Brasil"
+      },
+      "status": "ATIVO"
+    }
+  ],
+  "fornecedores": [
+    {
+      "id": 1,
+      "nome": "Fornecedor Demo",
+      "documento": "98765432000155",
+      "tipoPessoa": "PJ",
+      "indicadorIE": "ISENTO",
+      "endereco": {
+        "cep": "20040002",
+        "logradouro": "Rua da Quitanda",
+        "numero": "50",
+        "bairro": "Centro",
         "cidade": "Rio de Janeiro",
         "uf": "RJ",
         "codigoMunicipioIbge": "3304557",
         "pais": "Brasil"
       },
-      "status": "ATIVO",
-      "id": 1
-    },
-    {
-      "nome": "Pag ",
-      "documento": "11111111111111",
-      "tipoPessoa": "PJ",
-      "inscricaoEstadual": "1111111111111111111111",
-      "indicadorIE": "CONTRIBUINTE",
-      "endereco": {
-        "cep": "25730520",
-        "logradouro": "Rua Promenade",
-        "numero": "123",
-        "bairro": "Nogueira",
-        "cidade": "Petrópolis",
-        "uf": "RJ",
-        "codigoMunicipioIbge": "3303906",
-        "pais": "Brasil"
-      },
-      "status": "ATIVO",
-      "id": 2
-    }
-  ],
-  "fornecedores": [
-    {
-      "nome": "Proprietario Casa",
-      "documento": "11111111111",
-      "tipoPessoa": "PF",
-      "indicadorIE": "NAO_CONTRIBUINTE",
-      "endereco": {},
-      "status": "ATIVO",
-      "id": 1
+      "status": "ATIVO"
     }
   ],
   "produtosServicos": [
     {
-      "descricao": "Teste",
-      "tipo": "PRODUTO",
-      "status": "ATIVO",
-      "codigo": "SKU_0001",
-      "unidade": "10",
-      "valorUnitario": 1000,
-      "fornecedorId": "1",
-      "localizacao": "Rua A / Prateleira 1",
-      "ncm": "8419.89.91",
-      "cfop": "111111",
-      "id": 1
-    },
-    {
-      "descricao": "Servico de suporte",
+      "id": 1,
+      "descricao": "Servico de consultoria",
       "tipo": "SERVICO",
       "status": "ATIVO",
-      "codigo": "SKU_0002",
+      "codigo": "SERV001",
       "unidade": "UN",
-      "valorUnitario": 2500,
-      "fornecedorId": "1",
-      "localizacao": "Sala 2",
-      "id": 2
+      "valorUnitario": 1500,
+      "cnae": "6202300",
+      "codigoServico": "1001"
+    },
+    {
+      "id": 2,
+      "descricao": "Produto demo",
+      "tipo": "PRODUTO",
+      "status": "ATIVO",
+      "codigo": "PROD001",
+      "unidade": "UN",
+      "valorUnitario": 350,
+      "ncm": "01012100",
+      "cfop": "5101"
     }
   ],
   "contas": [
     {
-      "nome": "Itau Phelipp",
+      "id": 1,
+      "nome": "Conta principal",
       "banco": "ITAU",
-      "agencia": "1111111",
-      "conta": "11111111",
-      "digito": "1",
+      "agencia": "0001",
+      "conta": "12345",
+      "digito": "6",
       "tipo": "BANCO",
-      "categoria": "ENTRADA",
-      "id": 1
-    },
-    {
-      "nome": "Cartão Henrique",
-      "banco": "",
-      "agencia": "",
-      "conta": "",
-      "digito": "",
-      "tipo": "CARTAO",
-      "categoria": "SAIDA",
-      "id": 2
-    },
-    {
-      "nome": "Riane",
-      "banco": "341",
-      "agencia": "11111",
-      "conta": "111111111",
-      "digito": "1",
-      "tipo": "BANCO",
-      "categoria": "ENTRADA",
-      "id": 3
+      "categoria": "ENTRADA"
     }
   ],
   "categorias": [
     {
-      "nome": "Salario",
-      "tipo": "ENTRADA",
-      "id": 1
-    },
-    {
-      "nome": "Aluguel",
-      "tipo": "SAIDA",
-      "id": 2
-    }
-  ],
-  "movimentos": [],
-  "estoqueMovimentos": [
-    {
       "id": 1,
-      "itemId": "1",
-      "depositoId": "dep_1",
-      "tipo": "ENTRADA",
-      "data": "2026-01-05",
-      "quantidade": 100,
-      "custoUnitario": 1000,
-      "custoMedio": 1000,
-      "saldo": 100,
-      "lote": "LOTE_001",
-      "origem": "MANUAL",
-      "origemId": null,
-      "observacoes": "Carga inicial",
-      "createdAt": "2026-01-05T10:00:00.000Z",
-      "createdBy": "Sistema",
-      "dedupeKey": "MANUAL:1:2026-01-05:ENTRADA:100"
+      "nome": "Receita de servicos",
+      "tipo": "ENTRADA"
     },
     {
       "id": 2,
-      "itemId": "1",
-      "depositoId": "dep_1",
+      "nome": "Despesa operacional",
+      "tipo": "SAIDA"
+    }
+  ],
+  "movimentos": [
+    {
+      "data": "2026-02-08",
+      "contaId": "1",
       "tipo": "SAIDA",
-      "data": "2026-01-07",
-      "quantidade": 10,
-      "custoUnitario": 1000,
-      "custoMedio": 1000,
-      "saldo": 90,
-      "lote": "LOTE_001",
-      "serie": "002",
-      "origem": "MANUAL",
-      "origemId": null,
-      "observacoes": "Ajuste de saldo",
-      "createdAt": "2026-01-07T10:00:00.000Z",
-      "createdBy": "Sistema",
-      "dedupeKey": "MANUAL:1:2026-01-07:SAIDA:10"
+      "valor": 7.56,
+      "descricao": "Fatura cartao Cartao Demo 2026-02",
+      "competencia": "2026-02",
+      "categoriaId": "2",
+      "referencia": {
+        "tipo": "CARTAO_FATURA",
+        "id": 1
+      },
+      "id": 6
     },
     {
-      "itemId": "1",
-      "depositoId": "dep_1",
-      "tipo": "ENTRADA",
-      "data": "2026-01-05",
-      "quantidade": 10,
-      "custoUnitario": 1000,
-      "custoMedio": 1000,
-      "saldo": 100,
-      "origem": "COMPRA",
-      "origemId": "1",
-      "observacoes": "Compra 1",
-      "createdAt": "2026-01-05T12:00:00.000Z",
-      "createdBy": "Sistema",
-      "dedupeKey": "COMPRA:1:2026-01-05:ENTRADA:10",
+      "data": "2026-03-08",
+      "contaId": "1",
+      "tipo": "SAIDA",
+      "valor": 5.56,
+      "descricao": "Fatura cartao Cartao Demo 2026-03",
+      "competencia": "2026-03",
+      "categoriaId": "2",
+      "referencia": {
+        "tipo": "CARTAO_FATURA",
+        "id": 2
+      },
+      "id": 7
+    },
+    {
+      "data": "2026-04-08",
+      "contaId": "1",
+      "tipo": "SAIDA",
+      "valor": 5.56,
+      "descricao": "Fatura cartao Cartao Demo 2026-04",
+      "competencia": "2026-04",
+      "categoriaId": "2",
+      "referencia": {
+        "tipo": "CARTAO_FATURA",
+        "id": 3
+      },
+      "id": 8
+    },
+    {
+      "data": "2026-12-08",
+      "contaId": "1",
+      "tipo": "SAIDA",
+      "valor": 10.1,
+      "descricao": "Fatura cartao Cartao Demo 2026-12",
+      "competencia": "2026-12",
+      "categoriaId": "2",
+      "referencia": {
+        "tipo": "CARTAO_FATURA",
+        "id": 4
+      },
+      "id": 9
+    }
+  ],
+  "financeiroExtratos": [],
+  "cartoesLancamentos": [
+    {
+      "cartaoId": "1",
+      "data": "2025-11-01",
+      "descricao": "222",
+      "valor": 1011,
+      "parcela": 1,
+      "totalParcelas": 11,
+      "categoriaId": "2",
+      "centroCustoId": "1",
+      "faturaCompetencia": "2025-11",
+      "id": 1
+    },
+    {
+      "cartaoId": "1",
+      "data": "2025-12-01",
+      "descricao": "222",
+      "valor": 1010,
+      "parcela": 2,
+      "totalParcelas": 11,
+      "categoriaId": "2",
+      "centroCustoId": "1",
+      "faturaCompetencia": "2025-12",
+      "id": 2
+    },
+    {
+      "cartaoId": "1",
+      "data": "2026-02-01",
+      "descricao": "222",
+      "valor": 1011,
+      "parcela": 1,
+      "totalParcelas": 11,
+      "categoriaId": "2",
+      "centroCustoId": "1",
+      "faturaCompetencia": "2026-02",
       "id": 3
     },
     {
-      "itemId": "1",
-      "depositoId": "dep_1",
-      "tipo": "SAIDA",
-      "data": "2026-01-08",
-      "quantidade": 5,
-      "custoUnitario": 1000,
-      "custoMedio": 1000,
-      "saldo": 95,
-      "origem": "VENDA",
-      "origemId": "1",
-      "observacoes": "Venda 1",
-      "createdAt": "2026-01-08T12:00:00.000Z",
-      "createdBy": "Sistema",
-      "dedupeKey": "VENDA:1:2026-01-08:SAIDA:5",
+      "cartaoId": "1",
+      "data": "2026-03-01",
+      "descricao": "222",
+      "valor": 1010,
+      "parcela": 2,
+      "totalParcelas": 11,
+      "categoriaId": "2",
+      "centroCustoId": "1",
+      "faturaCompetencia": "2026-03",
       "id": 4
     },
     {
-      "itemId": "1",
-      "depositoId": "dep_1",
-      "tipo": "SAIDA",
-      "data": "2026-01-09",
-      "quantidade": 5,
-      "custoUnitario": 1000,
-      "custoMedio": 1000,
-      "saldo": 90,
-      "origem": "MANUAL",
-      "origemId": "TRANSFERENCIA",
-      "observacoes": "Transferencia para dep_2",
-      "createdAt": "2026-01-09T12:00:00.000Z",
-      "createdBy": "Sistema",
-      "dedupeKey": "TRANSFERENCIA:dep_1:dep_2:2026-01-09:5",
+      "cartaoId": "1",
+      "data": "2026-04-01",
+      "descricao": "222",
+      "valor": 1010,
+      "parcela": 3,
+      "totalParcelas": 11,
+      "categoriaId": "2",
+      "centroCustoId": "1",
+      "faturaCompetencia": "2026-04",
       "id": 5
     },
     {
-      "itemId": "1",
-      "depositoId": "dep_2",
-      "tipo": "ENTRADA",
-      "data": "2026-01-09",
-      "quantidade": 5,
-      "custoUnitario": 1000,
-      "custoMedio": 1000,
-      "saldo": 30,
-      "origem": "MANUAL",
-      "origemId": "TRANSFERENCIA",
-      "observacoes": "Transferencia de dep_1",
-      "createdAt": "2026-01-09T12:00:00.000Z",
-      "createdBy": "Sistema",
-      "dedupeKey": "TRANSFERENCIA:dep_1:dep_2:2026-01-09:5:IN",
+      "cartaoId": "1",
+      "data": "2026-05-01",
+      "descricao": "222",
+      "valor": 1010,
+      "parcela": 4,
+      "totalParcelas": 11,
+      "categoriaId": "2",
+      "centroCustoId": "1",
+      "faturaCompetencia": "2026-05",
       "id": 6
+    },
+    {
+      "cartaoId": "1",
+      "data": "2026-06-01",
+      "descricao": "222",
+      "valor": 1010,
+      "parcela": 5,
+      "totalParcelas": 11,
+      "categoriaId": "2",
+      "centroCustoId": "1",
+      "faturaCompetencia": "2026-06",
+      "id": 7
+    },
+    {
+      "cartaoId": "1",
+      "data": "2026-07-01",
+      "descricao": "222",
+      "valor": 1010,
+      "parcela": 6,
+      "totalParcelas": 11,
+      "categoriaId": "2",
+      "centroCustoId": "1",
+      "faturaCompetencia": "2026-07",
+      "id": 8
+    },
+    {
+      "cartaoId": "1",
+      "data": "2026-08-01",
+      "descricao": "222",
+      "valor": 1010,
+      "parcela": 7,
+      "totalParcelas": 11,
+      "categoriaId": "2",
+      "centroCustoId": "1",
+      "faturaCompetencia": "2026-08",
+      "id": 9
+    },
+    {
+      "cartaoId": "1",
+      "data": "2026-09-01",
+      "descricao": "222",
+      "valor": 1010,
+      "parcela": 8,
+      "totalParcelas": 11,
+      "categoriaId": "2",
+      "centroCustoId": "1",
+      "faturaCompetencia": "2026-09",
+      "id": 10
+    },
+    {
+      "cartaoId": "1",
+      "data": "2026-10-01",
+      "descricao": "222",
+      "valor": 1010,
+      "parcela": 9,
+      "totalParcelas": 11,
+      "categoriaId": "2",
+      "centroCustoId": "1",
+      "faturaCompetencia": "2026-10",
+      "id": 11
+    },
+    {
+      "cartaoId": "1",
+      "data": "2026-11-01",
+      "descricao": "222",
+      "valor": 1010,
+      "parcela": 10,
+      "totalParcelas": 11,
+      "categoriaId": "2",
+      "centroCustoId": "1",
+      "faturaCompetencia": "2026-11",
+      "id": 12
+    },
+    {
+      "cartaoId": "1",
+      "data": "2026-12-01",
+      "descricao": "222",
+      "valor": 1010,
+      "parcela": 11,
+      "totalParcelas": 11,
+      "categoriaId": "2",
+      "centroCustoId": "1",
+      "faturaCompetencia": "2026-12",
+      "id": 13
+    },
+    {
+      "cartaoId": "1",
+      "data": "2026-01-30",
+      "descricao": "teste",
+      "valor": 200,
+      "parcela": 1,
+      "totalParcelas": 10,
+      "categoriaId": "2",
+      "centroCustoId": "1",
+      "faturaCompetencia": "2026-03",
+      "id": 14
+    },
+    {
+      "cartaoId": "1",
+      "data": "2026-03-02",
+      "descricao": "teste",
+      "valor": 200,
+      "parcela": 2,
+      "totalParcelas": 10,
+      "categoriaId": "2",
+      "centroCustoId": "1",
+      "faturaCompetencia": "2026-04",
+      "id": 15
+    },
+    {
+      "cartaoId": "1",
+      "data": "2026-03-30",
+      "descricao": "teste",
+      "valor": 200,
+      "parcela": 3,
+      "totalParcelas": 10,
+      "categoriaId": "2",
+      "centroCustoId": "1",
+      "faturaCompetencia": "2026-04",
+      "id": 16
+    },
+    {
+      "cartaoId": "1",
+      "data": "2026-04-30",
+      "descricao": "teste",
+      "valor": 200,
+      "parcela": 4,
+      "totalParcelas": 10,
+      "categoriaId": "2",
+      "centroCustoId": "1",
+      "faturaCompetencia": "2026-05",
+      "id": 17
+    },
+    {
+      "cartaoId": "1",
+      "data": "2026-05-30",
+      "descricao": "teste",
+      "valor": 200,
+      "parcela": 5,
+      "totalParcelas": 10,
+      "categoriaId": "2",
+      "centroCustoId": "1",
+      "faturaCompetencia": "2026-06",
+      "id": 18
+    },
+    {
+      "cartaoId": "1",
+      "data": "2026-06-30",
+      "descricao": "teste",
+      "valor": 200,
+      "parcela": 6,
+      "totalParcelas": 10,
+      "categoriaId": "2",
+      "centroCustoId": "1",
+      "faturaCompetencia": "2026-07",
+      "id": 19
+    },
+    {
+      "cartaoId": "1",
+      "data": "2026-07-30",
+      "descricao": "teste",
+      "valor": 200,
+      "parcela": 7,
+      "totalParcelas": 10,
+      "categoriaId": "2",
+      "centroCustoId": "1",
+      "faturaCompetencia": "2026-08",
+      "id": 20
+    },
+    {
+      "cartaoId": "1",
+      "data": "2026-08-30",
+      "descricao": "teste",
+      "valor": 200,
+      "parcela": 8,
+      "totalParcelas": 10,
+      "categoriaId": "2",
+      "centroCustoId": "1",
+      "faturaCompetencia": "2026-09",
+      "id": 21
+    },
+    {
+      "cartaoId": "1",
+      "data": "2026-09-30",
+      "descricao": "teste",
+      "valor": 200,
+      "parcela": 9,
+      "totalParcelas": 10,
+      "categoriaId": "2",
+      "centroCustoId": "1",
+      "faturaCompetencia": "2026-10",
+      "id": 22
+    },
+    {
+      "cartaoId": "1",
+      "data": "2026-10-30",
+      "descricao": "teste",
+      "valor": 200,
+      "parcela": 10,
+      "totalParcelas": 10,
+      "categoriaId": "2",
+      "centroCustoId": "1",
+      "faturaCompetencia": "2026-11",
+      "id": 23
+    },
+    {
+      "cartaoId": "1",
+      "data": "2025-12-19",
+      "descricao": "14546",
+      "valor": 2000,
+      "categoriaId": "2",
+      "centroCustoId": "1",
+      "faturaCompetencia": "2026-01",
+      "id": 24
     }
   ],
+  "cartoesFaturas": [
+    {
+      "cartaoId": "1",
+      "competencia": "2026-02",
+      "fechamento": "2026-01-01",
+      "vencimento": "2026-02-08",
+      "total": 756,
+      "status": "FECHADA",
+      "movimentoId": 6,
+      "id": 1
+    },
+    {
+      "cartaoId": "1",
+      "competencia": "2026-03",
+      "fechamento": "2026-02-01",
+      "vencimento": "2026-03-08",
+      "total": 556,
+      "status": "FECHADA",
+      "movimentoId": 7,
+      "id": 2
+    },
+    {
+      "cartaoId": "1",
+      "competencia": "2026-04",
+      "fechamento": "2026-03-01",
+      "vencimento": "2026-04-08",
+      "total": 556,
+      "status": "FECHADA",
+      "movimentoId": 8,
+      "id": 3
+    },
+    {
+      "cartaoId": "1",
+      "competencia": "2026-12",
+      "fechamento": "2026-11-01",
+      "vencimento": "2026-12-08",
+      "total": 1010,
+      "status": "FECHADA",
+      "movimentoId": 9,
+      "id": 4
+    }
+  ],
+  "financeiroFechamentos": [
+    {
+      "id": 1,
+      "competencia": "2026-01",
+      "status": "ABERTO",
+      "observacoes": "teste"
+    },
+    {
+      "id": 2,
+      "competencia": "2026-02",
+      "status": "ABERTO",
+      "observacoes": "aa"
+    }
+  ],
+  "financeiroAuditoria": [
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 1,
+      "competencia": "2026-02",
+      "data": "2026-01-10T03:45:15.301Z",
+      "id": 1
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 2,
+      "competencia": "2026-02",
+      "data": "2026-01-10T03:46:30.138Z",
+      "id": 2
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 3,
+      "competencia": "2026-03",
+      "data": "2026-01-10T03:46:30.216Z",
+      "id": 3
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 4,
+      "competencia": "2026-04",
+      "data": "2026-01-10T03:46:30.310Z",
+      "id": 4
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 5,
+      "competencia": "2026-05",
+      "data": "2026-01-10T03:46:30.425Z",
+      "id": 5
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 6,
+      "competencia": "2026-06",
+      "data": "2026-01-10T03:46:30.526Z",
+      "id": 6
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 7,
+      "competencia": "2026-07",
+      "data": "2026-01-10T03:46:30.622Z",
+      "id": 7
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 8,
+      "competencia": "2026-08",
+      "data": "2026-01-10T03:46:30.729Z",
+      "id": 8
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 9,
+      "competencia": "2026-09",
+      "data": "2026-01-10T03:46:30.824Z",
+      "id": 9
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 10,
+      "competencia": "2026-10",
+      "data": "2026-01-10T03:46:30.885Z",
+      "id": 10
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 11,
+      "competencia": "2026-11",
+      "data": "2026-01-10T03:46:30.995Z",
+      "id": 11
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 12,
+      "competencia": "2026-12",
+      "data": "2026-01-10T03:46:31.089Z",
+      "id": 12
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 13,
+      "competencia": "2027-01",
+      "data": "2026-01-10T03:46:31.164Z",
+      "id": 13
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 14,
+      "competencia": "2027-02",
+      "data": "2026-01-10T03:46:31.260Z",
+      "id": 14
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 15,
+      "competencia": "2027-03",
+      "data": "2026-01-10T03:46:31.360Z",
+      "id": 15
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 16,
+      "competencia": "2027-04",
+      "data": "2026-01-10T03:46:31.452Z",
+      "id": 16
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 17,
+      "competencia": "2027-05",
+      "data": "2026-01-10T03:46:31.546Z",
+      "id": 17
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 18,
+      "competencia": "2027-06",
+      "data": "2026-01-10T03:46:31.642Z",
+      "id": 18
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 19,
+      "competencia": "2027-07",
+      "data": "2026-01-10T03:46:31.733Z",
+      "id": 19
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 20,
+      "competencia": "2027-08",
+      "data": "2026-01-10T03:46:31.825Z",
+      "id": 20
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 21,
+      "competencia": "2027-09",
+      "data": "2026-01-10T03:46:31.921Z",
+      "id": 21
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_FATURA",
+      "entidadeId": 1,
+      "competencia": "2026-02",
+      "data": "2026-01-10T03:47:31.057Z",
+      "id": 22
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "MOVIMENTO",
+      "entidadeId": 6,
+      "competencia": "2026-02",
+      "detalhes": {
+        "tipo": "SAIDA",
+        "valor": 7.56
+      },
+      "data": "2026-01-10T03:47:31.167Z",
+      "id": 23
+    },
+    {
+      "acao": "ATUALIZAR",
+      "entidade": "CARTAO_FATURA",
+      "entidadeId": 1,
+      "competencia": "2026-02",
+      "data": "2026-01-10T03:47:31.296Z",
+      "id": 24
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_FATURA",
+      "entidadeId": 2,
+      "competencia": "2026-03",
+      "data": "2026-01-10T03:47:33.459Z",
+      "id": 25
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "MOVIMENTO",
+      "entidadeId": 7,
+      "competencia": "2026-03",
+      "detalhes": {
+        "tipo": "SAIDA",
+        "valor": 5.56
+      },
+      "data": "2026-01-10T03:47:33.576Z",
+      "id": 26
+    },
+    {
+      "acao": "ATUALIZAR",
+      "entidade": "CARTAO_FATURA",
+      "entidadeId": 2,
+      "competencia": "2026-03",
+      "data": "2026-01-10T03:47:33.672Z",
+      "id": 27
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_FATURA",
+      "entidadeId": 3,
+      "competencia": "2026-04",
+      "data": "2026-01-10T03:47:35.138Z",
+      "id": 28
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "MOVIMENTO",
+      "entidadeId": 8,
+      "competencia": "2026-04",
+      "detalhes": {
+        "tipo": "SAIDA",
+        "valor": 5.56
+      },
+      "data": "2026-01-10T03:47:35.239Z",
+      "id": 29
+    },
+    {
+      "acao": "ATUALIZAR",
+      "entidade": "CARTAO_FATURA",
+      "entidadeId": 3,
+      "competencia": "2026-04",
+      "data": "2026-01-10T03:47:35.310Z",
+      "id": 30
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 22,
+      "competencia": "2025-12",
+      "data": "2026-01-10T03:55:23.216Z",
+      "id": 31
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 23,
+      "competencia": "2026-01",
+      "data": "2026-01-10T03:55:23.319Z",
+      "id": 32
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 24,
+      "competencia": "2026-02",
+      "data": "2026-01-10T03:55:23.384Z",
+      "id": 33
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 25,
+      "competencia": "2026-03",
+      "data": "2026-01-10T03:55:23.458Z",
+      "id": 34
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 26,
+      "competencia": "2026-04",
+      "data": "2026-01-10T03:55:23.536Z",
+      "id": 35
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 27,
+      "competencia": "2026-05",
+      "data": "2026-01-10T03:55:23.602Z",
+      "id": 36
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 28,
+      "competencia": "2026-06",
+      "data": "2026-01-10T03:55:23.685Z",
+      "id": 37
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 29,
+      "competencia": "2026-07",
+      "data": "2026-01-10T03:55:23.761Z",
+      "id": 38
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 30,
+      "competencia": "2026-08",
+      "data": "2026-01-10T03:55:23.835Z",
+      "id": 39
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 31,
+      "competencia": "2026-09",
+      "data": "2026-01-10T03:55:23.887Z",
+      "id": 40
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 32,
+      "competencia": "2026-10",
+      "data": "2026-01-10T03:55:23.955Z",
+      "id": 41
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 33,
+      "competencia": "2026-11",
+      "data": "2026-01-10T03:55:24.017Z",
+      "id": 42
+    },
+    {
+      "acao": "EXCLUIR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 1,
+      "competencia": "2026-02",
+      "data": "2026-01-10T03:57:37.065Z",
+      "id": 43
+    },
+    {
+      "acao": "EXCLUIR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 2,
+      "competencia": "2026-02",
+      "data": "2026-01-10T03:57:37.808Z",
+      "id": 44
+    },
+    {
+      "acao": "EXCLUIR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 3,
+      "competencia": "2026-03",
+      "data": "2026-01-10T03:57:38.225Z",
+      "id": 45
+    },
+    {
+      "acao": "EXCLUIR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 4,
+      "competencia": "2026-04",
+      "data": "2026-01-10T03:57:38.604Z",
+      "id": 46
+    },
+    {
+      "acao": "EXCLUIR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 5,
+      "competencia": "2026-05",
+      "data": "2026-01-10T03:57:38.962Z",
+      "id": 47
+    },
+    {
+      "acao": "EXCLUIR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 6,
+      "competencia": "2026-06",
+      "data": "2026-01-10T03:57:39.340Z",
+      "id": 48
+    },
+    {
+      "acao": "EXCLUIR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 7,
+      "competencia": "2026-07",
+      "data": "2026-01-10T03:57:39.738Z",
+      "id": 49
+    },
+    {
+      "acao": "EXCLUIR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 8,
+      "competencia": "2026-08",
+      "data": "2026-01-10T03:57:40.150Z",
+      "id": 50
+    },
+    {
+      "acao": "EXCLUIR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 9,
+      "competencia": "2026-09",
+      "data": "2026-01-10T03:57:40.580Z",
+      "id": 51
+    },
+    {
+      "acao": "EXCLUIR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 10,
+      "competencia": "2026-10",
+      "data": "2026-01-10T03:57:40.989Z",
+      "id": 52
+    },
+    {
+      "acao": "EXCLUIR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 11,
+      "competencia": "2026-11",
+      "data": "2026-01-10T03:57:41.441Z",
+      "id": 53
+    },
+    {
+      "acao": "EXCLUIR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 12,
+      "competencia": "2026-12",
+      "data": "2026-01-10T03:57:41.866Z",
+      "id": 54
+    },
+    {
+      "acao": "EXCLUIR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 13,
+      "competencia": "2027-01",
+      "data": "2026-01-10T03:57:42.303Z",
+      "id": 55
+    },
+    {
+      "acao": "EXCLUIR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 14,
+      "competencia": "2027-02",
+      "data": "2026-01-10T03:57:42.721Z",
+      "id": 56
+    },
+    {
+      "acao": "EXCLUIR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 15,
+      "competencia": "2027-03",
+      "data": "2026-01-10T03:57:43.123Z",
+      "id": 57
+    },
+    {
+      "acao": "EXCLUIR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 16,
+      "competencia": "2027-04",
+      "data": "2026-01-10T03:57:43.525Z",
+      "id": 58
+    },
+    {
+      "acao": "EXCLUIR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 17,
+      "competencia": "2027-05",
+      "data": "2026-01-10T03:57:43.758Z",
+      "id": 59
+    },
+    {
+      "acao": "EXCLUIR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 18,
+      "competencia": "2027-06",
+      "data": "2026-01-10T03:57:44.444Z",
+      "id": 60
+    },
+    {
+      "acao": "EXCLUIR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 19,
+      "competencia": "2027-07",
+      "data": "2026-01-10T03:57:44.664Z",
+      "id": 61
+    },
+    {
+      "acao": "EXCLUIR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 20,
+      "competencia": "2027-08",
+      "data": "2026-01-10T03:57:44.929Z",
+      "id": 62
+    },
+    {
+      "acao": "EXCLUIR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 21,
+      "competencia": "2027-09",
+      "data": "2026-01-10T03:57:45.320Z",
+      "id": 63
+    },
+    {
+      "acao": "EXCLUIR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 22,
+      "competencia": "2025-12",
+      "data": "2026-01-10T03:57:45.802Z",
+      "id": 64
+    },
+    {
+      "acao": "EXCLUIR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 23,
+      "competencia": "2026-01",
+      "data": "2026-01-10T03:57:46.224Z",
+      "id": 65
+    },
+    {
+      "acao": "EXCLUIR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 24,
+      "competencia": "2026-02",
+      "data": "2026-01-10T03:57:46.708Z",
+      "id": 66
+    },
+    {
+      "acao": "EXCLUIR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 25,
+      "competencia": "2026-03",
+      "data": "2026-01-10T03:57:47.159Z",
+      "id": 67
+    },
+    {
+      "acao": "EXCLUIR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 26,
+      "competencia": "2026-04",
+      "data": "2026-01-10T03:57:47.408Z",
+      "id": 68
+    },
+    {
+      "acao": "EXCLUIR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 27,
+      "competencia": "2026-05",
+      "data": "2026-01-10T03:57:47.644Z",
+      "id": 69
+    },
+    {
+      "acao": "EXCLUIR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 28,
+      "competencia": "2026-06",
+      "data": "2026-01-10T03:57:48.375Z",
+      "id": 70
+    },
+    {
+      "acao": "EXCLUIR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 29,
+      "competencia": "2026-07",
+      "data": "2026-01-10T03:57:49.703Z",
+      "id": 71
+    },
+    {
+      "acao": "EXCLUIR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 30,
+      "competencia": "2026-08",
+      "data": "2026-01-10T03:57:50.421Z",
+      "id": 72
+    },
+    {
+      "acao": "EXCLUIR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 31,
+      "competencia": "2026-09",
+      "data": "2026-01-10T03:57:51.074Z",
+      "id": 73
+    },
+    {
+      "acao": "EXCLUIR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 32,
+      "competencia": "2026-10",
+      "data": "2026-01-10T03:57:51.524Z",
+      "id": 74
+    },
+    {
+      "acao": "EXCLUIR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 33,
+      "competencia": "2026-11",
+      "data": "2026-01-10T03:57:54.152Z",
+      "id": 75
+    },
+    {
+      "acao": "FECHAR",
+      "entidade": "FECHAMENTO_FINANCEIRO",
+      "entidadeId": 1,
+      "competencia": "2026-01",
+      "detalhes": {
+        "status": "FECHADO"
+      },
+      "data": "2026-01-10T04:04:32.412Z",
+      "id": 76
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 1,
+      "competencia": "2025-11",
+      "data": "2026-01-10T04:07:28.878Z",
+      "id": 77
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 2,
+      "competencia": "2025-12",
+      "data": "2026-01-10T04:07:28.956Z",
+      "id": 78
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 3,
+      "competencia": "2026-02",
+      "data": "2026-01-10T04:07:39.830Z",
+      "id": 79
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 4,
+      "competencia": "2026-03",
+      "data": "2026-01-10T04:07:39.922Z",
+      "id": 80
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 5,
+      "competencia": "2026-04",
+      "data": "2026-01-10T04:07:40.019Z",
+      "id": 81
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 6,
+      "competencia": "2026-05",
+      "data": "2026-01-10T04:07:40.112Z",
+      "id": 82
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 7,
+      "competencia": "2026-06",
+      "data": "2026-01-10T04:07:40.203Z",
+      "id": 83
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 8,
+      "competencia": "2026-07",
+      "data": "2026-01-10T04:07:40.295Z",
+      "id": 84
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 9,
+      "competencia": "2026-08",
+      "data": "2026-01-10T04:07:40.390Z",
+      "id": 85
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 10,
+      "competencia": "2026-09",
+      "data": "2026-01-10T04:07:40.482Z",
+      "id": 86
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 11,
+      "competencia": "2026-10",
+      "data": "2026-01-10T04:07:40.577Z",
+      "id": 87
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 12,
+      "competencia": "2026-11",
+      "data": "2026-01-10T04:07:40.671Z",
+      "id": 88
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 13,
+      "competencia": "2026-12",
+      "data": "2026-01-10T04:07:40.765Z",
+      "id": 89
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 14,
+      "competencia": "2026-03",
+      "data": "2026-01-10T04:15:44.942Z",
+      "id": 90
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 15,
+      "competencia": "2026-04",
+      "data": "2026-01-10T04:15:45.034Z",
+      "id": 91
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 16,
+      "competencia": "2026-04",
+      "data": "2026-01-10T04:15:45.127Z",
+      "id": 92
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 17,
+      "competencia": "2026-05",
+      "data": "2026-01-10T04:15:45.219Z",
+      "id": 93
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 18,
+      "competencia": "2026-06",
+      "data": "2026-01-10T04:15:45.328Z",
+      "id": 94
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 19,
+      "competencia": "2026-07",
+      "data": "2026-01-10T04:15:45.405Z",
+      "id": 95
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 20,
+      "competencia": "2026-08",
+      "data": "2026-01-10T04:15:45.503Z",
+      "id": 96
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 21,
+      "competencia": "2026-09",
+      "data": "2026-01-10T04:15:45.594Z",
+      "id": 97
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 22,
+      "competencia": "2026-10",
+      "data": "2026-01-10T04:15:45.688Z",
+      "id": 98
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 23,
+      "competencia": "2026-11",
+      "data": "2026-01-10T04:15:45.782Z",
+      "id": 99
+    },
+    {
+      "acao": "REABRIR",
+      "entidade": "FECHAMENTO_FINANCEIRO",
+      "entidadeId": 1,
+      "competencia": "2026-01",
+      "detalhes": {
+        "status": "ABERTO"
+      },
+      "data": "2026-01-10T04:21:01.079Z",
+      "id": 100
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_LANCAMENTO",
+      "entidadeId": 24,
+      "competencia": "2026-01",
+      "data": "2026-01-10T04:21:38.267Z",
+      "id": 101
+    },
+    {
+      "acao": "FECHAR",
+      "entidade": "FECHAMENTO_FINANCEIRO",
+      "entidadeId": 2,
+      "competencia": "2026-02",
+      "detalhes": {
+        "status": "FECHADO"
+      },
+      "data": "2026-01-10T04:23:00.406Z",
+      "id": 102
+    },
+    {
+      "acao": "REABRIR",
+      "entidade": "FECHAMENTO_FINANCEIRO",
+      "entidadeId": 2,
+      "competencia": "2026-02",
+      "detalhes": {
+        "status": "ABERTO"
+      },
+      "data": "2026-01-10T04:23:04.268Z",
+      "id": 103
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "CARTAO_FATURA",
+      "entidadeId": 4,
+      "competencia": "2026-12",
+      "data": "2026-01-10T06:18:16.908Z",
+      "id": 104
+    },
+    {
+      "acao": "CRIAR",
+      "entidade": "MOVIMENTO",
+      "entidadeId": 9,
+      "competencia": "2026-12",
+      "detalhes": {
+        "tipo": "SAIDA",
+        "valor": 10.1
+      },
+      "data": "2026-01-10T06:18:17.027Z",
+      "id": 105
+    },
+    {
+      "acao": "ATUALIZAR",
+      "entidade": "CARTAO_FATURA",
+      "entidadeId": 4,
+      "competencia": "2026-12",
+      "data": "2026-01-10T06:18:17.121Z",
+      "id": 106
+    }
+  ],
+  "financeiroOrcamentos": [],
+  "estoqueMovimentos": [],
   "estoqueDepositos": [
     {
       "id": "dep_1",
       "nome": "Principal",
       "ativo": true
-    },
-    {
-      "id": "dep_2",
-      "nome": "Secundario",
-      "ativo": true,
-      "observacoes": "Deposito auxiliar"
     }
   ],
   "cartoes": [
     {
-      "nome": "Henrique",
-      "banco": "341",
+      "nome": "Cartao Demo",
+      "banco": "ITAU",
       "vencimentoDia": 8,
       "limiteInicial": 0,
-      "fechamentoDia": 1,
+      "fechamentoDia": 28,
+      "corteDia": 1,
       "id": 1
     }
   ],
-  "contasReceber": [
-    {
-      "clienteId": "1",
-      "vencimento": "2026-01-05",
-      "valor": 580000,
-      "status": "ABERTA",
-      "descricao": "Salario",
-      "recorrente": true,
-      "valorOriginal": 580000,
-      "valorRecebido": 580000,
-      "dataRecebimento": "2026-01-01",
-      "formaPagamento": "TRANSFERENCIA",
-      "contaId": "1",
-      "categoriaId": "1",
-      "id": 1
-    },
-    {
-      "clienteId": "2",
-      "vencimento": "2026-01-14",
-      "valor": 2000000,
-      "status": "ABERTA",
-      "descricao": "Salario Riane",
-      "recorrente": true,
-      "valorOriginal": 2000000,
-      "valorRecebido": 2000000,
-      "contaId": "3",
-      "categoriaId": "1",
-      "id": 2
-    }
-  ],
-  "contasPagar": [
-    {
-      "fornecedorId": "fornecedor-avulso",
-      "fornecedorNome": "IFD*JULIANNIE DRUMMOND",
-      "vencimento": "2026-01-08",
-      "valor": 10478,
-      "status": "PAGA",
-      "origem": "MANUAL",
-      "descricao": "IFD*JULIANNIE DRUMMOND",
-      "competencia": "2025-11-06",
-      "contaId": "",
-      "id": 1,
-      "parcelaPaga": 1,
-      "dataPagamento": "2026-01-06",
-      "valorPago": 10478
-    },
-    {
-      "fornecedorId": "fornecedor-avulso",
-      "vencimento": "2025-12-01",
-      "valor": 29327,
-      "status": "ABERTA",
-      "descricao": "DROGASMILRIO D 2/6",
-      "competencia": "2025-10-19",
-      "parcela": 2,
-      "totalParcelas": 6,
-      "recorrente": false,
-      "parcelaPaga": 1,
-      "valorOriginal": 29327,
-      "valorPago": 29327,
-      "id": 2
-    },
-    {
-      "fornecedorId": "fornecedor-avulso",
-      "fornecedorNome": "IFOOD CLUBOsascoBR",
-      "vencimento": "2026-01-08",
-      "valor": 798,
-      "status": "PAGA",
-      "origem": "MANUAL",
-      "descricao": "IFOOD CLUBOsascoBR",
-      "competencia": "2025-11-05",
-      "contaId": "",
-      "id": 3,
-      "parcelaPaga": 1,
-      "dataPagamento": "2026-01-06",
-      "valorPago": 798,
-      "baixas": [
-        {
-          "id": "baixa-1767678965101-1eb8f92a7a8028",
-          "data": "2026-01-06",
-          "valor": 798,
-          "contaId": ""
-        }
-      ]
-    },
-    {
-      "fornecedorId": "fornecedor-avulso",
-      "fornecedorNome": "MERCADOLIVRE*7",
-      "vencimento": "2025-12-08",
-      "valor": 5932,
-      "status": "PAGA",
-      "origem": "MANUAL",
-      "descricao": "MERCADOLIVRE*7 2/4",
-      "competencia": "2025-10-20",
-      "parcela": 2,
-      "totalParcelas": 4,
-      "parcelaPaga": 4,
-      "contaId": "",
-      "id": 4,
-      "dataPagamento": "2026-01-06",
-      "valorPago": 5932,
-      "baixas": [
-        {
-          "id": "baixa-1767678969486-9d9401fa06ac6",
-          "data": "2026-01-06",
-          "valor": 5932,
-          "parcela": 2,
-          "contaId": ""
-        },
-        {
-          "id": "baixa-1767678972954-16c3372bdf1c9",
-          "data": "2026-01-06",
-          "valor": 5932,
-          "parcela": 3,
-          "contaId": ""
-        },
-        {
-          "id": "baixa-1767678978585-807a12165ac2d",
-          "data": "2026-01-06",
-          "valor": 5932,
-          "parcela": 4,
-          "contaId": ""
-        }
-      ]
-    },
-    {
-      "fornecedorId": "fornecedor-avulso",
-      "fornecedorNome": "MP*PHDDIGITALM",
-      "vencimento": "2025-12-08",
-      "valor": 22550,
-      "status": "PAGA",
-      "origem": "MANUAL",
-      "descricao": "MP*PHDDIGITALM 2/4",
-      "competencia": "2025-10-20",
-      "parcela": 2,
-      "totalParcelas": 4,
-      "parcelaPaga": 4,
-      "contaId": "",
-      "id": 5,
-      "dataPagamento": "2026-01-06",
-      "valorPago": 22550,
-      "baixas": [
-        {
-          "id": "baixa-1767678983359-234dd36be97a5",
-          "data": "2026-01-06",
-          "valor": 22550,
-          "parcela": 2,
-          "contaId": ""
-        },
-        {
-          "id": "baixa-1767678986188-166d8d6ab43b08",
-          "data": "2026-01-06",
-          "valor": 22550,
-          "parcela": 3,
-          "contaId": ""
-        },
-        {
-          "id": "baixa-1767678988645-6218f0ae71687",
-          "data": "2026-01-06",
-          "valor": 22550,
-          "parcela": 4,
-          "contaId": ""
-        }
-      ]
-    },
-    {
-      "fornecedorId": "fornecedor-avulso",
-      "fornecedorNome": "MERCADOLIVRE*M",
-      "vencimento": "2026-01-08",
-      "valor": 5501,
-      "status": "ABERTA",
-      "origem": "MANUAL",
-      "descricao": "MERCADOLIVRE*M 1/4",
-      "competencia": "2025-11-05",
-      "parcela": 1,
-      "totalParcelas": 4,
-      "contaId": "",
-      "id": 6,
-      "parcelaPaga": 2,
-      "dataPagamento": "2026-01-06",
-      "valorPago": 5501,
-      "baixas": [
-        {
-          "id": "baixa-1767678991285-8eb549f5801c2",
-          "data": "2026-01-06",
-          "valor": 5501,
-          "parcela": 1,
-          "contaId": ""
-        },
-        {
-          "id": "baixa-1767678993979-2724d79712317",
-          "data": "2026-01-06",
-          "valor": 5501,
-          "parcela": 2,
-          "contaId": ""
-        }
-      ]
-    },
-    {
-      "fornecedorId": "fornecedor-avulso",
-      "fornecedorNome": "EC *PHDDIGITAL",
-      "vencimento": "2025-12-08",
-      "valor": 27979,
-      "status": "ABERTA",
-      "origem": "MANUAL",
-      "descricao": "EC *PHDDIGITAL 2/4",
-      "competencia": "2025-10-20",
-      "parcela": 2,
-      "totalParcelas": 4,
-      "parcelaPaga": 1,
-      "contaId": "",
-      "id": 7
-    },
-    {
-      "fornecedorId": "fornecedor-avulso",
-      "fornecedorNome": "MERCADOLIVRE*J",
-      "vencimento": "2025-12-08",
-      "valor": 8423,
-      "status": "ABERTA",
-      "origem": "MANUAL",
-      "descricao": "MERCADOLIVRE*J 2/4",
-      "competencia": "2025-10-26",
-      "parcela": 2,
-      "totalParcelas": 4,
-      "parcelaPaga": 1,
-      "contaId": "",
-      "id": 8
-    },
-    {
-      "fornecedorId": "fornecedor-avulso",
-      "fornecedorNome": "IFD*MENDES E PIGLIASCOR",
-      "vencimento": "2026-01-08",
-      "valor": 7788,
-      "status": "PAGA",
-      "origem": "MANUAL",
-      "descricao": "IFD*MENDES E PIGLIASCOR",
-      "competencia": "2025-11-04",
-      "contaId": "",
-      "id": 9,
-      "parcelaPaga": 1,
-      "dataPagamento": "2026-01-06",
-      "valorPago": 7788
-    },
-    {
-      "fornecedorId": "fornecedor-avulso",
-      "fornecedorNome": "MERCADOLIVRE*55402074GU",
-      "vencimento": "2026-01-08",
-      "valor": 2757,
-      "status": "PAGA",
-      "origem": "MANUAL",
-      "descricao": "MERCADOLIVRE*55402074GU",
-      "competencia": "2025-11-03",
-      "contaId": "",
-      "id": 10,
-      "parcelaPaga": 1,
-      "dataPagamento": "2026-01-06",
-      "valorPago": 2757
-    },
-    {
-      "fornecedorId": "fornecedor-avulso",
-      "fornecedorNome": "IFD*41.357.472 MICHEL S",
-      "vencimento": "2025-12-08",
-      "valor": 3788,
-      "status": "ABERTA",
-      "origem": "MANUAL",
-      "descricao": "IFD*41.357.472 MICHEL S",
-      "competencia": "2025-11-01",
-      "contaId": "",
-      "id": 11
-    },
-    {
-      "fornecedorId": "fornecedor-avulso",
-      "fornecedorNome": "IFD*FABIANE DE AGUIAR S",
-      "vencimento": "2025-12-08",
-      "valor": 2524,
-      "status": "ABERTA",
-      "origem": "MANUAL",
-      "descricao": "IFD*FABIANE DE AGUIAR S",
-      "competencia": "2025-10-30",
-      "contaId": "",
-      "id": 12
-    },
-    {
-      "fornecedorId": "fornecedor-avulso",
-      "fornecedorNome": "IFD*JEYSON OLIVEIRA TUR",
-      "vencimento": "2025-12-08",
-      "valor": 2981,
-      "status": "ABERTA",
-      "origem": "MANUAL",
-      "descricao": "IFD*JEYSON OLIVEIRA TUR",
-      "competencia": "2025-10-29",
-      "contaId": "",
-      "id": 13
-    },
-    {
-      "fornecedorId": "fornecedor-avulso",
-      "fornecedorNome": "IFD*29.500.172 RODRIGO",
-      "vencimento": "2025-12-08",
-      "valor": 3479,
-      "status": "ABERTA",
-      "origem": "MANUAL",
-      "descricao": "IFD*29.500.172 RODRIGO",
-      "competencia": "2025-10-28",
-      "contaId": "",
-      "id": 14
-    },
-    {
-      "fornecedorId": "fornecedor-avulso",
-      "fornecedorNome": "EC *PHDDIGITAL",
-      "vencimento": "2025-12-08",
-      "valor": 7126,
-      "status": "ABERTA",
-      "origem": "MANUAL",
-      "descricao": "EC *PHDDIGITAL 2/2",
-      "competencia": "2025-10-25",
-      "parcela": 2,
-      "totalParcelas": 2,
-      "parcelaPaga": 1,
-      "contaId": "",
-      "id": 15
-    },
-    {
-      "fornecedorId": "fornecedor-avulso",
-      "fornecedorNome": "MULTA",
-      "vencimento": "2026-01-08",
-      "valor": 2480,
-      "status": "ABERTA",
-      "origem": "MANUAL",
-      "descricao": "MULTA",
-      "competencia": "2025-11-29",
-      "contaId": "",
-      "id": 16
-    },
-    {
-      "fornecedorId": "fornecedor-avulso",
-      "fornecedorNome": "JUROS DE MORA",
-      "vencimento": "2026-01-08",
-      "valor": 1240,
-      "status": "ABERTA",
-      "origem": "MANUAL",
-      "descricao": "JUROS DE MORA",
-      "competencia": "2025-11-29",
-      "contaId": "",
-      "id": 17
-    },
-    {
-      "fornecedorId": "fornecedor-avulso",
-      "fornecedorNome": "ENCARGOS REFINANCIAMENT",
-      "vencimento": "2026-01-08",
-      "valor": 18107,
-      "status": "ABERTA",
-      "origem": "MANUAL",
-      "descricao": "ENCARGOS REFINANCIAMENT",
-      "competencia": "2025-11-29",
-      "contaId": "",
-      "id": 18
-    },
-    {
-      "fornecedorId": "1",
-      "vencimento": "2026-01-12",
-      "valor": 120000,
-      "status": "ABERTA",
-      "descricao": "Aluguel Casa",
-      "recorrente": true,
-      "valorOriginal": 120000,
-      "contaId": "1",
-      "categoriaId": "2",
-      "id": 19
-    }
-  ],
-  "vendas": [
-    {
-      "id": 1,
-      "clienteId": "1",
-      "clienteNome": "Prosolution",
-      "data": "2026-01-08",
-      "status": "FATURADA",
-      "itens": [
-        {
-          "produtoId": "1",
-          "descricao": "Teste",
-          "quantidade": 5,
-          "valorUnitario": 1200,
-          "total": 6000
-        }
-      ],
-      "subtotal": 6000,
-      "desconto": 0,
-      "frete": 0,
-      "impostos": 0,
-      "total": 6000,
-      "estoque": {
-        "gerarMovimento": true,
-        "depositoId": "dep_1"
-      }
-    }
-  ],
-  "compras": [
-    {
-      "id": 1,
-      "fornecedorId": "1",
-      "fornecedorNome": "Proprietario Casa",
-      "data": "2026-01-05",
-      "status": "RECEBIDA",
-      "itens": [
-        {
-          "produtoId": "1",
-          "descricao": "Teste",
-          "quantidade": 10,
-          "valorUnitario": 1000,
-          "total": 10000
-        }
-      ],
-      "subtotal": 10000,
-      "desconto": 0,
-      "frete": 0,
-      "impostos": 0,
-      "total": 10000,
-      "estoque": {
-        "gerarMovimento": true,
-        "depositoId": "dep_1"
-      }
-    }
-  ],
+  "contasReceber": [],
+  "contasPagar": [],
+  "vendas": [],
+  "compras": [],
   "vendasAnalytics": {
     "totais": {
       "quantidade": 0,
@@ -682,500 +1402,316 @@
     "menosVendidos": [],
     "ultimosSaidos": []
   },
-  "folha": [],
-  "colaboradores": [],
-  "notas": [],
-  "integracoesBancarias": [
+  "rhFuncionarios": [
     {
+      "nome": "Ana Souza",
+      "cpf": "12345678901",
+      "email": "ana.souza@empresa.com",
+      "telefone": "11999990000",
+      "endereco": {},
+      "matricula": "MAT-001",
+      "dataAdmissao": "2025-09-01",
+      "tipoContrato": "CLT",
+      "jornada": "MENSAL",
+      "departamentoId": "1",
+      "cargoId": "1",
+      "centroCustoId": "1",
+      "status": "ATIVO",
+      "salarioBase": 3500,
+      "salarioTipo": "MENSAL",
+      "adicionalPericulosidade": true,
+      "adicionalInsalubridade": true,
+      "inssPercentual": 6,
       "banco": "ITAU",
-      "status": "ATIVA",
+      "agencia": "1234",
+      "conta": "56789",
+      "tipoConta": "CORRENTE",
+      "anexos": [],
       "id": 1
     }
   ],
+  "rhDepartamentos": [
+    {
+      "id": 1,
+      "nome": "Operacoes",
+      "descricao": "Time operacional",
+      "status": "ATIVO"
+    }
+  ],
+  "rhCargos": [
+    {
+      "id": 1,
+      "nome": "Analista",
+      "nivel": "Pleno",
+      "descricao": "Analista operacional",
+      "status": "ATIVO"
+    }
+  ],
+  "rhCentrosCusto": [
+    {
+      "id": 1,
+      "nome": "Administrativo",
+      "descricao": "Custos administrativos",
+      "status": "ATIVO"
+    }
+  ],
+  "rhCompetencias": [
+    {
+      "id": 1,
+      "competencia": "2026-01",
+      "status": "ABERTA",
+      "observacoes": "Competencia inicial"
+    }
+  ],
+  "rhEventos": [
+    {
+      "id": 1,
+      "codigo": "PROV001",
+      "descricao": "Salario base",
+      "tipo": "PROVENTO",
+      "incidencias": {
+        "inss": true,
+        "fgts": true,
+        "irrf": true
+      },
+      "valorFixo": 3500,
+      "status": "ATIVO"
+    },
+    {
+      "id": 2,
+      "codigo": "INSS",
+      "descricao": "INSS",
+      "tipo": "DESCONTO",
+      "incidencias": {
+        "inss": false,
+        "fgts": false,
+        "irrf": false
+      },
+      "status": "ATIVO"
+    },
+    {
+      "id": 3,
+      "codigo": "VT",
+      "descricao": "Vale transporte",
+      "tipo": "DESCONTO",
+      "incidencias": {
+        "inss": false,
+        "fgts": false,
+        "irrf": false
+      },
+      "valorFixo": 220,
+      "status": "ATIVO"
+    },
+    {
+      "codigo": "HORA_EXTRA",
+      "descricao": "Hora extra",
+      "tipo": "PROVENTO",
+      "incidencias": {
+        "inss": true,
+        "fgts": true,
+        "irrf": true
+      },
+      "status": "ATIVO",
+      "id": 4
+    },
+    {
+      "codigo": "ADICIONAL_NOTURNO",
+      "descricao": "Adicional noturno",
+      "tipo": "PROVENTO",
+      "incidencias": {
+        "inss": true,
+        "fgts": true,
+        "irrf": true
+      },
+      "status": "ATIVO",
+      "id": 5
+    },
+    {
+      "codigo": "FALTA",
+      "descricao": "Falta / atraso",
+      "tipo": "DESCONTO",
+      "incidencias": {
+        "inss": false,
+        "fgts": false,
+        "irrf": false
+      },
+      "status": "ATIVO",
+      "id": 6
+    }
+  ],
+  "rhLancamentos": [
+    {
+      "competencia": "2026-01",
+      "funcionarioId": 1,
+      "eventoId": 2,
+      "valor": 210,
+      "referencia": "Automatico",
+      "observacao": "Calculado automaticamente (INSS).",
+      "id": 6
+    }
+  ],
+  "rhPonto": [
+    {
+      "id": 1,
+      "funcionarioId": "1",
+      "data": "2026-01-06",
+      "entrada1": "08:00",
+      "saida1": "12:00",
+      "entrada2": "13:00",
+      "saida2": "17:00",
+      "status": "OK",
+      "totalHoras": 8
+    },
+    {
+      "id": 2,
+      "funcionarioId": "1",
+      "data": "2026-01-07",
+      "entrada1": "08:10",
+      "saida1": "12:00",
+      "entrada2": "13:00",
+      "saida2": "17:05",
+      "status": "OK",
+      "totalHoras": 7.9
+    }
+  ],
+  "rhPontoConfig": [
+    {
+      "id": 1,
+      "byContrato": {
+        "CLT": {
+          "dailyHours": 8,
+          "toleranceMinutes": 10,
+          "overtimeRate": 1.5,
+          "nightRate": 0.2,
+          "monthlyHours": 220,
+          "scheduleType": "SEMANAL_5X2"
+        },
+        "PJ": {
+          "dailyHours": 8,
+          "toleranceMinutes": 0,
+          "overtimeRate": 1,
+          "nightRate": 0,
+          "monthlyHours": 220,
+          "scheduleType": "SEMANAL_5X2"
+        },
+        "ESTAGIO": {
+          "dailyHours": 6,
+          "toleranceMinutes": 10,
+          "overtimeRate": 1.5,
+          "nightRate": 0.2,
+          "monthlyHours": 120,
+          "scheduleType": "SEMANAL_5X2"
+        },
+        "OUTRO": {
+          "dailyHours": 8,
+          "toleranceMinutes": 10,
+          "overtimeRate": 1.5,
+          "nightRate": 0.2,
+          "monthlyHours": 220,
+          "scheduleType": "SEMANAL_5X2"
+        }
+      }
+    }
+  ],
+  "rhPontoFuncionarioConfig": [],
+  "rhPontoCalendario": [
+    {
+      "id": 1,
+      "date": "2026-01-01",
+      "tipo": "FERIADO",
+      "descricao": "Confraternizacao universal"
+    },
+    {
+      "id": 2,
+      "date": "2026-02-16",
+      "tipo": "FERIADO",
+      "descricao": "Carnaval"
+    },
+    {
+      "id": 3,
+      "date": "2026-02-17",
+      "tipo": "FERIADO",
+      "descricao": "Carnaval (2º dia)"
+    },
+    {
+      "id": 4,
+      "date": "2026-04-03",
+      "tipo": "FERIADO",
+      "descricao": "Sexta-feira santa"
+    },
+    {
+      "id": 5,
+      "date": "2026-04-21",
+      "tipo": "FERIADO",
+      "descricao": "Tiradentes"
+    },
+    {
+      "id": 6,
+      "date": "2026-05-01",
+      "tipo": "FERIADO",
+      "descricao": "Dia do trabalho"
+    },
+    {
+      "id": 7,
+      "date": "2026-06-04",
+      "tipo": "FERIADO",
+      "descricao": "Corpus Christi"
+    },
+    {
+      "id": 8,
+      "date": "2026-09-07",
+      "tipo": "FERIADO",
+      "descricao": "Independencia do Brasil"
+    },
+    {
+      "id": 9,
+      "date": "2026-10-12",
+      "tipo": "FERIADO",
+      "descricao": "Nossa Senhora Aparecida"
+    },
+    {
+      "id": 10,
+      "date": "2026-11-02",
+      "tipo": "FERIADO",
+      "descricao": "Finados"
+    },
+    {
+      "id": 11,
+      "date": "2026-11-15",
+      "tipo": "FERIADO",
+      "descricao": "Proclamacao da Republica"
+    },
+    {
+      "id": 12,
+      "date": "2026-12-25",
+      "tipo": "FERIADO",
+      "descricao": "Natal"
+    }
+  ],
+  "rhPontoCalendarioFuncionario": [],
+  "rhFerias": [
+    {
+      "id": 1,
+      "funcionarioId": "1",
+      "inicio": "2026-02-01",
+      "fim": "2026-02-10",
+      "status": "SOLICITADA",
+      "observacoes": "Viagem programada"
+    }
+  ],
+  "rhAfastamentos": [],
+  "folha": [],
+  "colaboradores": [],
+  "notas": [],
+  "integracoesBancarias": [],
   "receitasTributacao": [],
   "caixaTributacao": [],
   "conciliacaoTributacao": [],
   "apuracoes": [],
   "obrigacoes": [],
   "empresas": [],
-  "importBatches": [
-    {
-      "id": "batch_1767679937434",
-      "createdAt": "2026-01-06T06:12:17.434Z",
-      "sourceType": "CARD",
-      "fileName": "Fatura_Itau_20251201-205323_251201_205352.pdf",
-      "fileType": "PDF",
-      "provider": "ITAU",
-      "status": "DRAFT",
-      "summary": {
-        "total": -262968,
-        "credits": 0,
-        "debits": 262968
-      },
-      "cardId": "1",
-      "invoiceMonth": "2026-01"
-    },
-    {
-      "id": "batch_1767680086416",
-      "createdAt": "2026-01-06T06:14:46.416Z",
-      "sourceType": "CARD",
-      "fileName": "Fatura_Itau_20251201-205323_251201_205352.pdf",
-      "fileType": "PDF",
-      "provider": "ITAU",
-      "status": "DRAFT",
-      "summary": {
-        "total": -262968,
-        "credits": 0,
-        "debits": 262968
-      },
-      "cardId": "1",
-      "invoiceMonth": "2026-01"
-    },
-    {
-      "id": "batch_1767680135605",
-      "createdAt": "2026-01-06T06:15:35.605Z",
-      "sourceType": "CARD",
-      "fileName": "Fatura_Itau_20251201-205323_251201_205352.pdf",
-      "fileType": "PDF",
-      "provider": "ITAU",
-      "status": "CANCELED",
-      "summary": {
-        "total": -262968,
-        "credits": 0,
-        "debits": 262968
-      },
-      "cardId": "1",
-      "invoiceMonth": "2026-01",
-      "canceledAt": "2026-01-06T06:15:45.517Z"
-    }
-  ],
-  "importTransactions": [
-    {
-      "id": "imp_Fatura_Itau_20251201-205323_251201_205352.pdf_2025-11-06_bcch0p",
-      "date": "2025-11-06",
-      "description": "IFD*JULIANNIE DRUMMOND",
-      "amount": -10478,
-      "currency": "BRL",
-      "sourceType": "CARD",
-      "direction": "DEBIT",
-      "issuer": "ITAU",
-      "rawLine": "06/11 IFD*JULIANNIE DRUMMOND 104.78",
-      "hash": "c2fb6c7f45a29cb9ea8fe4fec22b0ab960aaf951",
-      "duplicateInSystem": false,
-      "importBatchId": "batch_1767680135605"
-    },
-    {
-      "id": "imp_Fatura_Itau_20251201-205323_251201_205352.pdf_2025-10-19_vffbqc",
-      "date": "2025-10-19",
-      "description": "DROGASMILRIO D",
-      "amount": -29327,
-      "currency": "BRL",
-      "sourceType": "CARD",
-      "direction": "DEBIT",
-      "issuer": "ITAU",
-      "installment": {
-        "current": 2,
-        "total": 6
-      },
-      "rawLine": "19/10 DROGASMILRIO D 02/06 293.27",
-      "hash": "d1d58b5a536a4aad06709a8a80fde0f86c4b08d5",
-      "duplicateInSystem": false,
-      "importBatchId": "batch_1767680135605"
-    },
-    {
-      "id": "imp_Fatura_Itau_20251201-205323_251201_205352.pdf_2025-11-05_5lzp9n",
-      "date": "2025-11-05",
-      "description": "IFOOD CLUBOsascoBR",
-      "amount": -798,
-      "currency": "BRL",
-      "sourceType": "CARD",
-      "direction": "DEBIT",
-      "issuer": "ITAU",
-      "rawLine": "05/11 IFOOD CLUBOsascoBR 7.98",
-      "hash": "3f01b107d1644527723e29eac93b524c96e80006",
-      "duplicateInSystem": false,
-      "importBatchId": "batch_1767680135605"
-    },
-    {
-      "id": "imp_Fatura_Itau_20251201-205323_251201_205352.pdf_2025-10-20_dxpxp7",
-      "date": "2025-10-20",
-      "description": "MERCADOLIVRE*7",
-      "amount": -5932,
-      "currency": "BRL",
-      "sourceType": "CARD",
-      "direction": "DEBIT",
-      "issuer": "ITAU",
-      "installment": {
-        "current": 3,
-        "total": 4
-      },
-      "rawLine": "20/10 MERCADOLIVRE*7 03/04 59.32",
-      "hash": "330f174fb53ed967b2e73b37f94f67bcdbd6982d",
-      "duplicateInSystem": false,
-      "importBatchId": "batch_1767680135605"
-    },
-    {
-      "id": "imp_Fatura_Itau_20251201-205323_251201_205352.pdf_2025-10-20_4jwg84",
-      "date": "2025-10-20",
-      "description": "MP*PHDDIGITALM",
-      "amount": -22550,
-      "currency": "BRL",
-      "sourceType": "CARD",
-      "direction": "DEBIT",
-      "issuer": "ITAU",
-      "installment": {
-        "current": 3,
-        "total": 4
-      },
-      "rawLine": "20/10 MP*PHDDIGITALM 03/04 225.5",
-      "hash": "76728fa1768414089332f9fec37f2c8ba743011e",
-      "duplicateInSystem": false,
-      "importBatchId": "batch_1767680135605"
-    },
-    {
-      "id": "imp_Fatura_Itau_20251201-205323_251201_205352.pdf_2025-10-20_gx6qba",
-      "date": "2025-10-20",
-      "description": "MERCADOLIVRE*7",
-      "amount": -5932,
-      "currency": "BRL",
-      "sourceType": "CARD",
-      "direction": "DEBIT",
-      "issuer": "ITAU",
-      "installment": {
-        "current": 2,
-        "total": 4
-      },
-      "rawLine": "20/10 MERCADOLIVRE*7 02/04 59.32",
-      "hash": "c374f695600193adb53502ada0e5feb06d091e8d",
-      "duplicateInSystem": false,
-      "importBatchId": "batch_1767680135605"
-    },
-    {
-      "id": "imp_Fatura_Itau_20251201-205323_251201_205352.pdf_2025-10-19_ypqbbj",
-      "date": "2025-10-19",
-      "description": "DROGASMILRIO D",
-      "amount": -29327,
-      "currency": "BRL",
-      "sourceType": "CARD",
-      "direction": "DEBIT",
-      "issuer": "ITAU",
-      "installment": {
-        "current": 3,
-        "total": 6
-      },
-      "rawLine": "19/10 DROGASMILRIO D 03/06 293.27",
-      "hash": "2d50d2d67cd13f32196f82fd3446550aa3cd27d0",
-      "duplicateInSystem": false,
-      "importBatchId": "batch_1767680135605"
-    },
-    {
-      "id": "imp_Fatura_Itau_20251201-205323_251201_205352.pdf_2025-10-20_d5o4kx",
-      "date": "2025-10-20",
-      "description": "MP*PHDDIGITALM",
-      "amount": -22550,
-      "currency": "BRL",
-      "sourceType": "CARD",
-      "direction": "DEBIT",
-      "issuer": "ITAU",
-      "installment": {
-        "current": 2,
-        "total": 4
-      },
-      "rawLine": "20/10 MP*PHDDIGITALM 02/04 225.5",
-      "hash": "4f88d73c65fc508e95680b342e61e3f1fb69df2f",
-      "duplicateInSystem": false,
-      "importBatchId": "batch_1767680135605"
-    },
-    {
-      "id": "imp_Fatura_Itau_20251201-205323_251201_205352.pdf_2025-11-05_3fyt32",
-      "date": "2025-11-05",
-      "description": "MERCADOLIVRE*M",
-      "amount": -5501,
-      "currency": "BRL",
-      "sourceType": "CARD",
-      "direction": "DEBIT",
-      "issuer": "ITAU",
-      "installment": {
-        "current": 1,
-        "total": 4
-      },
-      "rawLine": "05/11 MERCADOLIVRE*M 01/04 55.01",
-      "hash": "fd01c5d037c0eed42576cf3c47a98201bda9311f",
-      "duplicateInSystem": false,
-      "importBatchId": "batch_1767680135605"
-    },
-    {
-      "id": "imp_Fatura_Itau_20251201-205323_251201_205352.pdf_2025-10-20_mcl828",
-      "date": "2025-10-20",
-      "description": "EC *PHDDIGITAL",
-      "amount": -27979,
-      "currency": "BRL",
-      "sourceType": "CARD",
-      "direction": "DEBIT",
-      "issuer": "ITAU",
-      "installment": {
-        "current": 3,
-        "total": 4
-      },
-      "rawLine": "20/10 EC *PHDDIGITAL 03/04 279.79",
-      "hash": "22f3345007dd58ff864c086a0f113124c04dd3d3",
-      "duplicateInSystem": false,
-      "importBatchId": "batch_1767680135605"
-    },
-    {
-      "id": "imp_Fatura_Itau_20251201-205323_251201_205352.pdf_2025-10-20_eh72mf",
-      "date": "2025-10-20",
-      "description": "EC *PHDDIGITAL",
-      "amount": -27979,
-      "currency": "BRL",
-      "sourceType": "CARD",
-      "direction": "DEBIT",
-      "issuer": "ITAU",
-      "installment": {
-        "current": 2,
-        "total": 4
-      },
-      "rawLine": "20/10 EC *PHDDIGITAL 02/04 279.79",
-      "hash": "8fbbd4c3a4c66bf6e65fb5800aa7c384aa6a3ebc",
-      "duplicateInSystem": false,
-      "importBatchId": "batch_1767680135605"
-    },
-    {
-      "id": "imp_Fatura_Itau_20251201-205323_251201_205352.pdf_2025-10-26_69826k",
-      "date": "2025-10-26",
-      "description": "MERCADOLIVRE*J",
-      "amount": -8423,
-      "currency": "BRL",
-      "sourceType": "CARD",
-      "direction": "DEBIT",
-      "issuer": "ITAU",
-      "installment": {
-        "current": 3,
-        "total": 4
-      },
-      "rawLine": "26/10 MERCADOLIVRE*J 03/04 84.23",
-      "hash": "c8f4cd283daac8170159e5ba2ee41447740cd8ee",
-      "duplicateInSystem": false,
-      "importBatchId": "batch_1767680135605"
-    },
-    {
-      "id": "imp_Fatura_Itau_20251201-205323_251201_205352.pdf_2025-10-26_rio879",
-      "date": "2025-10-26",
-      "description": "MERCADOLIVRE*J",
-      "amount": -8423,
-      "currency": "BRL",
-      "sourceType": "CARD",
-      "direction": "DEBIT",
-      "issuer": "ITAU",
-      "installment": {
-        "current": 2,
-        "total": 4
-      },
-      "rawLine": "26/10 MERCADOLIVRE*J 02/04 84.23",
-      "hash": "271ecf4f52b723c3b1b4958ebfaeb962f4fd64b5",
-      "duplicateInSystem": false,
-      "importBatchId": "batch_1767680135605"
-    },
-    {
-      "id": "imp_Fatura_Itau_20251201-205323_251201_205352.pdf_2025-11-04_6pv2os",
-      "date": "2025-11-04",
-      "description": "IFD*MENDES E PIGLIASCOR",
-      "amount": -7788,
-      "currency": "BRL",
-      "sourceType": "CARD",
-      "direction": "DEBIT",
-      "issuer": "ITAU",
-      "rawLine": "04/11 IFD*MENDES E PIGLIASCOR 77.88",
-      "hash": "c2fbdb3f9946f2717e7695d7f8c46a5d05da3258",
-      "duplicateInSystem": false,
-      "importBatchId": "batch_1767680135605"
-    },
-    {
-      "id": "imp_Fatura_Itau_20251201-205323_251201_205352.pdf_2025-11-05_osh9mu",
-      "date": "2025-11-05",
-      "description": "MERCADOLIVRE*M",
-      "amount": -5499,
-      "currency": "BRL",
-      "sourceType": "CARD",
-      "direction": "DEBIT",
-      "issuer": "ITAU",
-      "installment": {
-        "current": 2,
-        "total": 4
-      },
-      "rawLine": "05/11 MERCADOLIVRE*M 02/04 54.99",
-      "hash": "83c7a5f909ab8e2adf134ad794f45aa574fffd5e",
-      "duplicateInSystem": false,
-      "importBatchId": "batch_1767680135605"
-    },
-    {
-      "id": "imp_Fatura_Itau_20251201-205323_251201_205352.pdf_2025-11-03_wo2el0",
-      "date": "2025-11-03",
-      "description": "MERCADOLIVRE*55402074GU",
-      "amount": -2757,
-      "currency": "BRL",
-      "sourceType": "CARD",
-      "direction": "DEBIT",
-      "issuer": "ITAU",
-      "rawLine": "03/11 MERCADOLIVRE*55402074GU 27.57",
-      "hash": "1fb2c36f72df17953f6e0035d414b893300ea35d",
-      "duplicateInSystem": false,
-      "importBatchId": "batch_1767680135605"
-    },
-    {
-      "id": "imp_Fatura_Itau_20251201-205323_251201_205352.pdf_2025-11-01_7777yq",
-      "date": "2025-11-01",
-      "description": "IFD*41.357.472 MICHEL S",
-      "amount": -3788,
-      "currency": "BRL",
-      "sourceType": "CARD",
-      "direction": "DEBIT",
-      "issuer": "ITAU",
-      "rawLine": "01/11 IFD*41.357.472 MICHEL S 37.88",
-      "hash": "bdaa11d0ec80086dc5248a70791d68820528f19a",
-      "duplicateInSystem": false,
-      "importBatchId": "batch_1767680135605"
-    },
-    {
-      "id": "imp_Fatura_Itau_20251201-205323_251201_205352.pdf_2025-10-30_ofu3iw",
-      "date": "2025-10-30",
-      "description": "IFD*FABIANE DE AGUIAR S",
-      "amount": -2524,
-      "currency": "BRL",
-      "sourceType": "CARD",
-      "direction": "DEBIT",
-      "issuer": "ITAU",
-      "rawLine": "30/10 IFD*FABIANE DE AGUIAR S 25.24",
-      "hash": "7a28c1ef8cbf5bf55087628dec13e91fefc79be2",
-      "duplicateInSystem": false,
-      "importBatchId": "batch_1767680135605"
-    },
-    {
-      "id": "imp_Fatura_Itau_20251201-205323_251201_205352.pdf_2025-10-29_mp8s1f",
-      "date": "2025-10-29",
-      "description": "IFD*JEYSON OLIVEIRA TUR",
-      "amount": -2981,
-      "currency": "BRL",
-      "sourceType": "CARD",
-      "direction": "DEBIT",
-      "issuer": "ITAU",
-      "rawLine": "29/10 IFD*JEYSON OLIVEIRA TUR 29.81",
-      "hash": "8c871903b343e7698993255ff00da83b330ace84",
-      "duplicateInSystem": false,
-      "importBatchId": "batch_1767680135605"
-    },
-    {
-      "id": "imp_Fatura_Itau_20251201-205323_251201_205352.pdf_2025-10-28_px8024",
-      "date": "2025-10-28",
-      "description": "IFD*29.500.172 RODRIGO",
-      "amount": -3479,
-      "currency": "BRL",
-      "sourceType": "CARD",
-      "direction": "DEBIT",
-      "issuer": "ITAU",
-      "rawLine": "28/10 IFD*29.500.172 RODRIGO 34.79",
-      "hash": "5b3721ae05203d919baf3d57002992dbe83e1fe4",
-      "duplicateInSystem": false,
-      "importBatchId": "batch_1767680135605"
-    },
-    {
-      "id": "imp_Fatura_Itau_20251201-205323_251201_205352.pdf_2025-10-25_8ji3ij",
-      "date": "2025-10-25",
-      "description": "EC *PHDDIGITAL",
-      "amount": -7126,
-      "currency": "BRL",
-      "sourceType": "CARD",
-      "direction": "DEBIT",
-      "issuer": "ITAU",
-      "installment": {
-        "current": 2,
-        "total": 2
-      },
-      "rawLine": "25/10 EC *PHDDIGITAL 02/02 71.26",
-      "hash": "3c07ba5a7b40c1b4e136544fb5f5f7e2948c8820",
-      "duplicateInSystem": false,
-      "importBatchId": "batch_1767680135605"
-    },
-    {
-      "id": "imp_Fatura_Itau_20251201-205323_251201_205352.pdf_2025-11-29_1kihpx",
-      "date": "2025-11-29",
-      "description": "MULTA",
-      "amount": -2480,
-      "currency": "BRL",
-      "sourceType": "CARD",
-      "direction": "DEBIT",
-      "issuer": "ITAU",
-      "rawLine": "29/11 MULTA 24.8",
-      "hash": "a3eafdb483478fb153f12cc50320dcc834743938",
-      "duplicateInSystem": false,
-      "importBatchId": "batch_1767680135605"
-    },
-    {
-      "id": "imp_Fatura_Itau_20251201-205323_251201_205352.pdf_2025-11-29_652nz0",
-      "date": "2025-11-29",
-      "description": "JUROS DE MORA",
-      "amount": -1240,
-      "currency": "BRL",
-      "sourceType": "CARD",
-      "direction": "DEBIT",
-      "issuer": "ITAU",
-      "rawLine": "29/11 JUROS DE MORA 12.4",
-      "hash": "2bf58e73abc6397f400455ffe49c5bbc9807f963",
-      "duplicateInSystem": false,
-      "importBatchId": "batch_1767680135605"
-    },
-    {
-      "id": "imp_Fatura_Itau_20251201-205323_251201_205352.pdf_2025-11-29_fp07qw",
-      "date": "2025-11-29",
-      "description": "ENCARGOS REFINANCIAMENT",
-      "amount": -18107,
-      "currency": "BRL",
-      "sourceType": "CARD",
-      "direction": "DEBIT",
-      "issuer": "ITAU",
-      "rawLine": "29/11 ENCARGOS REFINANCIAMENT 181.07",
-      "hash": "75a2c1aafa12cdaa5fde04e5d462a559823831b3",
-      "duplicateInSystem": false,
-      "importBatchId": "batch_1767680135605"
-    }
-  ],
-  "estoque": [
-    {
-      "produtoId": "1",
-      "depositoId": "dep_1",
-      "quantidade": 90,
-      "quantidadeReservada": 0,
-      "custoMedio": 1000,
-      "estoqueMinimo": 10,
-      "id": 1
-    },
-    {
-      "id": 3,
-      "produtoId": "1",
-      "depositoId": "dep_2",
-      "quantidade": 25,
-      "quantidadeReservada": 0,
-      "custoMedio": 1000,
-      "estoqueMinimo": 5
-    },
-    {
-      "id": 4,
-      "produtoId": "2",
-      "depositoId": "dep_1",
-      "quantidade": 15,
-      "quantidadeReservada": 0,
-      "custoMedio": 2500,
-      "estoqueMinimo": 3
-    },
-    {
-      "id": 5,
-      "produtoId": "2",
-      "depositoId": "dep_2",
-      "quantidade": 5,
-      "quantidadeReservada": 0,
-      "custoMedio": 2500,
-      "estoqueMinimo": 2
-    }
-  ],
+  "importBatches": [],
+  "importTransactions": [],
+  "estoque": [],
   "usuarioPerfil": {}
 }

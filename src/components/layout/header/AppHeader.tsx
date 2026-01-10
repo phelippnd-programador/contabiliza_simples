@@ -172,6 +172,20 @@ const AppHeader = () => {
             moduleKey: "financeiro",
           },
           {
+            id: "fechamento_financeiro",
+            label: "Fechamento",
+            to: "/financeiro/fechamento",
+            icon: <IconList />,
+            moduleKey: "financeiro",
+          },
+          {
+            id: "conciliacao_financeira",
+            label: "Conciliacao bancaria",
+            to: "/financeiro/conciliacao",
+            icon: <IconList />,
+            moduleKey: "financeiro",
+          },
+          {
             id: "caixa_financeiro",
             label: "Caixa",
             to: "/financeiro/caixa",
@@ -377,30 +391,107 @@ const AppHeader = () => {
         ],
       },
       {
+        id: "ponto",
+        label: "Ponto",
+        icon: <IconList />,
+        moduleKey: "folha",
+        children: [
+          {
+            id: "ponto_registro",
+            label: "Registro diario",
+            to: "/ponto/registro",
+            icon: <IconList />,
+            moduleKey: "folha",
+          },
+          {
+            id: "ponto_fechamento",
+            label: "Fechamento",
+            to: "/ponto/fechamento",
+            icon: <IconList />,
+            moduleKey: "folha",
+          },
+          {
+            id: "ponto_relatorios",
+            label: "Relatorios",
+            to: "/ponto/relatorios",
+            icon: <IconList />,
+            moduleKey: "folha",
+          },
+          {
+            id: "ponto_calendario",
+            label: "Calendario",
+            to: "/ponto/calendario",
+            icon: <IconList />,
+            moduleKey: "folha",
+          },
+        ],
+      },
+      {
         id: "folha",
         label: planConfig.labels.menu.folha,
         icon: <IconList />,
         moduleKey: "folha",
         children: [
           {
-            id: "folha_execucao",
-            label: planConfig.labels.menu.folhaExecucao,
-            to: "/folha",
-            icon: <IconList />,
-            end: true,
-            moduleKey: "folha",
-          },
-          {
-            id: "folha_simulador",
-            label: planConfig.labels.menu.folhaSimulador,
-            to: "/folha/simulador",
+            id: "rh_funcionarios",
+            label: "Funcionarios",
+            to: "/rh/funcionarios",
             icon: <IconList />,
             moduleKey: "folha",
           },
           {
-            id: "folha_colaboradores",
-            label: planConfig.labels.menu.folhaColaboradores,
-            to: "/folha/colaboradores",
+            id: "rh_departamentos",
+            label: "Departamentos",
+            to: "/rh/estrutura/departamentos",
+            icon: <IconList />,
+            moduleKey: "folha",
+          },
+          {
+            id: "rh_cargos",
+            label: "Cargos",
+            to: "/rh/estrutura/cargos",
+            icon: <IconList />,
+            moduleKey: "folha",
+          },
+          {
+            id: "rh_centros_custo",
+            label: "Centros de custo",
+            to: "/rh/estrutura/centros-custo",
+            icon: <IconList />,
+            moduleKey: "folha",
+          },
+          {
+            id: "rh_competencia",
+            label: "Competencias",
+            to: "/rh/folha/competencia",
+            icon: <IconList />,
+            moduleKey: "folha",
+          },
+          {
+            id: "rh_eventos",
+            label: "Eventos de folha",
+            to: "/rh/folha/eventos",
+            icon: <IconList />,
+            moduleKey: "folha",
+          },
+          {
+            id: "rh_lancamentos",
+            label: "Lancamentos",
+            to: "/rh/folha/lancamentos",
+            icon: <IconList />,
+            moduleKey: "folha",
+          },
+          {
+            id: "rh_ferias",
+            label: "Ferias",
+            to: "/rh/ferias",
+            icon: <IconList />,
+            moduleKey: "folha",
+          },
+          {
+            id: "rh_afastamentos",
+            label: "Afastamentos",
+            to: "/rh/afastamentos",
             icon: <IconList />,
             moduleKey: "folha",
           },
@@ -460,7 +551,7 @@ const AppHeader = () => {
           aria-haspopup="menu"
           aria-expanded={settingsOpen}
           onClick={() => setSettingsOpen((prev) => !prev)}
-          className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 shadow-sm hover:border-blue-500 hover:text-blue-600 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-200"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200/70 bg-white/80 text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100"
         >
           <IconSettings />
         </button>
@@ -468,14 +559,14 @@ const AppHeader = () => {
         {settingsOpen ? (
           <div
             role="menu"
-            className="absolute right-0 z-50 mt-2 w-56 rounded-lg border border-gray-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-800"
+            className="absolute right-0 z-50 mt-2 w-60 rounded-2xl border border-slate-200/70 bg-white/95 shadow-2xl backdrop-blur dark:border-slate-700 dark:bg-slate-900/95"
           >
-            <div className="px-3 py-2 text-xs uppercase tracking-wide text-gray-400">
+            <div className="px-4 py-3 text-[11px] uppercase tracking-[0.2em] text-slate-400">
               Configuracoes
             </div>
             <button
               type="button"
-              className="flex w-full items-center justify-between px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-slate-700"
+              className="flex w-full items-center justify-between px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100/70 dark:text-slate-200 dark:hover:bg-slate-800"
               onClick={() => {
                 const next = !isDark;
                 setIsDark(next);
@@ -486,7 +577,7 @@ const AppHeader = () => {
               <span
                 className={[
                   "inline-flex h-5 w-9 items-center rounded-full border transition",
-                  isDark ? "border-blue-500 bg-blue-500" : "border-gray-300 bg-gray-200",
+                  isDark ? "border-sky-500 bg-sky-500" : "border-slate-300 bg-slate-200",
                 ].join(" ")}
               >
                 <span
@@ -498,13 +589,13 @@ const AppHeader = () => {
               </span>
             </button>
             <div className="px-4 py-2">
-              <div className="text-xs uppercase tracking-wide text-gray-400">
+              <div className="text-[11px] uppercase tracking-[0.2em] text-slate-400">
                 Plano
               </div>
               <select
                 value={plan}
                 onChange={(event) => setPlan(event.target.value as AppPlan)}
-                className="mt-2 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 outline-none transition focus:border-blue-500 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-100"
+                className="mt-2 w-full rounded-xl border border-slate-200/70 bg-white/80 px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-sky-300 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100"
               >
                 {planOptions.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -515,28 +606,28 @@ const AppHeader = () => {
             </div>
             <Link
               to="/empresa"
-              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-slate-700"
+              className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-100/70 dark:text-slate-200 dark:hover:bg-slate-800"
               onClick={() => setSettingsOpen(false)}
             >
               Empresas
             </Link>
             <Link
               to="/empresa/nova"
-              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-slate-700"
+              className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-100/70 dark:text-slate-200 dark:hover:bg-slate-800"
               onClick={() => setSettingsOpen(false)}
             >
               Cadastrar empresa
             </Link>
             <Link
               to="/configuracoes/usuario"
-              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-slate-700"
+              className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-100/70 dark:text-slate-200 dark:hover:bg-slate-800"
               onClick={() => setSettingsOpen(false)}
             >
               Configuracao do usuario
             </Link>
             <button
               type="button"
-              className="block w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10"
+              className="block w-full px-4 py-2 text-left text-sm font-medium text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10"
               onClick={() => {
                 setSettingsOpen(false);
                 logout();

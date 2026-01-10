@@ -106,13 +106,17 @@ const CaixaPage = () => {
   };
 
   return (
-    <div className="flex w-full flex-col items-center justify-center p-5">
-      <AppTitle text="Visao de caixa" />
-      <AppSubTitle text="Acompanhe o saldo e o extrato por conta." />
+    <div className="flex w-full flex-col gap-6">
+      <div className="space-y-1">
+        <AppTitle text="Visao de caixa" />
+        <AppSubTitle text="Acompanhe o saldo e o extrato por conta." />
+      </div>
 
       <Card>
         <AppSubTitle text="Filtros" />
-        <small>Filtre os movimentos por periodo, conta e categoria.</small>
+        <p className="text-sm text-slate-500 dark:text-slate-400">
+          Filtre os movimentos por periodo, conta e categoria.
+        </p>
 
         <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-4">
           <AppDateInput
@@ -166,13 +170,13 @@ const CaixaPage = () => {
             data={saldosPorConta}
             rowKey={(row) => row.id}
             emptyState={<AppListNotFound texto="Nenhuma conta cadastrada." />}
-            pagination={{ enabled: false }}
+            pagination={{ enabled: true }}
             columns={[
               {
                 key: "conta",
                 header: "Conta",
                 render: (row) => (
-                  <span className="font-medium text-gray-900">
+                  <span className="font-medium text-slate-900 dark:text-slate-100">
                     {row.conta.nome}
                   </span>
                 ),
