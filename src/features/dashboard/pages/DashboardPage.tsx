@@ -234,7 +234,7 @@ const DashboardPage = () => {
             data={movimentosRecentes}
             rowKey={(row) => row.id}
             emptyState={<AppListNotFound texto="Nenhum movimento recente." />}
-            pagination={{ enabled: false }}
+            pagination={{ enabled: true }}
             columns={[
               {
                 key: "data",
@@ -288,7 +288,7 @@ const DashboardPage = () => {
             data={despesasPorCategoria}
             rowKey={(row) => row.categoria}
             emptyState={<AppListNotFound texto="Sem despesas registradas." />}
-            pagination={{ enabled: false }}
+            pagination={{ enabled: true }}
             columns={[
               { key: "categoria", header: "Categoria", render: (row) => row.categoria },
               {

@@ -15,8 +15,8 @@ type AppPopupProps = {
 };
 
 const toneClasses: Record<AppPopupTone, string> = {
-  default: "border-blue-200 text-blue-700 hover:border-blue-400",
-  danger: "border-red-200 text-red-600 hover:border-red-400",
+  default: "border-sky-200 text-sky-700 hover:border-sky-300",
+  danger: "border-rose-200 text-rose-600 hover:border-rose-300",
 };
 
 const AppPopup = ({
@@ -33,20 +33,20 @@ const AppPopup = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
       onClick={onCancel}
     >
       <div
-        className="w-full max-w-md rounded-xl border border-gray-200 bg-white p-6 shadow-xl dark:border-slate-700 dark:bg-slate-900"
+        className="w-full max-w-md rounded-2xl border border-slate-200/70 bg-white/95 p-6 shadow-2xl backdrop-blur dark:border-slate-700 dark:bg-slate-900/95"
         onClick={(event) => event.stopPropagation()}
       >
-        <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">
+        <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
           {title}
         </h3>
         {description ? (
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+          <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
             {description}
           </p>
         ) : null}

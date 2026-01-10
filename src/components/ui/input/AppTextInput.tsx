@@ -122,12 +122,13 @@ const AppTextInput = forwardRef<HTMLInputElement, AppTextInputProps>(
           onKeyDown={handleKeyDown}
           value={display}
           className={[
-            props.disabled ? "bg-gray-100 cursor-not-allowed" : "",
-            "h-11 w-full rounded-lg px-3 text-sm border-2",
+            props.disabled ? "bg-slate-100/80 cursor-not-allowed" : "bg-white/80",
+            "h-11 w-full rounded-xl px-3 text-sm border",
             error
               ? "border-red-300 focus:border-red-500 focus:ring-2 focus:ring-red-200"
-              : "border-gray-200 hover:border-blue-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-200",
-            "bg-white text-gray-900 dark:bg-slate-900 dark:text-gray-100 dark:border-slate-700 dark:focus:ring-blue-900/40",
+              : "border-slate-200/70 hover:border-slate-300 focus:border-sky-300 focus:ring-2 focus:ring-sky-200",
+            "text-slate-900 shadow-sm transition",
+            "dark:bg-slate-900/80 dark:text-slate-100 dark:border-slate-700 dark:focus:ring-sky-900/40",
             "outline-none transition",
             className ?? "",
           ].join(" ")}
@@ -135,7 +136,7 @@ const AppTextInput = forwardRef<HTMLInputElement, AppTextInputProps>(
         {error ? (
           <span className="text-xs text-red-600">{error}</span>
         ) : (
-          helperText && <span className="text-xs text-gray-500 dark:text-gray-400">{helperText}</span>
+          helperText && <span className="text-xs text-slate-500 dark:text-slate-400">{helperText}</span>
         )}
 
       </div>

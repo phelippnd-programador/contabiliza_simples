@@ -1,6 +1,6 @@
 import type { BaixaTitulo, MovimentoCaixa } from "../types";
 import { TipoMovimentoCaixa, TipoReferenciaMovimentoCaixa } from "../types";
-import { saveMovimento } from "../services/movimentos.service";
+import { deleteMovimento, saveMovimento } from "../services/movimentos.service";
 
 const createBaixaId = () =>
   `baixa-${Date.now()}-${Math.random().toString(16).slice(2)}`;
@@ -16,6 +16,55 @@ const hasBaixa = (
     (baixa) => baixa.data === data && (baixa.parcela ?? 0) === (parcela ?? 0)
   );
 
+const buildMovimento = (
+  baixa: BaixaInput,
+  referenciaId: string,
+  descricao: string,
+  tipo: "RECEBER" | "PAGAR",
+  movimentoId?: string
+): Omit<MovimentoCaixa, "id"> & { id?: string } => ({
+  id: movimentoId,
+  data: baixa.data,
+  contaId: baixa.contaId!,
+  tipo: tipo === "RECEBER" ? TipoMovimentoCaixa.ENTRADA : TipoMovimentoCaixa.SAIDA,
+  valor: baixa.valor,
+  descricao,
+  competencia: createCompetencia(baixa.data),
+  categoriaId: baixa.categoriaId,
+  centroCustoId: baixa.centroCustoId,
+  referencia: {
+    tipo:
+      tipo === "RECEBER"
+        ? TipoReferenciaMovimentoCaixa.RECEITA
+        : TipoReferenciaMovimentoCaixa.DESPESA,
+    id: referenciaId,
+  },
+});
+
+const updateMovimentoForBaixa = async (params: {
+  baixa: BaixaInput;
+  referenciaId: string;
+  descricao: string;
+  tipo: "RECEBER" | "PAGAR";
+  movimentoId?: string;
+}) => {
+  if (!params.baixa.contaId) return undefined;
+  const movimento = buildMovimento(
+    params.baixa,
+    params.referenciaId,
+    params.descricao,
+    params.tipo,
+    params.movimentoId
+  );
+  const saved = await saveMovimento(movimento);
+  return saved.id;
+};
+
+const removeMovimentoForBaixa = async (movimentoId?: string) => {
+  if (!movimentoId) return;
+  await deleteMovimento(movimentoId);
+};
+
 export type BaixaInput = {
   data: string;
   valor: number;
@@ -23,6 +72,7 @@ export type BaixaInput = {
   formaPagamento?: string;
   contaId?: string;
   categoriaId?: string;
+  centroCustoId?: string;
   observacoes?: string;
 };
 
@@ -35,31 +85,44 @@ export const registrarBaixa = async (params: {
 }): Promise<BaixaTitulo[]> => {
   const { tipo, referenciaId, descricao, baixa } = params;
   const atual = params.baixas ?? [];
-  if (hasBaixa(atual, baixa.data, baixa.parcela)) {
-    return atual;
+  const existingIndex = atual.findIndex(
+    (item) => item.data === baixa.data && (item.parcela ?? 0) === (baixa.parcela ?? 0)
+  );
+  if (existingIndex >= 0) {
+    const existing = atual[existingIndex];
+    if (!baixa.contaId && existing.movimentoId) {
+      await removeMovimentoForBaixa(existing.movimentoId);
+    }
+    const movimentoId = await updateMovimentoForBaixa({
+      baixa,
+      referenciaId,
+      descricao,
+      tipo,
+      movimentoId: existing.movimentoId,
+    });
+    const updated: BaixaTitulo = {
+      ...existing,
+      data: baixa.data,
+      valor: baixa.valor,
+      parcela: baixa.parcela,
+      formaPagamento: baixa.formaPagamento,
+      contaId: baixa.contaId,
+      categoriaId: baixa.categoriaId,
+      observacoes: baixa.observacoes,
+      movimentoId: movimentoId ?? existing.movimentoId,
+    };
+    const next = [...atual];
+    next[existingIndex] = updated;
+    return next;
   }
 
   let movimentoId: string | undefined;
-  if (baixa.contaId) {
-    const movimento: Omit<MovimentoCaixa, "id"> = {
-      data: baixa.data,
-      contaId: baixa.contaId,
-      tipo: tipo === "RECEBER" ? TipoMovimentoCaixa.ENTRADA : TipoMovimentoCaixa.SAIDA,
-      valor: baixa.valor,
-      descricao,
-      competencia: createCompetencia(baixa.data),
-      categoriaId: baixa.categoriaId,
-      referencia: {
-        tipo:
-          tipo === "RECEBER"
-            ? TipoReferenciaMovimentoCaixa.RECEITA
-            : TipoReferenciaMovimentoCaixa.DESPESA,
-        id: referenciaId,
-      },
-    };
-    const saved = await saveMovimento(movimento);
-    movimentoId = saved.id;
-  }
+  movimentoId = await updateMovimentoForBaixa({
+    baixa,
+    referenciaId,
+    descricao,
+    tipo,
+  });
 
   return [
     ...atual,
@@ -75,4 +138,13 @@ export const registrarBaixa = async (params: {
       movimentoId,
     },
   ];
+};
+
+export const removerMovimentosDeBaixas = async (baixas?: BaixaTitulo[]) => {
+  if (!baixas?.length) return;
+  for (const baixa of baixas) {
+    if (baixa.movimentoId) {
+      await deleteMovimento(baixa.movimentoId);
+    }
+  }
 };

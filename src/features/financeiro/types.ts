@@ -27,6 +27,7 @@ export type MovimentoCaixa = {
     competencia?: string; // '2025-12'
     cnae?: string;        // se entrada for de receita ligada a uma atividade
     categoriaId?: string; // ex: "Vendas", "Aluguel", "Impostos", "Folha"...
+    centroCustoId?: string;
 
     // para conciliação
     referencia?: {
@@ -35,10 +36,21 @@ export type MovimentoCaixa = {
     };
 };
 
+export type ExtratoBancarioItem = {
+    id: string;
+    data: string;
+    contaId: string;
+    descricao: string;
+    valor: number;
+    tipo: TipoMovimentoCaixa;
+    movimentoId?: string;
+};
+
 export const TipoReferenciaMovimentoCaixa = {
     RECEITA: 'RECEITA',
     DESPESA: 'DESPESA',
     IMPOSTO: 'IMPOSTO',
+    CARTAO_FATURA: 'CARTAO_FATURA',
 } as const;
 export type TipoReferenciaMovimentoCaixa = typeof TipoReferenciaMovimentoCaixa[keyof typeof TipoReferenciaMovimentoCaixa];
 
@@ -70,6 +82,7 @@ export type BaixaTitulo = {
     formaPagamento?: string;
     contaId?: string;
     categoriaId?: string;
+    centroCustoId?: string;
     observacoes?: string;
     movimentoId?: string;
 };
@@ -91,7 +104,62 @@ export type CartaoCredito = {
     banco: string;
     vencimentoDia: number;
     fechamentoDia: number;
+    corteDia?: number;
     limiteInicial: number;
+};
+
+export type CartaoLancamento = {
+    id: string;
+    cartaoId: string;
+    data: string;
+    descricao: string;
+    valor: number;
+    parcela?: number;
+    totalParcelas?: number;
+    categoriaId?: string;
+    centroCustoId?: string;
+    faturaCompetencia: string;
+};
+
+export type CartaoFaturaStatus = "ABERTA" | "FECHADA" | "PAGA";
+
+export type CartaoFatura = {
+    id: string;
+    cartaoId: string;
+    competencia: string;
+    fechamento: string;
+    vencimento: string;
+    total: number;
+    status: CartaoFaturaStatus;
+    movimentoId?: string;
+};
+
+export type FinanceiroFechamentoStatus = "ABERTO" | "FECHADO";
+
+export type FinanceiroFechamento = {
+    id: string;
+    competencia: string;
+    status: FinanceiroFechamentoStatus;
+    fechadoEm?: string;
+    fechadoPor?: string;
+    observacoes?: string;
+};
+
+export type FinanceiroAuditoria = {
+    id: string;
+    data: string;
+    acao: string;
+    entidade: string;
+    entidadeId?: string;
+    competencia?: string;
+    detalhes?: Record<string, unknown>;
+};
+
+export type OrcamentoFinanceiro = {
+    id: string;
+    competencia: string;
+    categoriaId: string;
+    valor: number;
 };
 
 

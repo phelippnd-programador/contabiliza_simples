@@ -117,13 +117,17 @@ const ProlaborePage = () => {
   };
 
   return (
-    <div className="flex w-full flex-col items-center justify-center p-5">
-      <AppTitle text="Pro-labore (execucao)" />
-      <AppSubTitle text="Gere lancamentos automaticos de pro-labore e INSS." />
+    <div className="flex w-full flex-col gap-6">
+      <div className="space-y-1">
+        <AppTitle text="Pro-labore (execucao)" />
+        <AppSubTitle text="Gere lancamentos automaticos de pro-labore e INSS." />
+      </div>
 
       <Card>
         <AppSubTitle text="Dados do lancamento" />
-        <small>Baseado na configuracao da empresa.</small>
+        <p className="text-sm text-slate-500 dark:text-slate-400">
+          Baseado na configuracao da empresa.
+        </p>
 
         <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
           <AppDateInput
@@ -178,7 +182,7 @@ const ProlaborePage = () => {
             error={errors.categoriaProlaboreId}
           />
 
-          <div className="flex items-center gap-2 text-sm">
+          <div className="flex items-center gap-2 rounded-xl border border-slate-200/70 bg-white/70 px-3 py-2 text-sm text-slate-600 shadow-sm dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-300">
             <input
               type="checkbox"
               checked={form.gerarInss}

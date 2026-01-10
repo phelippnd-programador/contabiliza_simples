@@ -1,6 +1,8 @@
 import { apiFetch } from "../../../shared/services/apiClient";
 import type { ApiListResponse } from "../../../shared/types/api-types";
 import type { BaixaTitulo } from "../types";
+import { assertCompetenciaAberta } from "./fechamento.service";
+import { registrarAuditoria } from "./auditoria.service";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 
@@ -29,6 +31,7 @@ export type ContaPagarResumo = {
   formaPagamento?: string;
   contaId?: string;
   categoriaId?: string;
+  centroCustoId?: string;
   observacoes?: string;
   recorrente?: boolean;
   baixas?: BaixaTitulo[];
@@ -57,6 +60,7 @@ export type ContaPagarPayload = {
   formaPagamento?: string;
   contaId?: string;
   categoriaId?: string;
+  centroCustoId?: string;
   observacoes?: string;
   recorrente?: boolean;
   baixas?: BaixaTitulo[];
@@ -88,7 +92,7 @@ export async function listContasPagar(
   const page = params.page ?? 1;
   const pageSize = params.pageSize ?? 10;
   if (!API_BASE) {
-    return { data: [], meta: { page, pageSize, total: 0 } };
+    throw new Error("API_NOT_CONFIGURED");
   }
   const query = new URLSearchParams();
   query.set("page", String(page));
@@ -111,6 +115,8 @@ export async function createContaPagar(
   if (!API_BASE) {
     throw new Error("API_NOT_CONFIGURED");
   }
+  const competencia = payload.competencia ?? payload.vencimento?.slice(0, 7);
+  await assertCompetenciaAberta(competencia);
   const res = await apiFetch("/financeiro/contas-pagar", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -119,7 +125,14 @@ export async function createContaPagar(
   if (!res.ok) {
     throw new Error("CREATE_CONTA_PAGAR_FAILED");
   }
-  return (await res.json()) as ContaPagarResumo;
+  const created = (await res.json()) as ContaPagarResumo;
+  await registrarAuditoria({
+    acao: "CRIAR",
+    entidade: "CONTA_PAGAR",
+    entidadeId: created.id,
+    competencia: competencia ?? created.competencia,
+  });
+  return created;
 }
 
 export async function updateContaPagar(
@@ -129,6 +142,12 @@ export async function updateContaPagar(
   if (!API_BASE) {
     throw new Error("API_NOT_CONFIGURED");
   }
+  let competencia = payload.competencia ?? payload.vencimento?.slice(0, 7);
+  if (!competencia) {
+    const current = await getContaPagar(id);
+    competencia = current?.competencia ?? current?.vencimento?.slice(0, 7);
+  }
+  await assertCompetenciaAberta(competencia);
   const res = await apiFetch(`/financeiro/contas-pagar/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
@@ -137,7 +156,14 @@ export async function updateContaPagar(
   if (!res.ok) {
     throw new Error("UPDATE_CONTA_PAGAR_FAILED");
   }
-  return (await res.json()) as ContaPagarResumo;
+  const updated = (await res.json()) as ContaPagarResumo;
+  await registrarAuditoria({
+    acao: "ATUALIZAR",
+    entidade: "CONTA_PAGAR",
+    entidadeId: updated.id,
+    competencia: competencia ?? updated.competencia,
+  });
+  return updated;
 }
 
 export async function patchContaPagar(
@@ -147,6 +173,12 @@ export async function patchContaPagar(
   if (!API_BASE) {
     throw new Error("API_NOT_CONFIGURED");
   }
+  let competencia = payload.competencia ?? payload.vencimento?.slice(0, 7);
+  if (!competencia) {
+    const current = await getContaPagar(id);
+    competencia = current?.competencia ?? current?.vencimento?.slice(0, 7);
+  }
+  await assertCompetenciaAberta(competencia);
   const res = await apiFetch(`/financeiro/contas-pagar/${id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
@@ -155,17 +187,33 @@ export async function patchContaPagar(
   if (!res.ok) {
     throw new Error("PATCH_CONTA_PAGAR_FAILED");
   }
-  return (await res.json()) as ContaPagarResumo;
+  const patched = (await res.json()) as ContaPagarResumo;
+  await registrarAuditoria({
+    acao: "ATUALIZAR",
+    entidade: "CONTA_PAGAR",
+    entidadeId: patched.id,
+    competencia: competencia ?? patched.competencia,
+  });
+  return patched;
 }
 
 export async function deleteContaPagar(id: string): Promise<void> {
   if (!API_BASE) {
     throw new Error("API_NOT_CONFIGURED");
   }
+  const current = await getContaPagar(id);
+  const competencia = current?.competencia ?? current?.vencimento?.slice(0, 7);
+  await assertCompetenciaAberta(competencia);
   const res = await apiFetch(`/financeiro/contas-pagar/${id}`, {
     method: "DELETE",
   });
   if (!res.ok) {
     throw new Error("DELETE_CONTA_PAGAR_FAILED");
   }
+  await registrarAuditoria({
+    acao: "EXCLUIR",
+    entidade: "CONTA_PAGAR",
+    entidadeId: id,
+    competencia,
+  });
 }

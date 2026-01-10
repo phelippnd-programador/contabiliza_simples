@@ -65,15 +65,17 @@ const CartoesPage = () => {
   };
 
   return (
-    <div className="flex w-full flex-col items-center justify-center p-5">
-      <AppTitle text="Cartoes" />
-      <AppSubTitle text="Cadastre e acompanhe seus cartoes de credito." />
+    <div className="flex w-full flex-col gap-6">
+      <div className="space-y-1">
+        <AppTitle text="Cartoes" />
+        <AppSubTitle text="Cadastre e acompanhe seus cartoes de credito." />
+      </div>
 
       <Card>
         <div className="flex items-center justify-between gap-4">
           <AppButton
             type="button"
-            className="w-10"
+            className="w-auto px-6"
             onClick={() => navigate("/financeiro/cartoes/novo")}
           >
             Novo cartao
@@ -91,7 +93,7 @@ const CartoesPage = () => {
                 key: "nome",
                 header: "Cartao",
                 render: (row) => (
-                  <span className="font-medium text-gray-900 dark:text-gray-400">
+                  <span className="font-medium text-slate-900 dark:text-slate-100">
                     {row.nome}
                   </span>
                 ),
@@ -112,6 +114,12 @@ const CartoesPage = () => {
                 header: "Fechamento",
                 render: (row) =>
                   row.fechamentoDia ? `Dia ${row.fechamentoDia}` : "-",
+              },
+              {
+                key: "corte",
+                header: "Corte",
+                render: (row) =>
+                  row.corteDia ? `Dia ${row.corteDia}` : "Fechamento",
               },
               {
                 key: "limiteInicial",

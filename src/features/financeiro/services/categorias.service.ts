@@ -1,13 +1,6 @@
 import { apiFetch } from "../../../shared/services/apiClient";
 import type { ApiListResponse } from "../../../shared/types/api-types";
 import type { CategoriaMovimento, TipoMovimentoCaixa } from "../types";
-import {
-  deleteCategoria as deleteCategoriaStorage,
-  getCategoria as getCategoriaStorage,
-  listCategorias as listCategoriasStorage,
-  saveCategoria as saveCategoriaStorage,
-} from "../storage/categorias";
-
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 
 export type ListCategoriasParams = {
@@ -21,7 +14,7 @@ export async function listCategorias(
   params: ListCategoriasParams = {}
 ): Promise<CategoriaMovimento[]> {
   if (!API_BASE) {
-    return listCategoriasStorage();
+    throw new Error("API_NOT_CONFIGURED");
   }
   const query = new URLSearchParams();
   if (params.page) query.set("page", String(params.page));
@@ -44,7 +37,7 @@ export async function getCategoria(
   id: string
 ): Promise<CategoriaMovimento | undefined> {
   if (!API_BASE) {
-    return getCategoriaStorage(id);
+    throw new Error("API_NOT_CONFIGURED");
   }
   const res = await apiFetch(`/financeiro/categorias/${id}`);
   if (!res.ok) {
@@ -57,7 +50,7 @@ export async function saveCategoria(
   data: Omit<CategoriaMovimento, "id"> & { id?: string }
 ): Promise<CategoriaMovimento> {
   if (!API_BASE) {
-    return saveCategoriaStorage(data);
+    throw new Error("API_NOT_CONFIGURED");
   }
   const method = data.id ? "PUT" : "POST";
   const path = data.id
@@ -76,8 +69,7 @@ export async function saveCategoria(
 
 export async function deleteCategoria(id: string): Promise<void> {
   if (!API_BASE) {
-    deleteCategoriaStorage(id);
-    return;
+    throw new Error("API_NOT_CONFIGURED");
   }
   const res = await apiFetch(`/financeiro/categorias/${id}`, {
     method: "DELETE",

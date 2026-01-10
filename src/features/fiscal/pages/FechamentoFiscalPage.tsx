@@ -175,7 +175,7 @@ const FechamentoFiscalPage = () => {
             emptyState={
               <AppListNotFound texto="Nenhuma receita encontrada." />
             }
-            pagination={{ enabled: false }}
+            pagination={{ enabled: true }}
             columns={[
               { key: "cnae", header: "CNAE", render: (row) => row.cnae },
               {

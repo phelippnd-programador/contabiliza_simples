@@ -60,7 +60,7 @@ export function NcmPicker({
       renderItem={(item) => (
         <>
           <div className="font-medium">{item.codigo}</div>
-          <div className="text-xs text-gray-600">{item.descricao}</div>
+          <div className="text-xs text-slate-500">{item.descricao}</div>
         </>
       )}
     />

@@ -65,15 +65,17 @@ const ContasBancariasPage = () => {
   };
 
   return (
-    <div className="flex w-full flex-col items-center justify-center p-5">
-      <AppTitle text="Contas bancarias" />
-      <AppSubTitle text="Gerencie as contas cadastradas no financeiro." />
+    <div className="flex w-full flex-col gap-6">
+      <div className="space-y-1">
+        <AppTitle text="Contas bancarias" />
+        <AppSubTitle text="Gerencie as contas cadastradas no financeiro." />
+      </div>
 
       <Card>
         <div className="flex items-center justify-between gap-4">
           <AppButton
             type="button"
-            className="w-10"
+            className="w-auto px-6"
             onClick={() => navigate("/financeiro/contas/nova")}
           >
             Nova conta
@@ -91,7 +93,7 @@ const ContasBancariasPage = () => {
                 key: "conta",
                 header: "Conta",
                 render: (conta) => (
-                  <span className="font-medium text-gray-900 dark:text-gray-400">
+                  <span className="font-medium text-slate-900 dark:text-slate-100">
                     {conta.nome}
                   </span>
                 ),

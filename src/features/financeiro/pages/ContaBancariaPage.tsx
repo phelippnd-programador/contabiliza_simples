@@ -103,18 +103,20 @@ const ContaBancariaPage = () => {
   };
 
   return (
-    <div className="flex w-full flex-col items-center justify-center p-5">
-      <AppTitle text={id ? "Editar conta bancaria" : "Criar conta bancaria"} />
-      <AppSubTitle text="Cadastre uma conta para pagamentos e conciliacoes." />
+    <div className="flex w-full flex-col gap-6">
+      <div className="space-y-1">
+        <AppTitle text={id ? "Editar conta bancaria" : "Criar conta bancaria"} />
+        <AppSubTitle text="Cadastre uma conta para pagamentos e conciliacoes." />
+      </div>
 
       <Card>
         <AppSubTitle text="Dados bancarios" />
-        <small>
+        <p className="text-sm text-slate-500 dark:text-slate-400">
           Preencha os dados basicos da conta. Campos com * sao obrigatorios.
-        </small>
+        </p>
 
         {notFound ? (
-          <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          <div className="mt-4 rounded-2xl border border-rose-200/70 bg-rose-50/80 p-4 text-sm text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-200">
             Conta nao encontrada.
           </div>
         ) : null}
@@ -198,7 +200,7 @@ const ContaBancariaPage = () => {
           />
         </div>
 
-        <div className="mt-6 flex gap-4">
+        <div className="mt-6 flex flex-wrap gap-3">
           <AppButton onClick={handleSave}>Salvar</AppButton>
           <AppButton type="button" onClick={() => navigate("/financeiro/contas")}>
             Cancelar

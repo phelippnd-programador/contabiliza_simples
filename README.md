@@ -21,6 +21,23 @@ Run
 - `npm run mock`
 - `npm run dev`
 
+## Docker (app + mock)
+
+Prod (build + preview)
+- `docker compose up --build`
+
+Dev (hot-reload)
+- `docker compose -f docker-compose.dev.yml up`
+
+Services
+- App: `http://localhost:5173`
+- Mock: `http://localhost:3001`
+
+Notes
+- Prod embeds `VITE_API_BASE_URL=http://mock:3001` at build time from `docker-compose.yml`.
+- If you change the API URL in prod, rebuild the image.
+- Dev uses `VITE_API_BASE_URL` at runtime from `docker-compose.dev.yml`.
+
 Perfil
 - `GET /usuarios/perfil`
 - `PUT /usuarios/perfil`

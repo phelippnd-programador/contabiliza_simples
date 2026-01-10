@@ -1,15 +1,8 @@
 import { apiFetch } from "../../../shared/services/apiClient";
 import type { ApiListResponse } from "../../../shared/types/api-types";
-import type {
-  MovimentoCaixa,
-  TipoMovimentoCaixa,
-} from "../types";
-import {
-  deleteMovimento as deleteMovimentoStorage,
-  getMovimento as getMovimentoStorage,
-  listMovimentos as listMovimentosStorage,
-  saveMovimento as saveMovimentoStorage,
-} from "../storage/movimentos";
+import type { MovimentoCaixa, TipoMovimentoCaixa } from "../types";
+import { assertCompetenciaAberta } from "./fechamento.service";
+import { registrarAuditoria } from "./auditoria.service";
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL ?? "";
 
@@ -27,7 +20,7 @@ export async function listMovimentos(
   params: ListMovimentosParams = {}
 ): Promise<MovimentoCaixa[]> {
   if (!API_BASE) {
-    return listMovimentosStorage();
+    throw new Error("API_NOT_CONFIGURED");
   }
   const query = new URLSearchParams();
   if (params.page) query.set("page", String(params.page));
@@ -50,7 +43,7 @@ export async function getMovimento(
   id: string
 ): Promise<MovimentoCaixa | undefined> {
   if (!API_BASE) {
-    return getMovimentoStorage(id);
+    throw new Error("API_NOT_CONFIGURED");
   }
   const res = await apiFetch(`/financeiro/movimentos/${id}`);
   if (!res.ok) {
@@ -63,8 +56,10 @@ export async function saveMovimento(
   data: Omit<MovimentoCaixa, "id"> & { id?: string }
 ): Promise<MovimentoCaixa> {
   if (!API_BASE) {
-    return saveMovimentoStorage(data);
+    throw new Error("API_NOT_CONFIGURED");
   }
+  const competencia = data.competencia ?? data.data?.slice(0, 7);
+  await assertCompetenciaAberta(competencia);
   const method = data.id ? "PUT" : "POST";
   const path = data.id
     ? `/financeiro/movimentos/${data.id}`
@@ -77,18 +72,34 @@ export async function saveMovimento(
   if (!res.ok) {
     throw new Error("SAVE_MOVIMENTO_FAILED");
   }
-  return (await res.json()) as MovimentoCaixa;
+  const saved = (await res.json()) as MovimentoCaixa;
+  await registrarAuditoria({
+    acao: data.id ? "ATUALIZAR" : "CRIAR",
+    entidade: "MOVIMENTO",
+    entidadeId: saved.id,
+    competencia: competencia ?? saved.competencia,
+    detalhes: { tipo: saved.tipo, valor: saved.valor },
+  });
+  return saved;
 }
 
 export async function deleteMovimento(id: string): Promise<void> {
   if (!API_BASE) {
-    deleteMovimentoStorage(id);
-    return;
+    throw new Error("API_NOT_CONFIGURED");
   }
+  const current = await getMovimento(id);
+  const competencia = current?.competencia ?? current?.data?.slice(0, 7);
+  await assertCompetenciaAberta(competencia);
   const res = await apiFetch(`/financeiro/movimentos/${id}`, {
     method: "DELETE",
   });
   if (!res.ok) {
     throw new Error("DELETE_MOVIMENTO_FAILED");
   }
+  await registrarAuditoria({
+    acao: "EXCLUIR",
+    entidade: "MOVIMENTO",
+    entidadeId: id,
+    competencia,
+  });
 }

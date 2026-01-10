@@ -38,10 +38,10 @@ server.use((req, _res, next) => {
     if (serie) req.query.serie = serie;
     if (depositoId) req.query.depositoId = depositoId;
 
-    req.url = url.pathname;
-    req.originalUrl = url.pathname;
   }
 
+  req.url = url.pathname;
+  req.originalUrl = url.pathname;
   next();
 });
 server.use(jsonServer.rewriter(routes));

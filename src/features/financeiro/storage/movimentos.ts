@@ -48,6 +48,10 @@ export const saveMovimento = (
 };
 
 export const deleteMovimento = (id: string) => {
+  if (id === "*") {
+    persist([]);
+    return;
+  }
   const movimentos = load();
   const next = movimentos.filter((movimento) => movimento.id !== id);
   persist(next);

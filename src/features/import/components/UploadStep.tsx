@@ -15,6 +15,10 @@ type UploadStepProps = {
   cardId: string;
   cards: Array<{ value: string; label: string }>;
   error?: string;
+  disableSourceType?: boolean;
+  disableCardSelect?: boolean;
+  hideSourceType?: boolean;
+  hideCardSelect?: boolean;
   onFileChange: (file: File | null) => void;
   onSourceTypeChange: (value: ImportSourceType) => void;
   onInvoiceMonthChange: (value: string) => void;
@@ -39,6 +43,10 @@ const UploadStep = ({
   cardId,
   cards,
   error,
+  disableSourceType,
+  disableCardSelect,
+  hideSourceType,
+  hideCardSelect,
   onFileChange,
   onSourceTypeChange,
   onInvoiceMonthChange,
@@ -96,24 +104,30 @@ const UploadStep = ({
             <p className="text-xs text-gray-400">Tipo detectado: {fileType}</p>
           ) : null}
         </div>
-        <AppSelectInput
-          title="Origem"
-          value={sourceType}
-          onChange={(event) => onSourceTypeChange(event.target.value as ImportSourceType)}
-          data={[
-            { value: "BANK", label: "Banco" },
-            { value: "CARD", label: "Cartao" },
-          ]}
-        />
+        {hideSourceType ? null : (
+          <AppSelectInput
+            title="Origem"
+            value={sourceType}
+            onChange={(event) => onSourceTypeChange(event.target.value as ImportSourceType)}
+            disabled={disableSourceType}
+            data={[
+              { value: "BANK", label: "Banco" },
+              { value: "CARD", label: "Cartao" },
+            ]}
+          />
+        )}
         {sourceType === "CARD" ? (
           <>
-            <AppSelectInput
-              title="Cartao"
-              value={cardId}
-              onChange={(event) => onCardChange(event.target.value)}
-              data={cards}
-              placeholder="Selecione"
-            />
+            {hideCardSelect ? null : (
+              <AppSelectInput
+                title="Cartao"
+                value={cardId}
+                onChange={(event) => onCardChange(event.target.value)}
+                disabled={disableCardSelect}
+                data={cards}
+                placeholder="Selecione"
+              />
+            )}
             <AppDateInput
               title="Mes da fatura"
               type="month"

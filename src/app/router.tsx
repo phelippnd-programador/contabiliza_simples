@@ -1,5 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
 import { Suspense, lazy } from "react";
+import { Navigate } from "react-router-dom";
 import AppLayout from "../components/layout/AppLayout";
 import NotFoundPage from "../shared/pages/errors/NotFoundPage";
 import ForbiddenPage from "../shared/pages/errors/ForbiddenPage";
@@ -20,6 +21,12 @@ const CategoriasFinanceirasPage = lazy(
 );
 const MovimentosCaixaPage = lazy(
   () => import("../features/financeiro/pages/MovimentosCaixaPage")
+);
+const ConciliacaoFinanceiraPage = lazy(
+  () => import("../features/financeiro/pages/ConciliacaoFinanceiraPage")
+);
+const FechamentoFinanceiroPage = lazy(
+  () => import("../features/financeiro/pages/FechamentoFinanceiroPage")
 );
 const CaixaPage = lazy(() => import("../features/financeiro/pages/CaixaPage"));
 const FechamentoFiscalPage = lazy(
@@ -100,14 +107,46 @@ const IntegracoesBancariasPage = lazy(
 const ImportWizardPage = lazy(
   () => import("../features/import/pages/ImportWizardPage")
 );
-const FolhaPagamentoPage = lazy(
-  () => import("../features/folha/pages/FolhaPagamentoPage")
+const RhFuncionariosPage = lazy(
+  () => import("../features/rh/pages/FuncionariosPage")
 );
-const FolhaSimuladorPage = lazy(
-  () => import("../features/folha/pages/FolhaSimuladorPage")
+const RhFuncionarioDetalhePage = lazy(
+  () => import("../features/rh/pages/FuncionarioDetalhePage")
 );
-const ColaboradoresPage = lazy(
-  () => import("../features/folha/pages/ColaboradoresPage")
+const RhDepartamentosPage = lazy(
+  () => import("../features/rh/pages/DepartamentosPage")
+);
+const RhCargosPage = lazy(
+  () => import("../features/rh/pages/CargosPage")
+);
+const RhCentrosCustoPage = lazy(
+  () => import("../features/rh/pages/CentrosCustoPage")
+);
+const RhFolhaCompetenciaPage = lazy(
+  () => import("../features/rh/pages/FolhaCompetenciaPage")
+);
+const RhEventosFolhaPage = lazy(
+  () => import("../features/rh/pages/EventosFolhaPage")
+);
+const RhLancamentosFolhaPage = lazy(
+  () => import("../features/rh/pages/LancamentosFolhaPage")
+);
+const RhPontoPage = lazy(() => import("../features/rh/pages/PontoPage"));
+const RhFeriasPage = lazy(() => import("../features/rh/pages/FeriasPage"));
+const RhAfastamentosPage = lazy(
+  () => import("../features/rh/pages/AfastamentosPage")
+);
+const PontoRegistroPage = lazy(
+  () => import("../features/ponto/pages/RegistroPontoPage")
+);
+const PontoFechamentoPage = lazy(
+  () => import("../features/ponto/pages/FechamentoPontoPage")
+);
+const PontoRelatoriosPage = lazy(
+  () => import("../features/ponto/pages/RelatoriosPontoPage")
+);
+const PontoCalendarioPage = lazy(
+  () => import("../features/ponto/pages/CalendarioPontoPage")
 );
 
 const withLoading = (node: React.ReactNode) => (
@@ -208,6 +247,14 @@ export const router = createBrowserRouter([
         element: withPlanGuard(["CONTADOR", "EMPRESA"], "financeiro", <MovimentosCaixaPage />),
       },
       {
+        path: "financeiro/fechamento",
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "financeiro", <FechamentoFinanceiroPage />),
+      },
+      {
+        path: "financeiro/conciliacao",
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "financeiro", <ConciliacaoFinanceiraPage />),
+      },
+      {
         path: "financeiro/caixa",
         element: withPlanGuard(["CONTADOR", "EMPRESA"], "financeiro", <CaixaPage />),
       },
@@ -292,16 +339,84 @@ export const router = createBrowserRouter([
         element: withPlanGuard(["CONTADOR", "EMPRESA"], "integracoes", <ImportWizardPage />),
       },
       {
+        path: "rh/funcionarios",
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "folha", <RhFuncionariosPage />),
+      },
+      {
+        path: "rh/funcionarios/novo",
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "folha", <RhFuncionariosPage />),
+      },
+      {
+        path: "rh/funcionarios/:id",
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "folha", <RhFuncionarioDetalhePage />),
+      },
+      {
+        path: "rh/estrutura/departamentos",
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "folha", <RhDepartamentosPage />),
+      },
+      {
+        path: "rh/estrutura/cargos",
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "folha", <RhCargosPage />),
+      },
+      {
+        path: "rh/estrutura/centros-custo",
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "folha", <RhCentrosCustoPage />),
+      },
+      {
+        path: "rh/folha/competencia",
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "folha", <RhFolhaCompetenciaPage />),
+      },
+      {
+        path: "rh/folha/eventos",
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "folha", <RhEventosFolhaPage />),
+      },
+      {
+        path: "rh/folha/lancamentos",
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "folha", <RhLancamentosFolhaPage />),
+      },
+      {
+        path: "rh/ponto",
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "folha", <RhPontoPage />),
+      },
+      {
+        path: "ponto",
+        element: <Navigate to="/ponto/registro" replace />,
+      },
+      {
+        path: "ponto/registro",
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "folha", <PontoRegistroPage />),
+      },
+      {
+        path: "ponto/fechamento",
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "folha", <PontoFechamentoPage />),
+      },
+      {
+        path: "ponto/relatorios",
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "folha", <PontoRelatoriosPage />),
+      },
+      {
+        path: "ponto/calendario",
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "folha", <PontoCalendarioPage />),
+      },
+      {
+        path: "rh/ferias",
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "folha", <RhFeriasPage />),
+      },
+      {
+        path: "rh/afastamentos",
+        element: withPlanGuard(["CONTADOR", "EMPRESA"], "folha", <RhAfastamentosPage />),
+      },
+      {
         path: "folha",
-        element: withPlanGuard(["CONTADOR", "EMPRESA"], "folha", <FolhaPagamentoPage />),
+        element: <Navigate to="/rh/folha/competencia" replace />,
       },
       {
         path: "folha/simulador",
-        element: withPlanGuard(["CONTADOR", "EMPRESA"], "folha", <FolhaSimuladorPage />),
+        element: <Navigate to="/rh/folha/lancamentos" replace />,
       },
       {
         path: "folha/colaboradores",
-        element: withPlanGuard(["CONTADOR", "EMPRESA"], "folha", <ColaboradoresPage />),
+        element: <Navigate to="/rh/funcionarios" replace />,
       },
       {
         path: "configuracoes/usuario",
